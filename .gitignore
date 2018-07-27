@@ -1,0 +1,28 @@
+*.iml
+.idea
+# Maven
+**/target/**
+
+# Mac specific files
+.DS_Store
+
+# Python specific files
+*.pyc
+*.cache
+*.coverage
+__pycache__
+
+# pytest coverage plugin files
+htmlcov
+
+# hdf5 specific files
+*.h5
+
+# tsv and txt files
+*.txt 
+*.csv
+*.xml
+*.tsv
+
+# the files folder 
+files
