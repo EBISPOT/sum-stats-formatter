@@ -164,3 +164,4 @@ def get_csv_reader(csv_file):
 
 def get_filename(file):
     return file.split("/")[-1].split(".")[0]
+
