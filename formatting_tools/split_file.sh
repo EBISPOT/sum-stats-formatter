@@ -2,15 +2,18 @@
 
 file=$1
 filename=$(basename $file)
+file_dir=$(dirname $file)
 number=$2
+cwd=$(pwd)
 
 
-tail -n +2 $file > "data_${filename}" 
+cd $file_dir
+tail -n +2 $filename > "data_${filename}" 
 split --number=l/$number -d --additional-suffix=_$filename "data_${filename}" split_
 split_files=$(ls split_*_${filename})
 for split_file in $split_files
 do
-	head -n 1 $file > "head_${split_file}"
+	head -n 1 $filename > "head_${split_file}"
 
 	while [ -f $split_file ];
 	do
