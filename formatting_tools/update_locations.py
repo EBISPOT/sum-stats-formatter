@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from utils import *
-
+from liftover import *
 
 CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
 
@@ -28,7 +28,7 @@ def select_canonical_data(mapped_data):
         return "NA", "NA" # to catch those where they only map to a patch
 
 
-def open_process_file(file, out_dir):
+def open_process_file(file, out_dir, from_build, to_build):
     filename = file.split("/")[-1].split(".")[0]
     path = os.path.dirname(file)
 
@@ -48,6 +48,12 @@ def open_process_file(file, out_dir):
 
             if mapped_data:
                 row[CHR_DSET], row[BP_DSET] = select_canonical_data(mapped_data)     
+            # do the bp location mapping if needed
+            elif from_build != to_build:
+                mapped_bp = map_bp_to_build_via_liftover(chromosome=chromosome, bp=bp, build_map=build_map)
+                if mapped_bp is None:
+                    mapped_bp = map_bp_to_build_via_ensembl(chromosome=chromosome, bp=bp, from_build=from_build, to_build=to_build)
+                row[BP_DSET] = mapped_bp
             else:
                 row[BP_DSET] = "NA" #"UNMAPPED"
             
@@ -58,11 +64,16 @@ def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The full path to the file to be processed', required=True)
     argparser.add_argument('-d', help='The directory to write to', required=True)
+    argparser.add_argument('-from_build', help='The original build e.g. "36" for NCBI36 or hg18', required=True)
+    argparser.add_argument('-to_build', help='The latest (desired) build e.g. "38"', required=True)
     args = argparser.parse_args()
     
     file = args.f
     out_dir = args.d
-    open_process_file(file, out_dir)
+    from_build = args.from_build
+    to_build = args.to_build
+
+    open_process_file(file, out_dir, from_build, to_build)
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ rule sumstat_format:
     input:
         "toformat/{ss_file}.tsv"
     output:
-        "formatted/{ss_file, \d+-GSCT\d+-EFO_\d+}.tsv"
+        "formatted/{ss_file}.tsv"
     shell:
         "python formatting_tools/sumstats_formatting.py "
         "-f {input} "
@@ -77,7 +77,7 @@ rule get_tbi_files:
 
 rule split_file:
     input:
-        "formatted/{ss_file, \d+-GSCT\d+-EFO_\d+}.tsv"
+        "formatted/{ss_file}.tsv"
     output:
         expand("formatted/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=config["steps"], split=config["splits"])
     shell:
@@ -89,7 +89,7 @@ rule split_file:
 
 rule retrieve_ensembl_mapping_data:
     input:
-        "formatted/{ss_file, '\d+-GSCT\d+-EFO_\d+'}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
+        "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
     output:
         "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out"
     shell:
@@ -98,12 +98,15 @@ rule retrieve_ensembl_mapping_data:
 
 rule update_locations_from_ensembl:
     input:
-        "formatted/{ss_file, '\d+-GSCT\d+-EFO_\d+'}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out",
-        in_ss="formatted/{ss_file, '\d+-GSCT\d+-EFO_\d+'}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
+        "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out",
+        in_ss="formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
     output:
         "build_38/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
+    params:
+        to_build=config["desired_build"],
     shell:
-        "python formatting_tools/update_locations.py -f {input.in_ss} -d build_38/{wildcards.ss_file}"
+        "from_build=$(echo -n {wildcards.ss_file} | tail -c 2); " 
+        "python formatting_tools/update_locations.py -f {input.in_ss} -d build_38/{wildcards.ss_file} -from_build $from_build -to_build {params.to_build}"
 
 
 rule cat_all_splits:
@@ -149,7 +152,7 @@ rule generate_strand_counts:
     output:
         "harm_splits/{ss_file}/output/strand_count_bpsplit_{step, \d+}_chr_{chromosome}.tsv"
     shell:
-        "mkdir -p {wildcards.ss_file}/output;"
+        "mkdir -p harm_splits/{wildcards.ss_file}/output;"
         "./formatting_tools/sumstat_harmoniser/bin/sumstat_harmoniser --sumstats {input.in_ss} "
         "--vcf vcf_refs/homo_sapiens-chr{wildcards.chromosome}.vcf.gz "
         "--chrom_col chromosome "
