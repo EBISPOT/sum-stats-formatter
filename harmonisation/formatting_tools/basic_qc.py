@@ -9,10 +9,14 @@ from common_constants import *
 
 
 # 1) must have SNP, PVAL, CHR, BP
-# 2) remove rows with blank values for (1)
-# 3) conform to data types:
+# 2) coerce headers
+# 3) if variant_id is None: try to set it to hm_variant_id
+# 3) remove rows with blank values for (1)
+# 4) conform to data types:
 #   - if pval not floats: remove row
 #   - if chr and bp not ints: remove row
+# 5) set chr 'x' and 'y' to 23 and 24
+
 
 
 REQUIRED_HEADERS = [SNP_DSET, PVAL_DSET, CHR_DSET, BP_DSET]
