@@ -3,23 +3,34 @@ import argparse
 import os
 
 
+def mkdir_if_not_exists(path):
+    dir = os.path.dirname(path)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The full path to the file to be processed', required=True)
     argparser.add_argument('-chr', help='Chromosome whose data we are going to extract', required=True)
+    argparser.add_argument('-d', help='The path to the out directory', required=True)
     args = argparser.parse_args()
 
     file = args.f
-    path = os.path.dirname(os.path.abspath(__file__))
-    chromosome = int(args.chr)
+    path = args.d
+    chromosome = args.chr
     filename = file.split("/")[-1].split(".")[0]
 
     chromosome_index = None
     is_header = True
     total_of_lines = 0
 
-    new_filename = os.path.join(path, 'chr_' + str(chromosome) + "_" + filename + '.tsv')
+    file_dir = os.path.join(path, filename)
+    print(file_dir)
+    mkdir_if_not_exists(file_dir)
+    new_filename = os.path.join(file_dir, 'chr_' + str(chromosome) + '.tsv')
 
+    print(new_filename)
     result_file = open(new_filename, 'w')
     writer = csv.writer(result_file, delimiter='\t')
     with open(file) as csv_file:
@@ -33,15 +44,15 @@ def main():
                 writer.writerows([header])
                 is_header = False
             else:
-                if int(row[chromosome_index]) == chromosome:
+                if row[chromosome_index] == chromosome:
                     writer.writerows([row])
                     total_of_lines += 1
 
     result_file.close()
 
-    if total_of_lines == 0:
+    #if total_of_lines == 0:
         # nothing was written, delete the file
-        os.remove(new_filename)
+    #    os.remove(new_filename)
 
 
 if __name__ == "__main__":
