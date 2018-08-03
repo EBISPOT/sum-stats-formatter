@@ -1,5 +1,6 @@
 import csv
 
+sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 from common_constants import *
 
 
