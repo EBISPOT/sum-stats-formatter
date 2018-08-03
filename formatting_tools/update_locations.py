@@ -39,6 +39,9 @@ def open_process_file(file, out_dir, from_build, to_build):
         writer = csv.DictWriter(result_file, fieldnames=fieldnames, delimiter='\t')
         writer.writeheader()
         ensembl_data = set(ensembl_file.read().splitlines())
+        build_map = None
+        if from_build != to_build:
+            build_map = LiftOver(ucsc_release.get(from_build), ucsc_release.get(to_build))
         for row in csv_reader:
             variant_id = row[SNP_DSET]
             chromosome = row[CHR_DSET].replace('23', 'X').replace('24', 'Y')

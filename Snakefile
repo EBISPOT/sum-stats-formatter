@@ -105,7 +105,8 @@ rule update_locations_from_ensembl:
     params:
         to_build=config["desired_build"],
     shell:
-        "from_build=$(echo -n {wildcards.ss_file} | tail -c 2); " 
+        "filename={wildcards.ss_file}; "
+        "from_build=$(echo -n $filename | tail -c 2); " 
         "python formatting_tools/update_locations.py -f {input.in_ss} -d build_38/{wildcards.ss_file} -from_build $from_build -to_build {params.to_build}"
 
 
