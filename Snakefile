@@ -4,7 +4,6 @@ configfile: "config.yaml"
 STUDIES, = glob_wildcards(config["ss_file_pattern"])
 
 # --------------------------Snakemake rules ------------------------------------
-# To do: parameterise directories
 
 
 rule all:
@@ -12,7 +11,7 @@ rule all:
         expand("harmonised/{ss_file}.tsv", ss_file=STUDIES)
 
 
-# Sumstat formatting
+# Formatting for summary statistics database
 
 rule sumstat_format:
     input:
@@ -25,35 +24,7 @@ rule sumstat_format:
         "-d formatted/"
 
 
-# Liftover to current build
-
-#rule liftover:
-#    input:
-#        "formatted/{ss_file}.tsv",
-#        "formatting_tools/build_info.tsv"
-#    output:
-#        "build_38/{ss_file}.tsv"
-#    params:
-#        desired_build=config["desired_build"],
-#        script_path=config["script_path"]
-#    shell:
-#        "./formatting_tools/liftover_ss_files.sh {input}"
-
-
-# Resolve missing locations
-
-#rule resolve_missing_locations:
-#    input:
-#        "build_38/{ss_file}.tsv"
-#    output:
-#        "resolved_chrbp/{ss_file}.tsv"
-#    shell:
-#        "python formatting_tools/resolve_location.py "
-#        "-f {input}"
-
-
-
-# Harmonisation
+# Retrieve VCF reference files 
 
 rule get_vcf_files:
     output:
@@ -73,7 +44,7 @@ rule get_tbi_files:
         "wget -P vcf_refs/ {params.location}/homo_sapiens-chr{wildcards.chromosome}.vcf.gz.tbi"
 
 
-# split files into fractions (e.g. 16 and then again by 16)
+# Split files into fractions for parallelisation of mapping and liftover (e.g. split into 16 and then again by 16)
 
 rule split_file:
     input:
@@ -85,7 +56,8 @@ rule split_file:
         "./formatting_tools/split_file.sh formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv 16; "
         "for split in formatted/{wildcards.ss_file}/bpsplit*.tsv; do ./formatting_tools/split_file.sh $split 16; done"
 
-# map rsids to chr:bp location
+
+# Map rsids to chr:bp location
 
 rule retrieve_ensembl_mapping_data:
     input:
@@ -95,6 +67,10 @@ rule retrieve_ensembl_mapping_data:
     shell:
         "./formatting_tools/var2location.pl {input}"
 
+
+# Update locations based on Ensembl mapping
+# Failing that --> liftover 
+# Failing that --> set location to 'NA'
 
 rule update_locations_from_ensembl:
     input:
@@ -110,6 +86,8 @@ rule update_locations_from_ensembl:
         "python formatting_tools/update_locations.py -f {input.in_ss} -d build_38/{wildcards.ss_file} -from_build $from_build -to_build {params.to_build}"
 
 
+# Concatenate all the splits
+
 rule cat_all_splits:
     input:
         expand("build_38/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=config["steps"], split=config["splits"])
@@ -119,7 +97,7 @@ rule cat_all_splits:
         "./formatting_tools/cat_splits_alt.sh {wildcards.ss_file}"
 
 
-# split the file by chromosome
+# Split the file by chromosome so that we know which VCF file to reference later on
 
 rule split_by_chrom:
     input:
@@ -129,10 +107,8 @@ rule split_by_chrom:
     shell:
         "python formatting_tools/split_by_chromosome.py -f {input} -chr {wildcards.chromosome} -d build_38/"
 
-# collect unmapped chromosomes and add to log
 
-
-# split files into fractions (e.g. 16 and then again by 16)
+# Split each chromosome file into fractions for parallelisation purposes
 
 rule split_by_bp:
     input:
@@ -143,7 +119,7 @@ rule split_by_bp:
         "./formatting_tools/split_file.sh {input} 16"
 
 
-# run sumstat_harmoniser.py to get strand counts
+# Run sumstat_harmoniser.py to get the orientation counts for each split file
 
 rule generate_strand_counts:
     input:
@@ -163,7 +139,7 @@ rule generate_strand_counts:
         "--strand_counts harm_splits/{wildcards.ss_file}/output/strand_count_bpsplit_{wildcards.step}_chr_{wildcards.chromosome}.tsv" 
         
 
-# make strand counts 
+# Summarise the orientation of the varients of all the splits i.e. what is the consensus for the entire sumstats file?
 
 rule make_strand_count:
     input:
@@ -174,7 +150,7 @@ rule make_strand_count:
         "python formatting_tools/sum_strand_counts.py -i harm_splits/{wildcards.ss_file}/output/ -o harm_splits/{wildcards.ss_file}/output/" 
 
 
-# run sumstat_harmoniser.py for each split
+# Run sumstat_harmoniser.py for each split based on the orientation consensus
 
 rule run_harmonisation_per_split:
     input:
@@ -198,7 +174,7 @@ rule run_harmonisation_per_split:
         "--palin_mode $palin_mode"
 
 
-# concatenate harmonised splits 
+# Concatenate harmonised splits 
 
 rule concatenate_bp_splits:
     input:
@@ -209,7 +185,7 @@ rule concatenate_bp_splits:
         "./formatting_tools/cat_bpsplits.sh {wildcards.ss_file} {wildcards.chromosome}"
 
 
-# concatenate chromosomes into one file
+# Concatenate chromosomes into one file
 
 rule concatenate_chr_splits:
     input:
@@ -219,5 +195,5 @@ rule concatenate_chr_splits:
     shell:
         "./formatting_tools/cat_chroms.sh {wildcards.ss_file}"
 
-# clean up
-# final QC and make X=23 and Y=24
+
+# Final QC: set X=23 and Y=24 and remove records with invalid data in essential fields.
