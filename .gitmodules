@@ -1,0 +1,6 @@
+[submodule "harmonisation/formatting_tools/sumstat_harmoniser"]
+	path = harmonisation/formatting_tools/sumstat_harmoniser
+	url = https://github.com/opentargets/sumstat_harmoniser.git
+[submodule "SumStats"]
+	path = SumStats
+	url = https://github.com/EBISPOT/SumStats.git
