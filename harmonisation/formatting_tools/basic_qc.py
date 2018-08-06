@@ -9,8 +9,12 @@ from common_constants import *
 
 
 # 1) must have SNP, PVAL, CHR, BP
-# 2) coerce headers
-# 3) if variant_id is None: try to set it to hm_variant_id
+# 2) *coerce headers
+# 3) *if variant_id is None: try to set it to hm_variant_id or set variant_id to hm_variant_id?
+# ---- The consequence of that is that we are both filling in and also removing if the rsids don't map any more
+# ---- Do we want to keep rsids even if they don't map - and certainly don't map to the coordinates
+# ---- OR if hm_rsid is not None, set variant_id = hm_rsid, thus updating all rsids where possible and keeping
+# ---- ones that where not harmonised. 
 # 3) remove rows with blank values for (1)
 # 4) conform to data types:
 #   - if pval not floats: remove row
@@ -18,9 +22,35 @@ from common_constants import *
 # 5) set chr 'x' and 'y' to 23 and 24
 
 
+hm_header_transformations = {
+
+    # variant id
+    'hm_varid': HM_VAR_ID,
+    # odds ratio
+    'hm_OR': HM_OR_DSET,
+    # or range
+    'hm_OR_lowerCI': HM_RANGE_DSET, # NEED TO CHANGE WHEN RANGE IS SPLIT
+    #'hm_OR_upper': HM_CI_UPPER_DSET,
+    # beta
+    'hm_beta': HM_BETA_DSET,
+    # effect allele
+    'hm_effect_allele': HM_EFFECT_DSET,
+    # other allele
+    'hm_other_allele': HM_OTHER_DSET,
+    # effect allele frequency
+    'hm_eaf': HM_FREQ_DSET,
+    # harmonisation code
+    'hm_code': HM_CODE
+}
+
 
 REQUIRED_HEADERS = [SNP_DSET, PVAL_DSET, CHR_DSET, BP_DSET]
-BLANK_SET = {'', ' ', '-', '.'}
+BLANK_SET = {'', ' ', '-', '.', 'NA'}
+
+
+def refactor_header(header):
+    return [hm_header_transformations[h] if h in hm_header_transformations else h for h in header]
+
 
 def check_for_required_headers(header):
     return list(set(REQUIRED_HEADERS) - set(header))
@@ -73,6 +103,18 @@ def drop_last_element_from_filename(filename):
     return '-'.join(filename_parts[:-1])
 
 
+def resolve_invalid_rsids(row, header):
+    hm_rsid_idx = header.index('hm_rsid')
+    snp_idx = header.index(SNP_DSET)
+    # if possible, set variant_id to harmonised rsid
+    if row[hm_rsid_idx].startswith('rs'):
+        row[snp_idx] = row[hm_rsid_idx]
+    # if variant_id is doesn't begin 'rs' 
+    if not row[snp_idx].startswith('rs'):
+        row[snp_idx] = 'NA'
+    return row
+
+
 def main():
 
     argparser = argparse.ArgumentParser()
@@ -102,7 +144,7 @@ def main():
 
         for row in csv_reader:
             if is_header:
-                header = row
+                header = refactor_header(row)
                 is_header = False
                 missing_headers = check_for_required_headers(header)
                 if missing_headers:
@@ -110,11 +152,13 @@ def main():
                 if not args.print_only:
                     writer.writerows([header])
             else:
+                # First try to replace an invalid variant_id with the hm_rsid
                 # Checks for blanks, integers and floats:
+                row = resolve_invalid_rsids(row, header)
                 row = blanks_to_NA(row)
                 row = map_x_y_to_23_24(row, header)
                 blank = remove_row_if_required_is_blank(row, header)
-                wrong_type_chr = (remove_row_if_wrong_data_type(row, header, CHR_DSET, int)) # can get this from common_constants.py if h5py installed
+                wrong_type_chr = (remove_row_if_wrong_data_type(row, header, CHR_DSET, int)) 
                 wrong_type_bp = (remove_row_if_wrong_data_type(row, header, BP_DSET, int))
                 wrong_type_pval = (remove_row_if_wrong_data_type(row, header, PVAL_DSET, float))
                 remove_row_tests = [blank == False,
@@ -125,16 +169,9 @@ def main():
                     if not args.print_only:
                         writer.writerows([row])
                 else:
-                #    removed_lines.append(row)
+                    # print lines that are removed
                     print(row)
 
-    #print("kept: {} rows".format(len(lines)))
-    #print("removed: {} rows".format(len(removed_lines)))
-
-    #with open(new_filename, 'w') as result_file:
-    #    writer = csv.writer(result_file, delimiter='\t')
-    #    writer.writerows([header])
-    #    writer.writerows(lines)
            
 if __name__ == "__main__":
     main()
