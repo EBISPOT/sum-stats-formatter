@@ -1,6 +1,7 @@
 import csv
 import sys
 import argparse
+
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
 from common_constants import *
@@ -17,8 +18,10 @@ sumstat_header_transformations = {
     'bp': BP_DSET, 
     # odds ratio
     'or': OR_DSET,
-    # or range
-    'range': RANGE_DSET,
+    # ci lower
+    'ci_lower': RANGE_L_DSET,
+    # ci upper
+    'ci_upper': RANGE_U_DSET,
     # beta
     'beta': BETA_DSET,
     # standard error
@@ -30,6 +33,9 @@ sumstat_header_transformations = {
     # effect allele frequency
     'eaf': FREQ_DSET
 }
+
+
+BLANK_SET = {'', ' ', '-', '.', 'na', None, 'none', 'nan', 'nil'}
 
 
 def refactor_header(header):
@@ -57,6 +63,13 @@ def get_filename(file):
 def add_blank_col_to_row(row, headers_to_add):
     for _ in headers_to_add:
         row.append('NA')
+    return row
+
+
+def blanks_to_NA(row):
+    for n, i in enumerate(row):
+        if i.lower() in BLANK_SET:
+            row[n] = 'NA'
     return row
 
 
@@ -102,6 +115,7 @@ def main():
             else:
                 row = add_blank_col_to_row(row, headers_to_add)
                 #row = map_x_y_to_23_24(row, new_header)
+                row = blanks_to_NA(row)
                 writer.writerow(row)
         
 

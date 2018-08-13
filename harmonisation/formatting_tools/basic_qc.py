@@ -29,8 +29,8 @@ hm_header_transformations = {
     # odds ratio
     'hm_OR': HM_OR_DSET,
     # or range
-    'hm_OR_lowerCI': HM_RANGE_DSET, # NEED TO CHANGE WHEN RANGE IS SPLIT
-    #'hm_OR_upper': HM_CI_UPPER_DSET,
+    'hm_OR_lowerCI': HM_RANGE_L_DSET, 
+    'hm_OR_upperCI': HM_RANGE_U_DSET,
     # beta
     'hm_beta': HM_BETA_DSET,
     # effect allele
@@ -45,7 +45,7 @@ hm_header_transformations = {
 
 
 REQUIRED_HEADERS = [SNP_DSET, PVAL_DSET, CHR_DSET, BP_DSET]
-BLANK_SET = {'', ' ', '-', '.', 'NA'}
+BLANK_SET = {'', ' ', '-', '.', 'na', None, 'none', 'nan', 'nil'}
 
 
 def refactor_header(header):
@@ -74,7 +74,7 @@ def remove_row_if_required_is_blank(row, header):
 
 def blanks_to_NA(row):
     for n, i in enumerate(row):
-        if i in BLANK_SET:
+        if i.lower() in BLANK_SET:
             row[n] = 'NA'
     return row
             
@@ -127,7 +127,9 @@ def main():
     out_dir = args.d
     filename = get_filename(file)
 
-    new_filename = out_dir + drop_last_element_from_filename(filename) + '.tsv' # drop the build from the filename
+    #new_filename = out_dir + drop_last_element_from_filename(filename) + '.tsv' # drop the build from the filename
+    new_filename = out_dir + filename + '.tsv' 
+    
     header = None
     is_header = True
     lines = []
