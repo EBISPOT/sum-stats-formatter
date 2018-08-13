@@ -1,10 +1,17 @@
 import csv
 import sys
 import argparse
+import logging
 
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
 from common_constants import *
+
+
+logger = logging.getLogger('sumstats_formatting')
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s %(message)s')
+
 
 sumstat_header_transformations = {
 
@@ -88,16 +95,21 @@ def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The name of the file to be processed', required=True)
     argparser.add_argument('-d', help='The name of the output directory', required=True)
+    argparser.add_argument('--log', help='The name of the log file')
     args = argparser.parse_args()
 
     file = args.f
     outdir = args.d
+    log_file = args.log
     filename = get_filename(file)
     what_changed = None
     new_header = None
     is_header = True
     headers_to_add = []
-#    lines = []
+
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
     with open(file) as csv_file:
         csv_reader = get_csv_reader(csv_file)
@@ -109,6 +121,7 @@ def main():
                 what_changed = mapped_headers(row[:])
                 new_header = refactor_header(row)
                 headers_to_add = missing_headers(new_header)
+                logger.info('headers missing and added: {}'.format(headers_to_add))
                 new_header.extend(headers_to_add)
                 is_header = False
                 writer.writerow(new_header)
@@ -118,12 +131,6 @@ def main():
                 row = blanks_to_NA(row)
                 writer.writerow(row)
         
-
-#    new_filename = 'sumstats_' + filename + '.tsv'
-#    with open(new_filename, 'w') as result_file:
-#        writer = csv.writer(result_file, delimiter='\t')
-#        writer.writerows([new_header])
-#        writer.writerows(lines)
 
     print("\n")
     print("------> Output saved in file:", outdir + filename + ".tsv", "<------")
