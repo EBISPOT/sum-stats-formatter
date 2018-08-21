@@ -66,7 +66,7 @@ https://github.com/EBISPOT/sum-stats-formatter/tree/master/harmonisation).
 The goal of the harmonisation is to make available as much of the summary 
 statistics as possible in a uniform, harmonised way. This means that all 
 location data will be on the same, latest genome build. Missing data that can
-be inferred, will if safely possible, be inferred and provided. 
+be inferred will, if safely possible, be inferred and provided. 
 The harmonisation process is the following:
 
   Formatting
@@ -137,7 +137,7 @@ The harmonisation process is the following:
      +----+--------------------------------------------------------------+
 
   Filtering and QC
-    6) Any missing variant IDs that could be found by step (5) are updated. 
+    6) Variant ID is set to variant IDs found by step (5).
     7) Records without a valid value for variant ID, chromosome, base pair
        location and p-value are removed. 
 
