@@ -1,8 +1,7 @@
 # Configure --------------------------------------------------------------------
 
 configfile: "config.yaml"
-STUDIES, = glob_wildcards(config["ss_file_pattern"])
-OUTFILE, = glob_wildcards(config["out_file_name"])
+STUDIES = glob_wildcards(config["ss_file_pattern"])
 
 # --------------------------Snakemake rules ------------------------------------
 # To do: parameterise directories
@@ -20,12 +19,20 @@ rule sumstat_format:
         "toformat/{ss_file}.tsv"
     output:
         "formatted/{ss_file}.tsv"
+    log:
+        "logs/{ss_file}.log"
     shell:
+        "ilc1=$(wc -l {input} | awk '{{print $1}}'); "
+        "echo Number of input lines: $ilc1 >> {log}; "
         "python formatting_tools/sumstats_formatting.py "
         "-f {input} "
-        "-d formatted/"
+        "-d formatted/ "
+        "--log {log}; "
+        "olc1=$(wc -l {output} | awk '{{print $1}}'); "
+        "echo Number of output lines: $olc1 >> {log}; "
+        "if [ $ilc1 -ne $olc1 ]; then "
+        "echo 'WARNING: number of outlines != inlines' >> {log}; fi"
 
-# Normalise NA values
 
 # Harmonisation
 
