@@ -1,7 +1,7 @@
 # Configure --------------------------------------------------------------------
 
 configfile: "config.yaml"
-STUDIES = glob_wildcards(config["ss_file_pattern"])
+STUDIES, = glob_wildcards(config["ss_file_pattern"])
 
 # --------------------------Snakemake rules ------------------------------------
 # To do: parameterise directories
@@ -19,19 +19,17 @@ rule sumstat_format:
         "toformat/{ss_file}.tsv"
     output:
         "formatted/{ss_file}.tsv"
-    log:
-        "logs/{ss_file}.log"
     shell:
         "ilc1=$(wc -l {input} | awk '{{print $1}}'); "
-        "echo Number of input lines: $ilc1 >> {log}; "
+        "echo Number of input lines: $ilc1 >> reports/{wildcards.ss_file}.txt; "
         "python formatting_tools/sumstats_formatting.py "
         "-f {input} "
         "-d formatted/ "
-        "--log {log}; "
+        "--log reports/{wildcards.ss_file}.txt; "
         "olc1=$(wc -l {output} | awk '{{print $1}}'); "
-        "echo Number of output lines: $olc1 >> {log}; "
+        "echo Number of output lines: $olc1 >> reports/{wildcards.ss_file}.txt; "
         "if [ $ilc1 -ne $olc1 ]; then "
-        "echo 'WARNING: number of outlines != inlines' >> {log}; fi"
+        "echo 'WARNING: number of outlines != inlines' >> reports/{wildcards.ss_file}.txt; fi"
 
 
 # Harmonisation
@@ -62,9 +60,13 @@ rule split_file:
     output:
         expand("formatted/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=config["steps"], split=config["splits"])
     shell:
-        "mkdir -p formatted/{wildcards.ss_file}; cp formatted/{wildcards.ss_file}.tsv formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv; "
+        "echo 'Splitting file for parallel processing...'  >> reports/{wildcards.ss_file}.txt; "
+        "mkdir -p formatted/{wildcards.ss_file}; "
+        "cp formatted/{wildcards.ss_file}.tsv formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv; "
         "./formatting_tools/split_file.sh formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv 16; "
-        "for split in formatted/{wildcards.ss_file}/bpsplit*.tsv; do ./formatting_tools/split_file.sh $split 16; done"
+        "for split in formatted/{wildcards.ss_file}/bpsplit*.tsv; "
+        "do ./formatting_tools/split_file.sh $split 16; done; "
+        "echo 'Mapping RSIDs to locations with Ensembl:' >>  reports/{wildcards.ss_file}.txt"
 
 # map rsids to chr:bp location
 
@@ -74,7 +76,9 @@ rule retrieve_ensembl_mapping_data:
     output:
         "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out"
     shell:
-        "./formatting_tools/var2location.pl {input}"
+        "./formatting_tools/var2location_local.pl {input} formatting_tools/ensembl.registry; wait; "
+        #"./formatting_tools/var2location.pl {input}; wait; "
+        "cat {input}.log >> reports/{wildcards.ss_file}.txt"
 
 
 rule update_locations_from_ensembl:
@@ -87,8 +91,12 @@ rule update_locations_from_ensembl:
         to_build=config["desired_build"],
     shell:
         "filename={wildcards.ss_file}; "
-        "from_build=$(echo -n $filename | tail -c 2); " 
-        "python formatting_tools/update_locations.py -f {input.in_ss} -d build_38/{wildcards.ss_file} -from_build $from_build -to_build {params.to_build}"
+        "from_build=$(echo -n $filename | tail -c 2); "
+        "python formatting_tools/update_locations.py -f {input.in_ss} "
+        "-d build_38/{wildcards.ss_file} "
+        "-from_build $from_build "
+        "-to_build {params.to_build} "
+        "--log reports/{wildcards.ss_file}.txt"
 
 
 rule cat_all_splits:
@@ -97,8 +105,13 @@ rule cat_all_splits:
     output:
         "build_38/{ss_file}/{ss_file}.tsv"
     shell:
-        "./formatting_tools/cat_splits_alt.sh {wildcards.ss_file}"
-
+        "echo 'Collating splits...' >> reports/{wildcards.ss_file}.txt; "
+        "./formatting_tools/cat_splits_alt.sh {wildcards.ss_file}; wait; "
+        "olc2=$(wc -l build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv | awk '{{print $1}}'); "
+        "echo Number of output lines: $olc2 >> reports/{wildcards.ss_file}.txt; "
+        "python formatting_tools/chrom_check.py -f build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv "
+        "--log reports/{wildcards.ss_file}.txt"
+        
 
 # split the file by chromosome
 
@@ -215,6 +228,6 @@ rule basic_qc:
     shell:
         "python formatting_tools/basic_qc.py "
         "-f {input} "
-        "-d qc_harmonised/"
-# clean up
-# final QC and make X=23 and Y=24
+        "-d qc_harmonised/ "
+        "--log reports/{wildcards.ss_file}.txt"
+
