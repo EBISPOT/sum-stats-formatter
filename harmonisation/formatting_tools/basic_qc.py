@@ -1,12 +1,17 @@
 import csv
 import sys
 import argparse
+import logging
 
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
 from sumstats_formatting import *
 from common_constants import *
 
+
+logger = logging.getLogger('basic_qc')
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
 
 # 1) must have SNP, PVAL, CHR, BP
 # 2) *coerce headers
@@ -64,8 +69,12 @@ def required_elements(row, header):
     return [row[i] for i in get_header_indices(header)]
       
 
+def lowercase_list(lst):
+    return [x.lower() for x in lst]
+
+
 def remove_row_if_required_is_blank(row, header):
-    blanks = BLANK_SET & set(required_elements(row, header))
+    blanks = BLANK_SET & set(required_elements(lowercase_list(row), header))
     if blanks:
         return True
     else:
@@ -121,10 +130,12 @@ def main():
     argparser.add_argument('-f', help='The name of the file to be processed', required=True)
     argparser.add_argument('-d', help='The name of the output directory', required=True)
     argparser.add_argument('--print_only', help='only print the lines removed and do not write a new file', action='store_true')
+    argparser.add_argument('--log', help='The name of the log file')
     args = argparser.parse_args()
 
     file = args.f
     out_dir = args.d
+    log_file = args.log
     filename = get_filename(file)
 
     #new_filename = out_dir + drop_last_element_from_filename(filename) + '.tsv' # drop the build from the filename
@@ -135,6 +146,10 @@ def main():
     lines = []
     removed_lines =[]
     missing_headers = []
+
+    file_handler = logging.FileHandler(log_file, mode='a')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
     with open(file) as csv_file:
         result_file = None
@@ -172,7 +187,7 @@ def main():
                         writer.writerows([row])
                 else:
                     # print lines that are removed
-                    print(row)
+                    logger.info('Removing record: {}'.format(row))
 
            
 if __name__ == "__main__":
