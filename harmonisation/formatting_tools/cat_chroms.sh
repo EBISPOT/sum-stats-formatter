@@ -8,7 +8,7 @@ filename=$1
 # store the 
 head -n 1 "harm_splits/${filename}/output/merge_chr_1.output.tsv" > "harm_splits/${filename}/output/final.output.tsv"
 
-for split_file in harm_splits/$filename/output/merge_chr_{1..22}.output.tsv
+for split_file in harm_splits/$filename/output/merge_chr_*.output.tsv
 do
     # append the data to the $filename - CHECK THAT THE ORDER IS CORRECT
     if [ -e $split_file ]
