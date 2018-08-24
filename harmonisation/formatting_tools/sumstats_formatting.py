@@ -10,7 +10,7 @@ from common_constants import *
 
 logger = logging.getLogger('sumstats_formatting')
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
 
 
 sumstat_header_transformations = {
@@ -80,13 +80,13 @@ def blanks_to_NA(row):
     return row
 
 
-def map_x_y_to_23_24(row, header):
+def map_23_24_to_x_y(row, header):
     index_chr = header.index(CHR_DSET)
-    chromosome = row[index_chr].lower()
-    if 'x' in chromosome:
-        chromosome = '23'
-    if 'y' in chromosome:
-        chromosome = '24'
+    chromosome = row[index_chr]
+    if chromosome == '23':
+        chromosome = 'X'
+    if chromosome == '24':
+        chromosome = 'Y'
     row[index_chr] = chromosome
     return row
 
@@ -107,7 +107,7 @@ def main():
     is_header = True
     headers_to_add = []
 
-    file_handler = logging.FileHandler(log_file)
+    file_handler = logging.FileHandler(log_file, mode='a')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
@@ -127,7 +127,7 @@ def main():
                 writer.writerow(new_header)
             else:
                 row = add_blank_col_to_row(row, headers_to_add)
-                #row = map_x_y_to_23_24(row, new_header)
+                row = map_23_24_to_x_y(row, new_header)
                 row = blanks_to_NA(row)
                 writer.writerow(row)
         
