@@ -8,7 +8,8 @@ from utils import *
 from liftover import *
 
 
-CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
+#CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
+CHROMOSOMES = get_chromosome_list()
 
 logger = logging.getLogger('update_locations')
 logger.setLevel(logging.INFO)
@@ -50,7 +51,7 @@ def open_process_file(file, out_dir, from_build, to_build):
             build_map = LiftOver(ucsc_release.get(from_build), ucsc_release.get(to_build))
         for row in csv_reader:
             variant_id = row[SNP_DSET]
-            chromosome = row[CHR_DSET].replace('23', 'X').replace('24', 'Y')
+            chromosome = row[CHR_DSET].replace('23', 'X').replace('24', 'Y').replace('25', 'MT')
             bp = row[BP_DSET]
             variant_string = variant_id + '\t'
             mapped_data = [line for line in ensembl_data if variant_string in line]

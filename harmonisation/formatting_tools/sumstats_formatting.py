@@ -80,13 +80,15 @@ def blanks_to_NA(row):
     return row
 
 
-def map_23_24_to_x_y(row, header):
+def map_chr_numbers_to_values(row, header):
     index_chr = header.index(CHR_DSET)
     chromosome = row[index_chr]
     if chromosome == '23':
         chromosome = 'X'
     if chromosome == '24':
         chromosome = 'Y'
+    if chromosome == '25':
+        chromosome = 'MT'
     row[index_chr] = chromosome
     return row
 
@@ -127,7 +129,7 @@ def main():
                 writer.writerow(new_header)
             else:
                 row = add_blank_col_to_row(row, headers_to_add)
-                row = map_23_24_to_x_y(row, new_header)
+                row = map_chr_numbers_to_values(row, new_header)
                 row = blanks_to_NA(row)
                 writer.writerow(row)
         
