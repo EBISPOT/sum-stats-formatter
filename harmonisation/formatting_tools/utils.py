@@ -1,7 +1,16 @@
 import csv
+import sys
+import yaml
 
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
+sys.path.extend(sys_paths)
 from common_constants import *
+
+
+def get_chromosome_list():
+    with open("../config.yaml", 'r') as stream:
+        configs = yaml.load(stream)
+        return configs['chromosomes']
 
 
 def get_csv_reader(csv_file):

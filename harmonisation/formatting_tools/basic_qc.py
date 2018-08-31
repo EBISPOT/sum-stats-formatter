@@ -96,13 +96,15 @@ def remove_row_if_wrong_data_type(row, header, col, data_type):
         return True
 
 
-def map_x_y_to_23_24(row, header):
+def map_chr_values_to_numbers(row, header):
     index_chr = header.index(CHR_DSET)
     chromosome = row[index_chr].lower()
     if 'x' in chromosome:
         chromosome = '23'
     if 'y' in chromosome:
         chromosome = '24'
+    if 'mt' in chromosome:
+        chromosome = '25'
     row[index_chr] = chromosome
     return row
 
@@ -173,7 +175,7 @@ def main():
                 # Checks for blanks, integers and floats:
                 row = resolve_invalid_rsids(row, header)
                 row = blanks_to_NA(row)
-                row = map_x_y_to_23_24(row, header)
+                row = map_chr_values_to_numbers(row, header)
                 blank = remove_row_if_required_is_blank(row, header)
                 wrong_type_chr = (remove_row_if_wrong_data_type(row, header, CHR_DSET, int)) 
                 wrong_type_bp = (remove_row_if_wrong_data_type(row, header, BP_DSET, int))
