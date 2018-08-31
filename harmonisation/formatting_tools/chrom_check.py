@@ -4,6 +4,7 @@ import argparse
 
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
+from utils import *
 from sumstats_formatting import *
 from common_constants import *
 
