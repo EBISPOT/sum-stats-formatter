@@ -2,9 +2,9 @@ import csv
 import sys
 import argparse
 
+from utils import *
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
-from utils import *
 from sumstats_formatting import *
 from common_constants import *
 
@@ -15,7 +15,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
 
 
 #CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
-CHROMOSOMES = get_chromsome_list()
+CHROMOSOMES = get_chromosome_list()
 
 def chrom_is_valid(row, header):
     index_chr = header.index(CHR_DSET)
