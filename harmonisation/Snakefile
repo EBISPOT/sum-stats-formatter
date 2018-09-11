@@ -75,6 +75,8 @@ rule retrieve_ensembl_mapping_data:
         "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
     output:
         "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out"
+    resources:
+        load=1
     shell:
         "./formatting_tools/var2location_local.pl {input} formatting_tools/ensembl.registry; wait; "
         #"./formatting_tools/var2location.pl {input}; wait; "
