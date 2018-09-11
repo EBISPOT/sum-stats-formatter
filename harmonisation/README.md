@@ -46,8 +46,8 @@ To run the pipeline simply run `snakemake` but be warned that this is not very o
 To run on the cluster, ssh in, clone this repository and submodules and install dependencies (above) and Ensembl data.
 - Run `snakemake -j {number of jobs} -w {wait time} --cluster 'bsub {options}' &` to run it on the background. 
 - To run 100 jobs in parallel do the following for example:
-`snakemake -j 100 -w 1800 --cluster 'bsub -o stdin.txt -e stderr' &`
-The wait time limit of 1800 seconds should provide enough time to wait for output files to be generated but it should be extended/shortened as required.
+`snakemake -j 500 --resources load=240 -w 1800 --cluster 'bsub -o stdin.txt -e stderr' &`
+The wait time limit of 1800 seconds should provide ample time to wait for output files to be generated but it should be extended/shortened as required. The `-j` flag sets the number of jobs to submit to the cluster at any one time. `--resources load=240` is important because it restricts the number of parallel jobs for any rule with `resources` defined. In our case, we want to run as many jobs in parallel as we can for all rules except for the Ensembl mapping, which makes connections to our local Ensembl database. Having the resources defined like this means we can only make 240 concurrent connections.
 
 The pipeline will produce many outputs for the different stages, ending when there are files of the same names as all those in `toformat/` in `qc_harmonised/`. Reports are written for each file to the `reports/`, where the processes made to the file can be viewed.
 
