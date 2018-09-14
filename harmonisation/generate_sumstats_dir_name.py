@@ -17,7 +17,7 @@ def get_publication_data(study, database):
     """
 
     field_dict = {'study_acc': study}
-    publication_data = client.query(publication_sql, field_dict)
+    publication_data = client.query_fetchone(publication_sql, field_dict)
     return publication_data
 
 
