@@ -1,5 +1,5 @@
 # Activate Python venv for the script - uncomment to run script on commandline
-activate_this_file = "/nfs/spot/sw/prod/gwas/scripts/data-release/gwas-data-release-prod/bin/activate_this.py"
+activate_this_file = "path/to/activate_this"
 #execfile(activate_this_file, dict(__file__ = activate_this_file))
 exec(open(activate_this_file).read(), {'__file__': activate_this_file})
 
@@ -9,7 +9,7 @@ import sys
 #from tqdm import tqdm
 import os.path
 
-sys.path.insert(0, '/nfs/spot/sw/prod/gwas/scripts/ftpSummaryStatsRelease')
+sys.path.insert(0, 'path/to/gwas_data_source')
 import gwas_data_sources
 
 
