@@ -10,10 +10,10 @@ harmonised/
  |- harmonised_file
 
 'formatted_file' adheres to pattern: 
-    <author>-<pmid>-<study_accession>-<EFO_trait>-<build>.tsv.gz
+    <pmid>-<study_accession>-<EFO_trait>-<build>.f.tsv.gz
 
 'harmonised_file' adheres to pattern: 
-    <pmid>-<study_accession>-<EFO_trait>.tsv.gz  
+    <pmid>-<study_accession>-<EFO_trait>-<build>.h.tsv.gz  
 
 
 --------------------------------------------------------------------------------
@@ -24,6 +24,9 @@ At the time of writing, there is no standard to which summary statistics file
 are made to. We are formatting and harmonising author contributed summary 
 statistic files to enable users to access data with ease. 
 
+For summary statistics FAQ please see: https://www.ebi.ac.uk/gwas/docs/faq
+
+For more on summary statistics methods please see: https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics
 
 --------------------------------------------------------------------------------
 
@@ -38,23 +41,24 @@ across all formatted summary statistics files.
 
 - Headers will be coereced to the 'common format'.
 - Rows will never be removed.
-- Columns may be split, merged, deleted or moved.
+- Columns may be split, merged, deleted, added or moved.
 - Values will be unaltered.
+- Blanks will be set to 'NA'
 
 Formatted file headings (not all may be present in file):
 
-    'snp' = variant ID
-    'pval' = p-value
-    'chr' = chromosome
-    'bp' = base pair location
-    'or' = odds ratio
+    'variant_id' = variant ID
+    'p-value' = p-value
+    'chromosome' = chromosome
+    'base_pair_location' = base pair location
+    'odds_ratio' = odds ratio
     'ci_lower' = lower 95% confidence interval
     'ci_upper' = upper 95% confidence interval
     'beta' = beta
-    'se' = standard error
+    'standard_error' = standard error
     'effect_allele' = effect allele
     'other_allele' = other allele
-    'eaf' = effect allele frequency
+    'effect_allele_frequency' = effect allele frequency
 
 Note that the headers in the formatted file are not limited to the above 
 headers, nor are they required to have all of them.
@@ -68,13 +72,9 @@ statistics as possible in a uniform, harmonised way. This means that all
 location data will be on the same, latest genome build. Missing data that can
 be inferred will, if safely possible, be inferred and provided. 
 The harmonisation process is the following:
-
-  Formatting
-   1) Rename headers
-   2) Set blank values to 'NA' 
   
   Mapping variant IDs to locations
-   3) Update base pair location value by mapping variant ID using latest 
+   1) Update base pair location value by mapping variant ID using latest 
       Ensembl release
       OR
       if above not possible, liftover base pair location to latest genome build 
@@ -82,7 +82,7 @@ The harmonisation process is the following:
       if above not possible, remove variant from file.
   
   Harmonisation (repo: https://github.com/opentargets/sumstat_harmoniser)
-   4) Using chromosome, base pair location and the effect and other alleles, 
+   2) Using chromosome, base pair location and the effect and other alleles, 
       check the orientation of all non-palindromic variants against Ensembl VCF 
       references to detemine consensus:
       --> forward
@@ -92,7 +92,7 @@ The harmonisation process is the following:
       steps are performed on the palindromic variants, with the assumption that
       they are orientated according to the consensus, otherwise palindromic
       variants are not harmonised.
-   5) Using chromosome, base pair location and the effect and other alleles, 
+   3) Using chromosome, base pair location and the effect and other alleles, 
       query each variant against the Ensembl VCF reference to harmonise as
       appropriate by either:
       --> keeping record as is because:
@@ -137,8 +137,8 @@ The harmonisation process is the following:
      +----+--------------------------------------------------------------+
 
   Filtering and QC
-    6) Variant ID is set to variant IDs found by step (5).
-    7) Records without a valid value for variant ID, chromosome, base pair
+    4) Variant ID is set to variant IDs found by step (5).
+    5) Records without a valid value for variant ID, chromosome, base pair
        location and p-value are removed. 
 
 - Headers will be coerced to the 'harmonised format'.
