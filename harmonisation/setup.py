@@ -14,8 +14,6 @@ setup(
     },
     url='https://github.com/EBISPOT/sum-stats-formatter/',
     license='',
-    author='James Hayhurst',
-    author_email='hayhurst.jd@gmail.com',
     description='Package for harmonising summary statistics',
     install_requires=['h5py', 'snakemake', 'pyliftover', 'requests']
 )
