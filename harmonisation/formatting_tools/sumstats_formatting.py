@@ -93,6 +93,21 @@ def map_chr_numbers_to_values(row, header):
     return row
 
 
+def check_for_header_ambigs(header):
+    for h in header:
+        if h in TO_LOAD_DSET_HEADERS_DEFAULT:
+            return True
+        else:
+            return False
+
+
+def row_len_is_header_len(row, header):
+    if len(row) == len(header):
+        return True
+    else:
+        return False
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The name of the file to be processed', required=True)
@@ -120,6 +135,8 @@ def main():
 
         for row in csv_reader:
             if is_header:
+                if check_for_header_ambigs(row):
+                     logger.warning('{} already contains header(s) in the harmonised headers'.format(row))
                 what_changed = mapped_headers(row[:])
                 new_header = refactor_header(row)
                 headers_to_add = missing_headers(new_header)

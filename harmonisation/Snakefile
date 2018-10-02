@@ -22,7 +22,7 @@ rule sumstat_format:
     shell:
         "ilc1=$(wc -l {input} | awk '{{print $1}}'); "
         "echo Number of input lines: $ilc1 >> reports/{wildcards.ss_file}.txt; "
-        "python formatting_tools/sumstats_formatting.py "
+        "ss-format "
         "-f {input} "
         "-d formatted/ "
         "--log reports/{wildcards.ss_file}.txt; "
@@ -60,7 +60,7 @@ rule split_file:
     output:
         expand("formatted/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=config["steps"], split=config["splits"])
     shell:
-        "echo 'Splitting file for parallel processing...'  >> reports/{wildcards.ss_file}.txt; "
+        "echo 'Splitting file for parallel processing...' >> reports/{wildcards.ss_file}.txt; "
         "mkdir -p formatted/{wildcards.ss_file}; "
         "cp formatted/{wildcards.ss_file}.tsv formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv; "
         "./formatting_tools/split_file.sh formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv 16; "
@@ -94,7 +94,7 @@ rule update_locations_from_ensembl:
     shell:
         "filename={wildcards.ss_file}; "
         "from_build=$(echo -n $filename | tail -c 2); "
-        "python formatting_tools/update_locations.py -f {input.in_ss} "
+        "ss-update-locations -f {input.in_ss} "
         "-d build_38/{wildcards.ss_file} "
         "-from_build $from_build "
         "-to_build {params.to_build} "
@@ -111,7 +111,7 @@ rule cat_all_splits:
         "./formatting_tools/cat_splits_alt.sh {wildcards.ss_file}; wait; "
         "olc2=$(wc -l build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv | awk '{{print $1}}'); "
         "echo Number of output lines: $olc2 >> reports/{wildcards.ss_file}.txt; "
-        "python formatting_tools/chrom_check.py -f build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv "
+        "ss-chrom-check -f build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv "
         "--log reports/{wildcards.ss_file}.txt"
         
 
@@ -123,7 +123,7 @@ rule split_by_chrom:
     output:
         "build_38/{ss_file}/chr_{chromosome}.tsv"
     shell:
-        "python formatting_tools/split_by_chromosome.py -f {input} -chr {wildcards.chromosome} -d build_38/"
+        "ss-chrom-split -f {input} -chr {wildcards.chromosome} -d build_38/"
 
 # collect unmapped chromosomes and add to log
 
@@ -167,7 +167,7 @@ rule make_strand_count:
     output:
         "harm_splits/{ss_file}/output/total_strand_count.csv"
     shell:
-        "python formatting_tools/sum_strand_counts.py -i harm_splits/{wildcards.ss_file}/output/ -o harm_splits/{wildcards.ss_file}/output/" 
+        "ss-strand-count -i harm_splits/{wildcards.ss_file}/output/ -o harm_splits/{wildcards.ss_file}/output/" 
 
 
 # run sumstat_harmoniser.py for each split
@@ -228,7 +228,7 @@ rule basic_qc:
     output:
         "qc_harmonised/{ss_file}.tsv"
     shell:
-        "python formatting_tools/basic_qc.py "
+        "ss-qc "
         "-f {input} "
         "-d qc_harmonised/ "
         "--log reports/{wildcards.ss_file}.txt"
