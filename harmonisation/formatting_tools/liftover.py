@@ -2,8 +2,8 @@ import csv
 import argparse
 from pyliftover import LiftOver
 
-from utils import *
-from ensembl_rest_client import EnsemblRestClient
+from formatting_tools.utils import *
+from formatting_tools.ensembl_rest_client import EnsemblRestClient
 
 
 ucsc_release = {'28': 'hg10',

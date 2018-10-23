@@ -2,10 +2,10 @@ import csv
 import sys
 import argparse
 
-from utils import *
+from formatting_tools.utils import *
+from formatting_tools.sumstats_formatting import *
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
-from sumstats_formatting import *
 from common_constants import *
 
 
@@ -14,13 +14,10 @@ logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
 
 
-#CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
-CHROMOSOMES = get_chromosome_list()
-
-def chrom_is_valid(row, header):
+def chrom_is_valid(row, header, chromosomes):
     index_chr = header.index(CHR_DSET)
     chromosome = row[index_chr].upper()
-    if chromosome in CHROMOSOMES:
+    if chromosome in chromosomes:
         return True
     else:
         return chromosome
@@ -31,12 +28,16 @@ def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The name of the file to be processed', required=True)
     argparser.add_argument('--log', help='The name of the log file')
+    argparser.add_argument('-config', help='The path to the config.yaml file')
     args = argparser.parse_args()
 
     file = args.f
     filename = get_filename(file)
 
     log_file = args.log
+    config = args.config
+    
+    chromosomes = get_chromosome_list(config)
 
     file_handler = logging.FileHandler(log_file, mode='a')
     file_handler.setFormatter(formatter)
@@ -53,7 +54,7 @@ def main():
                 header = row
                 is_header = False
             else:
-                chrom = chrom_is_valid(row, header)
+                chrom = chrom_is_valid(row, header, chromosomes)
                 if chrom is not True:
                     logger.info('Record removed: {0} because chromosome = {1}'.format(row, chrom))
 

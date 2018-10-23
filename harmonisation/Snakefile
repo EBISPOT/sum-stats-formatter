@@ -2,6 +2,15 @@
 
 configfile: "config.yaml"
 STUDIES, = glob_wildcards(config["ss_file_pattern"])
+range_of_splits = [str(i).zfill(2) for i in range(0, config["parallel_step"])]
+next_range_of_splits = [str(i).zfill(2) for i in range(0, config["parallel_step_deeper"])]
+
+
+#onsuccess:
+#    shell("mail -s 'Harmonisation complete!' jhayhurst@ebi.ac.uk")
+#onerror:
+#    shell("mail -s 'Harmonisation error occurred' jhayhurst@ebi.ac.uk")
+
 
 # --------------------------Snakemake rules ------------------------------------
 # To do: parameterise directories
@@ -36,36 +45,41 @@ rule sumstat_format:
 
 rule get_vcf_files:
     output:
-        "vcf_refs/homo_sapiens-chr{chromosome}.vcf.gz"
+        expand("{local}homo_sapiens-chr{{chromosome}}.vcf.gz", local=config["vcf_local_path"])
     params:
-        location=config["remote_vcf_location"]
+        remote_location=config["remote_vcf_location"],
+        local_vcf=config["vcf_local_path"]
     shell:
-        "wget -P vcf_refs/ {params.location}/homo_sapiens-chr{wildcards.chromosome}.vcf.gz"
+        "wget -P {params.local_vcf} {params.remote_location}homo_sapiens-chr{wildcards.chromosome}.vcf.gz"
 
 
 rule get_tbi_files:
     output:
-        "vcf_refs/homo_sapiens-chr{chromosome}.vcf.gz.tbi"
+        expand("{local}homo_sapiens-chr{{chromosome}}.vcf.gz.tbi", local=config["vcf_local_path"])
     params:
-        location=config["remote_vcf_location"]
+        remote_location=config["remote_vcf_location"],
+        local_vcf=config["vcf_local_path"]
     shell:
-        "wget -P vcf_refs/ {params.location}/homo_sapiens-chr{wildcards.chromosome}.vcf.gz.tbi"
+        "wget -P {params.local_vcf} {params.remote_location}/homo_sapiens-chr{wildcards.chromosome}.vcf.gz.tbi"
 
 
-# split files into fractions (e.g. 16 and then again by 16)
+# split files into fractions (e.g. parallel step limit and then again by the deeper parallel step)
 
 rule split_file:
     input:
         "formatted/{ss_file}.tsv"
     output:
-        expand("formatted/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=config["steps"], split=config["splits"])
+        expand("formatted/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=range_of_splits, split=next_range_of_splits)
+    params:
+        splits=config["parallel_step"],
+        next_splits=config["parallel_step_deeper"]
     shell:
         "echo 'Splitting file for parallel processing...' >> reports/{wildcards.ss_file}.txt; "
         "mkdir -p formatted/{wildcards.ss_file}; "
         "cp formatted/{wildcards.ss_file}.tsv formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv; "
-        "./formatting_tools/split_file.sh formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv 16; "
+        "./formatting_tools/split_file.sh formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv {params.splits}; "
         "for split in formatted/{wildcards.ss_file}/bpsplit*.tsv; "
-        "do ./formatting_tools/split_file.sh $split 16; done; "
+        "do ./formatting_tools/split_file.sh $split {params.next_splits}; done; "
         "echo 'Mapping RSIDs to locations with Ensembl:' >>  reports/{wildcards.ss_file}.txt"
 
 # map rsids to chr:bp location
@@ -98,12 +112,13 @@ rule update_locations_from_ensembl:
         "-d build_38/{wildcards.ss_file} "
         "-from_build $from_build "
         "-to_build {params.to_build} "
-        "--log reports/{wildcards.ss_file}.txt"
+        "--log reports/{wildcards.ss_file}.txt "
+        "-config config.yaml"
 
 
 rule cat_all_splits:
     input:
-        expand("build_38/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=config["steps"], split=config["splits"])
+        expand("build_38/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=range_of_splits, split=next_range_of_splits)
     output:
         "build_38/{ss_file}/{ss_file}.tsv"
     shell:
@@ -112,7 +127,8 @@ rule cat_all_splits:
         "olc2=$(wc -l build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv | awk '{{print $1}}'); "
         "echo Number of output lines: $olc2 >> reports/{wildcards.ss_file}.txt; "
         "ss-chrom-check -f build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv "
-        "--log reports/{wildcards.ss_file}.txt"
+        "--log reports/{wildcards.ss_file}.txt "
+        "-config config.yaml"
         
 
 # split the file by chromosome
@@ -128,34 +144,39 @@ rule split_by_chrom:
 # collect unmapped chromosomes and add to log
 
 
-# split files into fractions (e.g. 16 and then again by 16)
+# split files into fractions (e.g. 16)
 
 rule split_by_bp:
     input:
         "build_38/{ss_file, \d+-GSCT\d+-EFO_\d+}/chr_{chromosome}.tsv"
     output:
-        expand("build_38/{{ss_file}}/bpsplit_{step}_chr_{{chromosome}}.tsv", step=config["steps"])
+        expand("build_38/{{ss_file}}/bpsplit_{step}_chr_{{chromosome}}.tsv", step=range_of_splits)
+    params:
+        splits=config["parallel_step"]
     shell:
-        "./formatting_tools/split_file.sh {input} 16"
+        "./formatting_tools/split_file.sh {input} {params.splits}"
 
 
 # run sumstat_harmoniser.py to get strand counts
 
 rule generate_strand_counts:
     input:
-        "vcf_refs/homo_sapiens-chr{chromosome}.vcf.gz",
-        "vcf_refs/homo_sapiens-chr{chromosome}.vcf.gz.tbi",
+        expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz", local_vcf=config["vcf_local_path"]),
+        expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz.tbi", local_vcf=config["vcf_local_path"]),
         in_ss="build_38/{ss_file}/bpsplit_{step}_chr_{chromosome}.tsv"
     output:
         "harm_splits/{ss_file}/output/strand_count_bpsplit_{step, \d+}_chr_{chromosome}.tsv"
+    params:
+        local_vcf=config["vcf_local_path"]
     shell:
         "mkdir -p harm_splits/{wildcards.ss_file}/output;"
         "./formatting_tools/sumstat_harmoniser/bin/sumstat_harmoniser --sumstats {input.in_ss} "
-        "--vcf vcf_refs/homo_sapiens-chr{wildcards.chromosome}.vcf.gz "
+        "--vcf {params.local_vcf}homo_sapiens-chr{wildcards.chromosome}.vcf.gz "
         "--chrom_col chromosome "
         "--pos_col base_pair_location "
         "--effAl_col effect_allele "
         "--otherAl_col other_allele "
+        "--rsid_col variant_id "
         "--strand_counts harm_splits/{wildcards.ss_file}/output/strand_count_bpsplit_{wildcards.step}_chr_{wildcards.chromosome}.tsv" 
         
 
@@ -163,7 +184,7 @@ rule generate_strand_counts:
 
 rule make_strand_count:
     input:
-        expand("harm_splits/{{ss_file}}/output/strand_count_bpsplit_{step}_chr_{chromosome}.tsv", step=config["steps"], chromosome=config["chromosomes"])
+        expand("harm_splits/{{ss_file}}/output/strand_count_bpsplit_{step}_chr_{chromosome}.tsv", step=range_of_splits, chromosome=config["chromosomes"])
     output:
         "harm_splits/{ss_file}/output/total_strand_count.csv"
     shell:
@@ -174,22 +195,25 @@ rule make_strand_count:
 
 rule run_harmonisation_per_split:
     input:
-        "vcf_refs/homo_sapiens-chr{chromosome}.vcf.gz",
-        "vcf_refs/homo_sapiens-chr{chromosome}.vcf.gz.tbi",
+        expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz", local_vcf=config["vcf_local_path"]),
+        expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz.tbi", local_vcf=config["vcf_local_path"]),
         "harm_splits/{ss_file}/output/total_strand_count.csv",
         in_ss="build_38/{ss_file}/bpsplit_{step, \d+}_chr_{chromosome}.tsv"
     output:
         "harm_splits/{ss_file}/output/bpsplit_{step, \d+}_chr_{chromosome}.output.tsv"
+    params:
+        local_vcf=config["vcf_local_path"]
     shell:
         "palin_mode=$(grep palin_mode harm_splits/{wildcards.ss_file}/output/total_strand_count.csv | cut -f2 );"
         "./formatting_tools/sumstat_harmoniser/bin/sumstat_harmoniser --sumstats {input.in_ss} "
-        "--vcf vcf_refs/homo_sapiens-chr{wildcards.chromosome}.vcf.gz "
+        "--vcf {params.local_vcf}homo_sapiens-chr{wildcards.chromosome}.vcf.gz "
         "--hm_sumstats harm_splits/{wildcards.ss_file}/output/bpsplit_{wildcards.step}_chr_{wildcards.chromosome}.output.tsv "
         "--hm_statfile harm_splits/{wildcards.ss_file}/output/bpsplit_{wildcards.step}_chr_{wildcards.chromosome}.log.tsv.gz "
         "--chrom_col chromosome "
         "--pos_col base_pair_location "
         "--effAl_col effect_allele "
         "--otherAl_col other_allele "
+        "--rsid_col variant_id "
         "--beta_col beta "
         "--or_col odds_ratio "
         "--or_col_lower ci_lower "
@@ -204,7 +228,7 @@ rule run_harmonisation_per_split:
 
 rule concatenate_bp_splits:
     input:
-        expand("harm_splits/{{ss_file}}/output/bpsplit_{step}_chr_{{chromosome}}.output.tsv", step=config["steps"])
+        expand("harm_splits/{{ss_file}}/output/bpsplit_{step}_chr_{{chromosome}}.output.tsv", step=range_of_splits)
     output:
         "harm_splits/{ss_file}/output/merge_chr_{chromosome}.output.tsv"
     shell:
@@ -232,4 +256,3 @@ rule basic_qc:
         "-f {input} "
         "-d qc_harmonised/ "
         "--log reports/{wildcards.ss_file}.txt"
-

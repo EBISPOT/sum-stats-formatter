@@ -7,8 +7,8 @@ sys.path.extend(sys_paths)
 from common_constants import *
 
 
-def get_chromosome_list():
-    with open("../config.yaml", 'r') as stream:
+def get_chromosome_list(config_path):
+    with open(config_path, 'r') as stream:
         configs = yaml.load(stream)
         return configs['chromosomes']
 
