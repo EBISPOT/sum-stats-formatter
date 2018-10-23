@@ -3,9 +3,9 @@ import sys
 import argparse
 import logging
 
+from formatting_tools.sumstats_formatting import *
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
-from sumstats_formatting import *
 from common_constants import *
 
 

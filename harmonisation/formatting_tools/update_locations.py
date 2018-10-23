@@ -4,12 +4,9 @@ import os
 import subprocess
 import logging
 
-from utils import *
-from liftover import *
+from formatting_tools.utils import *
+from formatting_tools.liftover import *
 
-
-#CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
-CHROMOSOMES = get_chromosome_list()
 
 logger = logging.getLogger('update_locations')
 logger.setLevel(logging.INFO)
@@ -20,11 +17,11 @@ def all_same(items):
     return all(x == items[0] for x in items)
 
 
-def select_canonical_data(mapped_data):
+def select_canonical_data(mapped_data, chromosomes):
     chrom = []
     bp = []
     for line in mapped_data:
-        if line.split('\t')[3] in CHROMOSOMES:
+        if line.split('\t')[3] in chromosomes:
             bp.append(line.split('\t')[5])
             chrom.append(line.split('\t')[3])
     if len(bp) == 1:
@@ -35,7 +32,7 @@ def select_canonical_data(mapped_data):
         return "NA", "NA" # to catch those where they only map to a patch
 
 
-def open_process_file(file, out_dir, from_build, to_build):
+def open_process_file(file, out_dir, from_build, to_build, chromosomes):
     filename = file.split("/")[-1].split(".")[0]
     path = os.path.dirname(file)
 
@@ -57,7 +54,7 @@ def open_process_file(file, out_dir, from_build, to_build):
             mapped_data = [line for line in ensembl_data if variant_string in line]
 
             if mapped_data:
-                row[CHR_DSET], row[BP_DSET] = select_canonical_data(mapped_data)
+                row[CHR_DSET], row[BP_DSET] = select_canonical_data(mapped_data, chromosomes)
                 logger.info('Mapping {0}:{1}:{2} to {3}:{4}'.format(variant_id, chromosome, bp, row[CHR_DSET], row[BP_DSET]))
             # do the bp location mapping if needed
             elif from_build != to_build:
@@ -80,7 +77,8 @@ def main():
     argparser.add_argument('-d', help='The directory to write to', required=True)
     argparser.add_argument('-from_build', help='The original build e.g. "36" for NCBI36 or hg18', required=True)
     argparser.add_argument('-to_build', help='The latest (desired) build e.g. "38"', required=True)
-    argparser.add_argument('--log', help='The name of the log file')
+    argparser.add_argument('--log', help='path to the log file')
+    argparser.add_argument('-config', help='path to the config.yaml file')
     args = argparser.parse_args()
     
     file = args.f
@@ -88,12 +86,15 @@ def main():
     from_build = args.from_build
     to_build = args.to_build
     log_file = args.log
+    config_file = args.config
+
+    chromosomes = get_chromosome_list(config_file)
 
     file_handler = logging.FileHandler(log_file, mode='a')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    open_process_file(file, out_dir, from_build, to_build)
+    open_process_file(file, out_dir, from_build, to_build, chromosomes)
 
 
 if __name__ == "__main__":
