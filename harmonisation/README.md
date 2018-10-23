@@ -21,6 +21,10 @@ python libraries:
 - requests
 - [pyliftover](https://pypi.org/project/pyliftover/)
 
+# Install the harmonisation scripts
+`cd harmonisation`
+`pip install .`
+
 Follow the Ensembl Perl API installation instructions [here](https://www.ensembl.org/info/docs/api/api_installation.html).
 If you don't have access to a mirror of the Ensembl Homo sapiens core and variation databases, you will need to [build your own](https://www.ensembl.org/info/docs/webcode/mirror/install/ensembl-data.html). If it is not possible to connect to a mirror, the RSID --> location mapping will all be done using liftover, so if the location data are not present in your file, those records will be lost.
 Once you have your mirror of the Ensembl Homo sapiens core and variation databases you need to update the [registry file](https://github.com/EBISPOT/sum-stats-formatter/blob/master/harmonisation/formatting_tools/ensembl.registry) with the appropriate information.
