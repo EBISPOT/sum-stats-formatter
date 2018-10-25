@@ -56,8 +56,8 @@ known_header_transformations = {
     'odds_ratio': 'or',
     'oddsratio': 'or',
     # or range
-    '95%ci': 'range',
-    'range': 'range',
+    'L95': 'ci_upper',
+    'U95': 'ci_lower',
     # beta
     'b': 'beta',
     'beta': 'beta',
@@ -134,7 +134,7 @@ CHR = 'chr'
 BP = 'bp'
 VARIANT = 'snp'
 
-DESIRED_HEADERS = {'eaf', 'other_allele', 'effect_allele', 'se', 'beta', 'range',
+DESIRED_HEADERS = {'eaf', 'other_allele', 'effect_allele', 'se', 'beta', 'ci_lower', 'ci_upper',
                    'or', 'bp', 'chr', 'pval', 'snp'}
 VALID_INPUT_HEADERS = set(known_header_transformations.values())
 
