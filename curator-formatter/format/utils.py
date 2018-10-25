@@ -26,6 +26,7 @@ known_header_transformations = {
     'frequentist_add_pvalue': 'pval',
     'scan_p': 'pval',
     'scanp': 'pval',
+    'p_wald': 'pval',   
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -90,6 +91,7 @@ known_header_transformations = {
     'allelea': 'other_allele',
     'allele_a': 'other_allele',
     'reference_allele': 'other_allele',
+    'allele0': 'other_allele',
     # effect allele frequency
     'eaf': 'eaf',
     'frq': 'eaf',
