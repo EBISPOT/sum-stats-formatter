@@ -15,6 +15,7 @@ known_header_transformations = {
     'id': 'snp',
     'id_dbsnp49': 'snp',
     'snp_rsid': 'snp',
+    'MARKER': 'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
