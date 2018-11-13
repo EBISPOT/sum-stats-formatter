@@ -64,6 +64,11 @@ def process_row(row, header):
     return row
 
 
+def multi_delimiters_to_single(row):
+    return "\t".join(row.split())
+
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The name of the file to be processed', required=True)
@@ -79,6 +84,7 @@ def main():
     with open(file) as csv_file:
         csv_reader = get_csv_reader(csv_file)
         for row in csv_reader:
+            row = multi_delimiters_to_single('\t'.join(row)).split()
             if is_header:
                 what_changed = mapped_headers(row[:])
                 new_header = refactor_header(row)
