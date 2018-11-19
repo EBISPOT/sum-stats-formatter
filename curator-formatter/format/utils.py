@@ -60,6 +60,8 @@ known_header_transformations = {
     # or range
     'L95': 'ci_upper',
     'U95': 'ci_lower',
+    'orlower': 'ci_lower',
+    'orupper': 'ci_upper',
     # beta
     'b': 'beta',
     'beta': 'beta',
@@ -94,9 +96,8 @@ known_header_transformations = {
     'reference_allele': 'other_allele',
     'allele0': 'other_allele',
     # effect allele frequency
-    'eaf': 'eaf',
+    'eafcontrols': 'eaf',
     'frq': 'eaf',
-    'maf': 'eaf',
     'ref_allele_frequency' : 'eaf',
     'frq_u': 'eaf',
     'f_u': 'eaf',
@@ -129,7 +130,7 @@ known_header_transformations = {
     'log_odds': 'log_odds',
     'signed_sumstat': 'signed_sumstat',
     # info
-    'info': 'info',
+    'info': 'info',   
 }
 
 CHR_BP = 'chr_bp'
