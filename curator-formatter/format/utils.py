@@ -6,7 +6,6 @@ known_header_transformations = {
     'snp': 'snp',
     'markername': 'snp',
     'marker': 'snp',
-    'snpid': 'snp',
     'rs': 'snp',
     'rsid': 'snp',
     'rs_number': 'snp',
