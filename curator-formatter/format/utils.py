@@ -62,6 +62,8 @@ known_header_transformations = {
     'U95': 'ci_lower',
     'orlower': 'ci_lower',
     'orupper': 'ci_upper',
+    'l95': 'ci_lower',
+    'u95': 'ci_upper',
     # beta
     'b': 'beta',
     'beta': 'beta',
