@@ -15,6 +15,7 @@ known_header_transformations = {
     'id_dbsnp49': 'snp',
     'snp_rsid': 'snp',
     'MARKER': 'snp',
+    'snpid':'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
@@ -95,6 +96,8 @@ known_header_transformations = {
     'reference_allele': 'other_allele',
     'allele0': 'other_allele',
     # effect allele frequency
+    'eaf': 'eaf',
+    'maf': 'eaf',
     'eafcontrols': 'eaf',
     'frq': 'eaf',
     'ref_allele_frequency' : 'eaf',
