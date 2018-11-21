@@ -1,30 +1,34 @@
 import argparse
+from tqdm import tqdm
 import os
 from format.utils import *
 
 
 def open_close_perform(file, headers):
     filename = get_filename(file)
-    header = None
+    header = []
+    mod_header = []
     is_header = True
-    lines = []
-    with open(file) as csv_file:
+
+    with open(file) as csv_file, open('.tmp.tsv', 'w') as result_file:
         csv_reader = get_csv_reader(csv_file)
-        for row in csv_reader:
+        writer = csv.writer(result_file, delimiter='\t')
+        row_count = get_row_count(file)
+        
+        
+        for row in tqdm(csv_reader, total=row_count, unit="rows"):
             if is_header:
                 is_header = False
-                header = row
+                header.extend(row)
+                mod_header.extend(row)
+                for h in headers:
+                    mod_header = remove_from_row(row=mod_header, header=mod_header[:], column=h)
+                writer.writerows([mod_header])
             else:
                 for h in headers:
                     row = remove_from_row(row=row, header=header[:], column=h)
-                lines.append(row)
+                writer.writerows([row])
 
-    for h in headers:
-        header = remove_from_row(row=header, header=header[:], column=h)
-    with open('.tmp.tsv', 'w') as result_file:
-        writer = csv.writer(result_file, delimiter='\t')
-        writer.writerows([header])
-        writer.writerows(lines)
 
     os.rename('.tmp.tsv', filename + ".tsv")
 
