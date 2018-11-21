@@ -1,4 +1,5 @@
 import argparse
+from tqdm import tqdm
 import os
 from format.utils import *
 
@@ -11,28 +12,28 @@ def header_index(header, h):
 
 def open_close_perform(file, delimiter, old_header, left_header, right_header):
     filename = get_filename(file)
-    header = None
+    header = []
+    mod_header = []
     index_h = None
     is_header = True
-    lines = []
-    with open(file) as csv_file:
+    with open(file) as csv_file, open('.tmp.tsv', 'w') as result_file:
         csv_reader = get_csv_reader(csv_file)
-        for row in csv_reader:
+        writer = csv.writer(result_file, delimiter='\t')
+        row_count = get_row_count(file)
+
+        for row in tqdm(csv_reader, total=row_count, unit="rows"):
             if is_header:
                 is_header = False
-                header = row
+                header.extend(row)
+                mod_header.extend(row)
                 index_h = header_index(header=header, h=old_header)
+                mod_header.pop(index_h)
+                mod_header.append(left_header)
+                mod_header.append(right_header)
+                writer.writerows([mod_header])
             else:
                 row = split_columns(index_h=index_h, row=row, delimiter=delimiter)
-                lines.append(row)
-
-    header.pop(index_h)
-    header.append(left_header)
-    header.append(right_header)
-    with open('.tmp.tsv', 'w') as result_file:
-        writer = csv.writer(result_file, delimiter='\t')
-        writer.writerows([header])
-        writer.writerows(lines)
+                writer.writerows([row])
 
     os.rename('.tmp.tsv', filename + ".tsv")
 

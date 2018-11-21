@@ -145,6 +145,11 @@ DESIRED_HEADERS = {'eaf', 'other_allele', 'effect_allele', 'se', 'beta', 'ci_low
 VALID_INPUT_HEADERS = set(known_header_transformations.values())
 
 
+def get_row_count(file):
+    with open(file, 'r') as f:
+        return len(f.readlines())
+
+
 def read_header(file):
     return set([clean_header(x.rstrip('\n')) for x in open(file).readline().split()])
 

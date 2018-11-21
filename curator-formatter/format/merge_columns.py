@@ -1,29 +1,31 @@
 import argparse
 import os
 from format.utils import *
+from tqdm import tqdm
 
 
 def open_close_perform(file, left_header, right_header, delimiter, new_header):
     filename = get_filename(file)
-    header = None
+    header = []
+    mod_header = []
     is_header = True
-    lines = []
-    with open(file) as csv_file:
+
+    with open(file) as csv_file, open('.tmp.tsv', 'w') as result_file:
         csv_reader = get_csv_reader(csv_file)
-        for row in csv_reader:
+        writer = csv.writer(result_file, delimiter='\t')
+        row_count = get_row_count(file)
+
+        for row in tqdm(csv_reader, total=row_count, unit="rows"):
             if is_header:
+                header.extend(row)
                 is_header = False
-                header = row
+                mod_header.extend(row)
+                mod_header = remove_from_row(row=mod_header, header=mod_header[:], left_header=left_header, right_header=right_header)
+                mod_header.append(new_header)
+                writer.writerows([mod_header])
             else:
                 row = merge_columns(left_header=left_header, right_header=right_header, header=header[:], row=row, delimiter=delimiter)
-                lines.append(row)
-
-    header = remove_from_row(row=header, header=header[:], left_header=left_header, right_header=right_header)
-    header.append(new_header)
-    with open('.tmp.tsv', 'w') as result_file:
-        writer = csv.writer(result_file, delimiter='\t')
-        writer.writerows([header])
-        writer.writerows(lines)
+                writer.writerows([row])
 
     os.rename('.tmp.tsv', filename + ".tsv")
 
