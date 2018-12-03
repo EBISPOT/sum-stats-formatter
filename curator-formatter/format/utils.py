@@ -34,7 +34,7 @@ known_header_transformations = {
     'chromosome': 'chr',
     'chrom': 'chr',
     'scaffold': 'chr',
-    'chr_build36': 'chr'
+    'chr_build36': 'chr',
     # base pair location
     'bp': 'bp',
     'pos': 'bp',
