@@ -36,7 +36,7 @@ known_header_transformations = {
     'scaffold': 'chr',
     'chr_build36': 'chr'
     # base pair location
-    'bp': 'bp',
+    'bp':'bp',
     'pos': 'bp',
     'position': 'bp',
     'phys_pos': 'bp',
