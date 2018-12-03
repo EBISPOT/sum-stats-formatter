@@ -108,6 +108,7 @@ known_header_transformations = {
     'f_u': 'eaf',
     'effect_allele_freq': 'eaf',
     'effect_allele_frequency': 'eaf',
+    'freq1': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
