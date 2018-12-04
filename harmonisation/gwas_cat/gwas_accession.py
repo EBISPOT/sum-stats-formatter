@@ -24,7 +24,6 @@ def generate_new_gcst_accession(database):
 
 
 def get_new_accession_suffix(database):
-    
     client = OracleGWASClient(database)
     trigger_new_gcst_sql = 'select accession_seq.NEXTVAL from dual'
     gcst_accession_response = client.execute_no_params(trigger_new_gcst_sql)
@@ -45,9 +44,8 @@ def select_entry(database, gcst):
 
 def main():
     parser = argparse.ArgumentParser()
-    # CHANGE DEFAULT TO SPOTPRO AFTER TESTING
-    parser.add_argument('--database', default='CTTV', choices=['CTTV','SPOTPRO'], 
-                        help='Run as (default: CTTV).')
+    parser.add_argument('--database', default='SPOTPRO', choices=['CTTV','SPOTPRO'], 
+                        help='Run as (default: SPOTPRO).')
     parser.add_argument('-extid', help='The external id you want to assign a GCST accession to', required=True)
 
     args = parser.parse_args()
