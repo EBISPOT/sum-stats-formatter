@@ -26,3 +26,8 @@ htmlcov
 
 # the files folder 
 files
+
+# configs
+*.yaml
+*.properties
+gwas_properties.py
