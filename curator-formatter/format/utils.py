@@ -35,6 +35,7 @@ known_header_transformations = {
     'chrom': 'chr',
     'scaffold': 'chr',
     'chr_build36': 'chr',
+    '#chrom': 'chr',
     # base pair location
     'bp': 'bp',
     'pos': 'bp',
