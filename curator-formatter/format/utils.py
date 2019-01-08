@@ -29,7 +29,7 @@ known_header_transformations = {
     'scan_p': 'pval',
     'scanp': 'pval',
     'p_wald': 'pval', 
-    'Multiancestry_pval_fix': 'pval',
+    'multiancestry_pval_fix': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -75,12 +75,12 @@ known_header_transformations = {
     'effects': 'beta',
     'effect': 'beta',
     'gwas_beta': 'beta',
-    'Multiancestry_beta_fix': 'beta',
+    'multiancestry_beta_fix': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
     'stderr': 'se',
-    'Multiancestry_se_fix': 'se',
+    'multiancestry_se_fix': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
