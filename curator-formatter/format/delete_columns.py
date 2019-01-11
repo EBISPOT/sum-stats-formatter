@@ -1,4 +1,5 @@
 import argparse
+import glob
 from tqdm import tqdm
 import os
 from format.utils import *
@@ -38,19 +39,33 @@ def remove_from_row(row, header, column):
     return row
 
 
-def main():
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument('-f', help='The name of the file to be processed', required=True)
-    argparser.add_argument('-headers', help='Header(s) that you want removed. If more than one, enter comma-separated', required=True)
-    args = argparser.parse_args()
-
-    file = args.f
-    headers = args.headers.split(",")
-
+def process_file(file, headers):
     open_close_perform(file=file, headers=headers)
 
     print("\n")
-    print("------> Processed data saved in:", file, "<------")
+    print("------> Processed data saved in:", os.path.basename(file), "<------")
+
+
+def main():
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('-f', help='The name of the file to be processed')
+    argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
+    argparser.add_argument('-headers', help='Header(s) that you want removed. If more than one, enter comma-separated', required=True)
+    args = argparser.parse_args()
+
+    headers = args.headers.split(",")
+
+    if args.f and args.dir is None:
+        file = args.f
+        process_file(file, headers)
+    elif args.dir and args.f is None:
+        dir = args.dir
+        print("Processing the following files:")
+        for f in glob.glob("{}/*".format(dir)):
+            print(f)
+            process_file(f, headers)
+    else:
+        print("You must specify either -f <file> OR -dir <directory containing files>")
 
 
 if __name__ == "__main__":
