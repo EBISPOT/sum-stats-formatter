@@ -1,3 +1,4 @@
+import glob
 import csv
 import argparse
 from tqdm import tqdm
@@ -70,13 +71,7 @@ def multi_delimiters_to_single(row):
     return "\t".join(row.split())
 
 
-
-def main():
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument('-f', help='The name of the file to be processed', required=True)
-    args = argparser.parse_args()
-
-    file = args.f
+def process_file(file):
     filename = get_filename(file)
     what_changed = None
     new_header = None
@@ -124,6 +119,25 @@ def main():
     print("Peeking into the new file...")
     print("\n")
     peek.peek(new_filename)
+
+
+def main():
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('-f', help='The name of the file to be processed')
+    argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
+    args = argparser.parse_args()
+
+    if args.f and args.dir is None:
+        file = args.f
+        process_file(file)
+    elif args.dir and args.f is None:
+        dir = args.dir
+        print("Processing the following files:")
+        for f in glob.glob("{}/*".format(dir)):
+            print(f)
+            process_file(f)
+    else:
+        print("You must specify either -f <file> OR -dir <directory containing files>")
 
 
 if __name__ == "__main__":

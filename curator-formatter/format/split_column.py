@@ -1,4 +1,5 @@
 import argparse
+import glob
 from tqdm import tqdm
 import os
 from format.utils import *
@@ -50,25 +51,39 @@ def split_columns(index_h, row, delimiter):
     return row
 
 
+def process_file(file, header, left_header, right_header, delimiter):
+    open_close_perform(file=file, old_header=header, left_header=left_header, right_header=right_header, delimiter=delimiter)
+
+    print("\n")
+    print("------> Split data saved in:", os.path.basename(file), "<------")
+
+
 def main():
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('-f', help='The name of the file to be processed', required=True)
+    argparser.add_argument('-f', help='The name of the file to be processed')
+    argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
     argparser.add_argument('-header', help='The header of the column that will be split', required=True)
     argparser.add_argument('-left', help='The new header 2 (will take the left part after the split)', required=True)
     argparser.add_argument('-right', help='The new header 1 (will take the right part after the split)', required=True)
     argparser.add_argument('-d', help='The delimiter that the column will be separated by', required=True)
     args = argparser.parse_args()
 
-    file = args.f
     header = args.header
     right_header = args.right
     left_header = args.left
     delimiter = args.d
 
-    open_close_perform(file=file, old_header=header, left_header=left_header, right_header=right_header, delimiter=delimiter)
-
-    print("\n")
-    print("------> Split data saved in:", file, "<------")
+    if args.f and args.dir is None:
+        file = args.f
+        process_file(file, header, left_header, right_header, delimiter)
+    elif args.dir and args.f is None:
+        dir = args.dir
+        print("Processing the following files:")
+        for f in glob.glob("{}/*".format(dir)):
+            print(f)
+            process_file(f, header, left_header, right_header, delimiter)
+    else:
+        print("You must specify either -f <file> OR -dir <directory containing files>")
 
 
 if __name__ == "__main__":
