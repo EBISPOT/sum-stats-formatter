@@ -94,6 +94,7 @@ def process_file(file):
             # if we have added chromosome and base pair location to the end of the file
             # we also need to add it to the header
                 row = process_row(row, new_header)
+                originalheader = [h for h in new_header]
                 if len(new_header) + 1 == len(row) or len(new_header) + 2 == len(row):
                     extended_header = add_info_to_header(new_header)
                     writer.writerows([extended_header])
@@ -102,7 +103,7 @@ def process_file(file):
                 writer.writerows([row])
                 first_line = False
             else:
-                row = process_row(row, new_header)
+                row = process_row(row, originalheader)
                 writer.writerows([row])
 
 
