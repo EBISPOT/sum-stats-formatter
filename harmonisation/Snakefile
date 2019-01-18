@@ -188,7 +188,7 @@ rule make_strand_count:
     output:
         "harm_splits/{ss_file}/output/total_strand_count.csv"
     shell:
-        "ss-strand-count -i harm_splits/{wildcards.ss_file}/output/ -o harm_splits/{wildcards.ss_file}/output/" 
+        "ss-strand-count -i harm_splits/{wildcards.ss_file}/output/ -o harm_splits/{wildcards.ss_file}/output/ -config config.yaml" 
 
 
 # run sumstat_harmoniser.py for each split

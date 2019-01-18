@@ -8,9 +8,13 @@ from common_constants import *
 
 
 def get_chromosome_list(config_path):
+    return get_properties(config_path)['chromosomes']
+
+    
+def get_properties(config_path):
     with open(config_path, 'r') as stream:
         configs = yaml.load(stream)
-        return configs['chromosomes']
+        return configs
 
 
 def get_csv_reader(csv_file):

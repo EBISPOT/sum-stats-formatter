@@ -3,8 +3,10 @@ import sys
 import glob
 import argparse
 
+from formatting_tools.utils import *
 
-def aggregate_counts(in_dir, out_dir): 
+
+def aggregate_counts(in_dir, out_dir, threshold):
 
     variant_type_dict = {
         "Palindormic variant": 0,
@@ -15,12 +17,22 @@ def aggregate_counts(in_dir, out_dir):
     }
 
     # decisions based on counts:
-    test_dict = {
-        "forward": variant_type_dict["Forward strand variant"] > 0 and variant_type_dict["Reverse strand variant"] == 0,
-        "reverse": variant_type_dict["Reverse strand variant"] > 0 and variant_type_dict["Forward strand variant"] == 0,
-        "mixed": variant_type_dict["Forward strand variant"] > 0 and variant_type_dict["Reverse strand variant"] > 0,
-        "no_consensus": variant_type_dict["Forward strand variant"] == 0 and variant_type_dict["Reverse strand variant"] == 0
-    }
+    """
+    if forward > reverse and (reverse/forward) >= threshold
+    """
+    #fwd = variant_type_dict["Forward strand variant"]
+    #rev = variant_type_dict["Reverse strand variant"]
+    #tot = fwd + rev
+
+    #test_dict = {
+    #    #"forward": variant_type_dict["Forward strand variant"] > 0 and variant_type_dict["Reverse strand variant"] == 0,
+    #    #"reverse": variant_type_dict["Reverse strand variant"] > 0 and variant_type_dict["Forward strand variant"] == 0,
+    #    #"mixed": variant_type_dict["Forward strand variant"] > 0 and variant_type_dict["Reverse strand variant"] > 0,
+    #    #"no_consensus": variant_type_dict["Forward strand variant"] == 0 and variant_type_dict["Reverse strand variant"] == 0
+    #    "forward": fwd / tot >= threshold,
+    #    "reverse": rev / tot >= threshold,
+    #    "drop": rev / tot < threshold and fwd / tot < threshold
+    #}
     all_files = glob.glob(in_dir + "strand_count_*.tsv")
 
     with open(out_dir + "total_strand_count.csv", 'w') as tsvout:
@@ -35,19 +47,33 @@ def aggregate_counts(in_dir, out_dir):
         for variant_type, count in variant_type_dict.items():
             tsvout.write(variant_type + '\t' + str(count) + '\n')
 
-        for mode, test in test_dict.items():
-            if test is True:
-                tsvout.write("palin_mode" + "\t" + mode.replace("mixed", "drop").replace("no_consensus", "drop"))
+        fwd = variant_type_dict["Forward strand variant"]
+        rev = variant_type_dict["Reverse strand variant"]
+        tot = fwd + rev
+
+        if tot > 0:
+            if fwd / tot >= threshold:
+                tsvout.write("palin_mode" + "\t" + "forward")
+            elif rev / tot >= threshold:
+                tsvout.write("palin_mode" + "\t" + "reverse")
+            else:
+                tsvout.write("palin_mode" + "\t" + "drop")
+        else:
+            tsvout.write("palin_mode" + "\t" + "drop")
+
 
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-i', help='The directory of strand ccount files', required=True)
     argparser.add_argument('-o', help='The directory to write to', required=True)
+    argparser.add_argument('-config', help='The path to the config.yaml file')
     args = argparser.parse_args()
     
     in_dir = args.i
     out_dir = args.o
-    aggregate_counts(in_dir, out_dir)
+    config = args.config
+    threshold = get_properties(config)['threshold']
+    aggregate_counts(in_dir, out_dir, threshold)
 
 
 if __name__ == "__main__":

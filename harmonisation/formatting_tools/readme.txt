@@ -13,7 +13,7 @@ harmonised/
     <pmid>-<study_accession>-<EFO_trait>-<build>.f.tsv.gz
 
 'harmonised_file' adheres to pattern: 
-    <pmid>-<study_accession>-<EFO_trait>-<build>.h.tsv.gz  
+    <pmid>-<study_accession>-<EFO_trait>.h.tsv.gz  
 
 
 --------------------------------------------------------------------------------
@@ -74,8 +74,8 @@ be inferred will, if safely possible, be inferred and provided.
 The harmonisation process is the following:
   
   Mapping variant IDs to locations
-   1) Update base pair location value by mapping variant ID using latest 
-      Ensembl release
+   1) Update base pair location value by mapping variant ID using
+      Ensembl release 93
       OR
       if above not possible, liftover base pair location to latest genome build 
       OR
@@ -93,7 +93,7 @@ The harmonisation process is the following:
       they are orientated according to the consensus, otherwise palindromic
       variants are not harmonised.
    3) Using chromosome, base pair location and the effect and other alleles, 
-      query each variant against the Ensembl VCF reference to harmonise as
+      query each variant against the Ensembl release 93 VCF reference to harmonise as
       appropriate by either:
       --> keeping record as is because:
           - it is already harmonised
