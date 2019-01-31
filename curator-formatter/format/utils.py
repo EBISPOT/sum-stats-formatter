@@ -1,4 +1,8 @@
+import sys
 import csv
+
+csv.field_size_limit(sys.maxsize)
+
 
 known_header_transformations = {
 
