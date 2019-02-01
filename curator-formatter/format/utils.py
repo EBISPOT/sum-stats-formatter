@@ -95,6 +95,7 @@ known_header_transformations = {
     'ea': 'effect_allele',
     'alleleb': 'effect_allele',
     'allele_b': 'effect_allele',
+    'effectallele': 'effect_allele',
     # other allele
     'a2': 'other_allele',
     'allele2': 'other_allele',
@@ -108,6 +109,7 @@ known_header_transformations = {
     'allele_a': 'other_allele',
     'reference_allele': 'other_allele',
     'allele0': 'other_allele',
+    'referenceallele': 'other_allele',
     # effect allele frequency
     'eaf': 'eaf',
     'maf': 'eaf',
