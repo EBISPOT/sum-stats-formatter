@@ -80,6 +80,7 @@ known_header_transformations = {
     'effect': 'beta',
     'gwas_beta': 'beta',
     'european_ancestry_beta_fix': 'beta',
+    'stdbeta': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
