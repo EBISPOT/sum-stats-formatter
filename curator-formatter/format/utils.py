@@ -21,6 +21,7 @@ known_header_transformations = {
     'MARKER': 'snp',
     'snpid':'snp',
     'oldid':'snp',
+    'var_name': 'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
@@ -34,6 +35,7 @@ known_header_transformations = {
     'scanp': 'pval',
     'p_wald': 'pval', 
     'european_ancestry_pval_fix': 'pval',
+    'bcac_onco_icogs_gwas_P1df': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -50,6 +52,7 @@ known_header_transformations = {
     'basepair': 'bp',
     'base_pair_location': 'bp',
     'pos_build36': 'bp',  
+    'position_b37': 'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -81,11 +84,13 @@ known_header_transformations = {
     'gwas_beta': 'beta',
     'european_ancestry_beta_fix': 'beta',
     'stdbeta': 'beta',
+    'bcac_onco_icogs_gwas_beta', :'beta',  
     # standard error
     'se': 'se',
     'standard_error': 'se',
     'stderr': 'se',
     'european_ancestry_se_fix': 'se',
+    'bcac_onco_icogs_gwas_se': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -97,6 +102,7 @@ known_header_transformations = {
     'alleleb': 'effect_allele',
     'allele_b': 'effect_allele',
     'effectallele': 'effect_allele',
+    'a1': 'effect_allele',  
     # other allele
     'a2': 'other_allele',
     'allele2': 'other_allele',
@@ -111,6 +117,7 @@ known_header_transformations = {
     'reference_allele': 'other_allele',
     'allele0': 'other_allele',
     'referenceallele': 'other_allele',
+    'a0': 'other_allele',
     # effect allele frequency
     'eaf': 'eaf',
     'maf': 'eaf',
@@ -124,6 +131,7 @@ known_header_transformations = {
     'freq1': 'eaf',
     'alt_freq': 'eaf',
     'a1_af':'eaf',
+    'bcac_onco_icogs_gwas_eaf_controls': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
