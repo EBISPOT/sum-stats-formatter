@@ -84,7 +84,7 @@ known_header_transformations = {
     'gwas_beta': 'beta',
     'european_ancestry_beta_fix': 'beta',
     'stdbeta': 'beta',
-    'bcac_onco_icogs_gwas_beta', :'beta',  
+    'bcac_onco_icogs_gwas_beta':'beta',  
     # standard error
     'se': 'se',
     'standard_error': 'se',
