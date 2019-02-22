@@ -21,7 +21,7 @@ known_header_transformations = {
     'MARKER': 'snp',
     'snpid':'snp',
     'oldid':'snp',
-    'var_name': 'snp',
+    'phase3_1kg_id': 'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
@@ -35,7 +35,7 @@ known_header_transformations = {
     'scanp': 'pval',
     'p_wald': 'pval', 
     'european_ancestry_pval_fix': 'pval',
-    'bcac_onco_icogs_gwas_P1df': 'pval',
+    'bcac_onco_icogs_gwas_p1df': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
