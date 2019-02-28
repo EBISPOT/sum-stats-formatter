@@ -70,7 +70,7 @@ known_header_transformations = {
     'or': 'or',
     'odds_ratio': 'or',
     'oddsratio': 'or',
-    'bcac_icogs1_OR': 'or',
+    'bcac_icogs1_or': 'or',
     # or range
     'L95': 'ci_upper',
     'U95': 'ci_lower',
