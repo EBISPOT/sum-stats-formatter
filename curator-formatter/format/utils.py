@@ -36,6 +36,7 @@ known_header_transformations = {
     'p_wald': 'pval', 
     'european_ancestry_pval_fix': 'pval',
     'bcac_onco_icogs_gwas_p1df': 'pval',
+    'bcac_icogs1_risk_P1df': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -69,6 +70,7 @@ known_header_transformations = {
     'or': 'or',
     'odds_ratio': 'or',
     'oddsratio': 'or',
+    'bcac_icogs1_OR': 'or',
     # or range
     'L95': 'ci_upper',
     'U95': 'ci_lower',
@@ -85,12 +87,14 @@ known_header_transformations = {
     'european_ancestry_beta_fix': 'beta',
     'stdbeta': 'beta',
     'bcac_onco_icogs_gwas_beta':'beta',  
+    'bcac_icogs1_risk_beta': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
     'stderr': 'se',
     'european_ancestry_se_fix': 'se',
     'bcac_onco_icogs_gwas_se': 'se',
+    'bcac_icogs1_risk_se': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -102,7 +106,7 @@ known_header_transformations = {
     'alleleb': 'effect_allele',
     'allele_b': 'effect_allele',
     'effectallele': 'effect_allele',
-    'a1': 'effect_allele',  
+    'a1': 'effect_allele',
     # other allele
     'a2': 'other_allele',
     'allele2': 'other_allele',
@@ -132,6 +136,7 @@ known_header_transformations = {
     'alt_freq': 'eaf',
     'a1_af':'eaf',
     'bcac_onco_icogs_gwas_eaf_controls': 'eaf',
+    'bcac_icogs1_european_controls_eaf': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
