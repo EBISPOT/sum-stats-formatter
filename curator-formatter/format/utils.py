@@ -21,7 +21,7 @@ known_header_transformations = {
     'MARKER': 'snp',
     'snpid':'snp',
     'oldid':'snp',
-    'phase3_1kg_id': 'snp',
+    'phase1_1kg_id':'snp,
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
