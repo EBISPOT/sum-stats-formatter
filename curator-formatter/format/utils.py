@@ -123,7 +123,6 @@ known_header_transformations = {
     'referenceallele': 'other_allele',
     'a0': 'other_allele'
     # effect allele frequency
-    'eaf': 'eaf',
     'maf': 'eaf',
     'eafcontrols': 'eaf',
     'frq': 'eaf',
