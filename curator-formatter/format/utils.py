@@ -133,7 +133,7 @@ known_header_transformations = {
     'effect_allele_frequency': 'eaf',
     'freq1': 'eaf',
     'alt_freq': 'eaf',
-    'a1_af':'eaf',
+    'a1_af': 'eaf',
     'bcac_onco_icogs_gwas_eaf_controls': 'eaf',
     'bcac_icogs1_european_controls_eaf': 'eaf',
     'eaf_ukb': 'eaf',
