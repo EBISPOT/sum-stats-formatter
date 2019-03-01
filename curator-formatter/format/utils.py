@@ -121,7 +121,7 @@ known_header_transformations = {
     'reference_allele': 'other_allele',
     'allele0': 'other_allele',
     'referenceallele': 'other_allele',
-    'a0': 'other_allele',
+    'a0': 'other_allele'
     # effect allele frequency
     'eaf': 'eaf',
     'maf': 'eaf',
@@ -137,6 +137,7 @@ known_header_transformations = {
     'a1_af':'eaf',
     'bcac_onco_icogs_gwas_eaf_controls': 'eaf',
     'bcac_icogs1_european_controls_eaf': 'eaf',
+    'eaf_ukb': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
