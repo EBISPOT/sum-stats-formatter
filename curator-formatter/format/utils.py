@@ -126,7 +126,7 @@ known_header_transformations = {
     'maf': 'eaf',
     'eafcontrols': 'eaf',
     'frq': 'eaf',
-    'ref_allele_frequency' : 'eaf',
+    'ref_allele_frequency': 'eaf',
     'frq_u': 'eaf',
     'f_u': 'eaf',
     'effect_allele_freq': 'eaf',
