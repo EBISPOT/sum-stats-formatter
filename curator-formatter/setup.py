@@ -24,5 +24,5 @@ setup(
     license='',
     author='Olga Vrousgou',
     author_email='olgavrou@gmail.com',
-    install_requires=['tqdm', 'pandas']
+    install_requires=['tqdm', 'pandas', 'numpy']
 )
