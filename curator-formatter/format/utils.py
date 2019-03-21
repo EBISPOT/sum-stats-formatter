@@ -89,6 +89,7 @@ known_header_transformations = {
     'stdbeta': 'beta',
     'bcac_onco_icogs_gwas_beta':'beta',  
     'bcac_icogs1_risk_beta': 'beta',
+    'log_odds': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
@@ -96,6 +97,7 @@ known_header_transformations = {
     'european_ancestry_se_fix': 'se',
     'bcac_onco_icogs_gwas_se': 'se',
     'bcac_icogs1_risk_se': 'se',
+    'log_odds_se': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
