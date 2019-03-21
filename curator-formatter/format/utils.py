@@ -54,6 +54,7 @@ known_header_transformations = {
     'base_pair_location': 'bp',
     'pos_build36': 'bp',  
     'position_b37': 'bp',
+    'bp_hg19': 'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -122,6 +123,7 @@ known_header_transformations = {
     'allele0': 'other_allele',
     'referenceallele': 'other_allele',
     'a0': 'other_allele',
+    'noneffect_allele': 'other_allele',
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
