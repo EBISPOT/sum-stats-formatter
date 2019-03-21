@@ -21,7 +21,7 @@ def main():
 
     dfs = (pd.read_csv(f, sep="\s+", dtype=str) for f in files)
 
-    df_cat = pd.concat(dfs, ignore_index=True, sort=False)
+    df_cat = pd.concat(dfs, ignore_index=True)
 
     print("Writing concatenated file to {o}".format(o=out))
     df_cat.to_csv(out, sep="\t", na_rep="NA", index=False)
