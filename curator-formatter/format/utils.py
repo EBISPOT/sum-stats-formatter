@@ -38,6 +38,7 @@ known_header_transformations = {
     'bcac_onco_icogs_gwas_p1df': 'pval',
     'bcac_icogs1_risk_P1df': 'pval',
     'mainp': 'pvalue',
+    'pv_clinical_c_k57': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -91,7 +92,8 @@ known_header_transformations = {
     'bcac_onco_icogs_gwas_beta':'beta',  
     'bcac_icogs1_risk_beta': 'beta',
     'log_odds': 'beta',
-    'maineffects': 'beta',    
+    'maineffects': 'beta',
+    'nbeta_clinical_c_k57': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
@@ -102,6 +104,7 @@ known_header_transformations = {
     'log_odds_se': 'se',
     'mainse': 'se',
     'standarderror': 'se',
+    'nse_clinical_c_k57': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
