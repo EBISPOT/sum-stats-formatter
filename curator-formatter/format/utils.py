@@ -100,7 +100,8 @@ known_header_transformations = {
     'bcac_onco_icogs_gwas_se': 'se',
     'bcac_icogs1_risk_se': 'se',
     'log_odds_se': 'se',
-    'mainse': 'se',  
+    'mainse': 'se',
+    'standarderror': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -144,6 +145,7 @@ known_header_transformations = {
     'bcac_onco_icogs_gwas_eaf_controls': 'eaf',
     'bcac_icogs1_european_controls_eaf': 'eaf',
     'eaf_ukb': 'eaf',
+    'allelefreq': 'eaf',   
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
