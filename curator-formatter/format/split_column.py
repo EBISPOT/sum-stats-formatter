@@ -2,6 +2,7 @@ import argparse
 import glob
 from tqdm import tqdm
 import os
+import pandas as pd
 from format.utils import *
 
 
@@ -11,51 +12,27 @@ def header_index(header, h):
     return header.index(h)
 
 
-def open_close_perform(file, delimiter, old_header, left_header, right_header):
-    filename = get_filename(file)
-    header = []
-    mod_header = []
-    index_h = None
-    is_header = True
-    with open(file) as csv_file, open('.tmp.tsv', 'w') as result_file:
-        csv_reader = get_csv_reader(csv_file)
-        writer = csv.writer(result_file, delimiter='\t')
-        row_count = get_row_count(file)
+def process_file(file, old_header, left_header, right_header, delimiter):
+    filename, file_extension = os.path.splitext(file)
+    new_filename = 'split_' + filename + '.tsv'
 
-        for row in tqdm(csv_reader, total=row_count, unit="rows"):
-            if is_header:
-                is_header = False
-                header.extend(row)
-                mod_header.extend(row)
-                index_h = header_index(header=header, h=old_header)
-                mod_header.pop(index_h)
-                mod_header.append(left_header)
-                mod_header.append(right_header)
-                writer.writerows([mod_header])
-            else:
-                row = split_columns(index_h=index_h, row=row, delimiter=delimiter)
-                writer.writerows([row])
+    sep = '\s+'
+    if file_extension == '.csv':
+        sep = ','
+     
+    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True)
+    header = df.columns.values
 
-    os.rename('.tmp.tsv', filename + ".tsv")
+    if old_header in header:
+        df = df.join(df[old_header].str.split(delimiter, expand=True).add_prefix(old_header).fillna('NA'))
+        df[left_header] = df[old_header + '0'] 
+        df[right_header] = df[old_header + '1']
+    
+        df.to_csv(new_filename, sep="\t", na_rep="NA", index=False)
+        print("------> Split data saved in:", new_filename, "<------")
 
-
-def split_columns(index_h, row, delimiter):
-    column = row[index_h]
-    if delimiter not in column:
-        raise ValueError("Wrong delimiter:" , delimiter)
-    row.pop(index_h)
-    c1 = column.split(delimiter)[0]
-    c2 = column.split(delimiter)[1]
-    row.append(c1)
-    row.append(c2)
-    return row
-
-
-def process_file(file, header, left_header, right_header, delimiter):
-    open_close_perform(file=file, old_header=header, left_header=left_header, right_header=right_header, delimiter=delimiter)
-
-    print("\n")
-    print("------> Split data saved in:", os.path.basename(file), "<------")
+    else:
+        raise ValueError("Couldn't find header: " , old_header)
 
 
 def main():
