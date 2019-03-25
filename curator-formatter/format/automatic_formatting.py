@@ -17,7 +17,7 @@ def process_file(file):
     new_filename = 'formatted_' + filename + '.tsv'
 
     tqdm.pandas()
-    df = pd.read_csv(file, low_memory=True, index_col=False, sep="\s+", dtype=str, error_bad_lines=False, warn_bad_lines=True)
+    df = pd.read_csv(file, comment='#', index_col=False, sep="\s+", dtype=str, error_bad_lines=False, warn_bad_lines=True)
 
     # map headers
     header = df.columns.values
