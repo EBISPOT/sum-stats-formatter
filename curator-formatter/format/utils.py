@@ -40,6 +40,7 @@ known_header_transformations = {
     'bcac_icogs1_risk_P1df': 'pval',
     'mainp': 'pvalue',
     'pv-clinical_c_k57': 'pval',
+    'frequentist_add_wald_pvalue_1': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -95,6 +96,7 @@ known_header_transformations = {
     'log_odds': 'beta',
     'maineffects': 'beta',
     'nbeta-clinical_c_k57': 'beta',
+    'frequentist_add_beta_1:add/sle=1': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
@@ -106,6 +108,7 @@ known_header_transformations = {
     'mainse': 'se',
     'standarderror': 'se',
     'nse-clinical_c_k57': 'se',
+    'frequentist_add_se_1': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -118,6 +121,7 @@ known_header_transformations = {
     'allele_b': 'effect_allele',
     'effectallele': 'effect_allele',
     'a1': 'effect_allele',
+    'alleleB': 'effect_allele',    
     # other allele
     'a2': 'other_allele',
     'allele2': 'other_allele',
@@ -134,6 +138,7 @@ known_header_transformations = {
     'referenceallele': 'other_allele',
     'a0': 'other_allele',
     'noneffect_allele': 'other_allele',
+    'alleleB': 'other_allele',
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
@@ -149,7 +154,8 @@ known_header_transformations = {
     'bcac_onco_icogs_gwas_eaf_controls': 'eaf',
     'bcac_icogs1_european_controls_eaf': 'eaf',
     'eaf_ukb': 'eaf',
-    'allelefreq': 'eaf',   
+    'allelefreq': 'eaf', 
+    'controls_maf': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
@@ -164,11 +170,13 @@ known_header_transformations = {
     'n_cas': 'n_cas',
     'n_con': 'n_con',
     'n_case': 'n_cas',
+    'cases_total': 'n_cas',
     'ncontrol': 'n_con',
     'controls_n': 'n_con',
     'n_control': 'n_con',
     'weight': 'n',
     'ncompletesamples': 'n',
+    'controls_total': 'n_con',
     # signed statistics
     'zscore': 'z',
     'z-score': 'z',
