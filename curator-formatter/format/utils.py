@@ -197,6 +197,8 @@ DESIRED_HEADERS = {'eaf', 'other_allele', 'effect_allele', 'se', 'beta', 'ci_low
                    'or', 'bp', 'chr', 'pval', 'snp'}
 VALID_INPUT_HEADERS = set(known_header_transformations.values())
 
+VALID_CHROMS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', 'X', 'Y', 'MT']
+
 
 def get_row_count(file):
     with open(file, 'r') as f:
