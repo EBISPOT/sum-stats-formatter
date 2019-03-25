@@ -28,17 +28,17 @@ def process_file(file):
     if CHR_BP in new_header:
         # split the chr_bp field
         df = df.join(df[CHR_BP].str.split('_|:', expand=True).add_prefix(CHR_BP).fillna('NA'))
-        df[CHR] = df[CHR_BP + '0'].str.replace('CHR|chr|_|-', '', regex=True)
+        df[CHR] = df[CHR_BP + '0'].str.replace('CHR|chr|_|-', '')
         df[BP] = df[VARIANT + '1']
 
     elif CHR in new_header:
         # clean the chr field
-        df[CHR] = df[CHR].str.replace('CHR|chr|_|-', '', regex=True)
+        df[CHR] = df[CHR].str.replace('CHR|chr|_|-', '')
 
     elif CHR not in new_header and BP not in new_header and VARIANT in new_header:
         # split the snp field
         df = df.join(df[VARIANT].str.split('_|:', expand=True).add_prefix(VARIANT).fillna('NA'))
-        df[CHR] = df[VARIANT + '0'].str.replace('CHR|chr|_|-|rs.*|ss.*', '', regex=True).replace('', 'NA', regex=True)
+        df[CHR] = df[VARIANT + '0'].str.replace('CHR|chr|_|-|rs.*|ss.*', '').replace('', 'NA')
         df[BP] = df[VARIANT + '1']
 
     else:
