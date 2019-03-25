@@ -2,58 +2,36 @@ import argparse
 import glob
 from tqdm import tqdm
 import os
+import pandas as pd
 from format.utils import *
 
 
-def open_close_perform(file, headers):
-    filename = get_filename(file)
-    header = []
-    mod_header = []
-    is_header = True
-
-    with open(file) as csv_file, open('.tmp.tsv', 'w') as result_file:
-        csv_reader = get_csv_reader(csv_file)
-        writer = csv.writer(result_file, delimiter='\t')
-        row_count = get_row_count(file)
-        
-        
-        for row in tqdm(csv_reader, total=row_count, unit="rows"):
-            if is_header:
-                is_header = False
-                header.extend(row)
-                mod_header.extend(row)
-                for h in headers:
-                    mod_header = remove_from_row(row=mod_header, header=mod_header[:], column=h)
-                writer.writerows([mod_header])
-            else:
-                for h in headers:
-                    row = remove_from_row(row=row, header=header[:], column=h)
-                writer.writerows([row])
-
-
-    os.rename('.tmp.tsv', filename + ".tsv")
-
-
-def remove_from_row(row, header, column):
-    row.pop(header.index(column))
-    return row
-
-
 def process_file(file, headers):
-    open_close_perform(file=file, headers=headers)
+    filename, file_extension = os.path.splitext(file)
+    new_filename = 'del_' + filename + '.tsv'
+
+    sep = '\s+'
+    if file_extension == '.csv':
+        sep = ','
+     
+    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True)
+    df = df.drop(columns=headers)
+    
+    df.to_csv(new_filename, sep="\t", na_rep="NA", index=False)
+
 
     print("\n")
-    print("------> Processed data saved in:", os.path.basename(file), "<------")
+    print("------> Processed data saved in:", new_filename, "<------")
 
 
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The name of the file to be processed')
     argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
-    argparser.add_argument('-headers', help='Header(s) that you want removed. If more than one, enter comma-separated', required=True)
+    argparser.add_argument('-headers', help='Header(s) that you want removed. If more than one, enter comma-separated, with no spaces', required=True)
     args = argparser.parse_args()
 
-    headers = args.headers.split(",")
+    headers = list(args.headers.split(","))
 
     if args.f and args.dir is None:
         file = args.f
