@@ -22,6 +22,7 @@ known_header_transformations = {
     'snpid':'snp',
     'oldid':'snp',
     'phase1_1kg_id':'snp',
+    'SNP': 'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
