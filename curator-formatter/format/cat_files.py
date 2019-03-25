@@ -19,7 +19,7 @@ def main():
     for f in files:
         print(f)
 
-    dfs = (pd.read_csv(f, sep="\s+", dtype=str) for f in files)
+    dfs = (pd.read_csv(f, comment='#', sep="\s+", dtype=str) for f in files)
 
     df_cat = pd.concat(dfs, ignore_index=True)
 
