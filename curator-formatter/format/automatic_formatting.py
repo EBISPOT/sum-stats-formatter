@@ -21,39 +21,45 @@ def process_file(file):
     
 
     tqdm.pandas()
-    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True)
+    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
 
-    # map headers
-    header = df.columns.values
-    df.rename(columns=known_header_transformations, inplace=True)
-    new_header = df.columns.values
-    what_changed = dict(zip(header, new_header))
-    print(new_header)
+    header = None
+    new_header = None
+    what_changed = None
+    
+    for chunk in df:
 
-    if CHR_BP in new_header:
-        # split the chr_bp field
-        df = df.join(df[CHR_BP].str.split('_|:', expand=True).add_prefix(CHR_BP).fillna('NA'))
-        df[CHR] = df[CHR_BP + '0'].str.replace('CHR|chr|_|-', '')
-        df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
-        df[BP] = df[VARIANT + '1']
+        # map headers
+        header = chunk.columns.values
+        chunk.rename(columns=known_header_transformations, inplace=True)
+        new_header = chunk.columns.values
+        what_changed = dict(zip(header, new_header))
+        print(new_header)
 
-    elif CHR in new_header:
-        # clean the chr field
-        df[CHR] = df[CHR].str.replace('CHR|chr|_|-', '')
-        df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
+        if CHR_BP in new_header:
+            # split the chr_bp field
+            chunk = chunk.join(chunk[CHR_BP].str.split('_|:', expand=True).add_prefix(CHR_BP).fillna('NA'))
+            chunk[CHR] = chunk[CHR_BP + '0'].str.replace('CHR|chr|_|-', '')
+            chunk[CHR] = chunk[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
+            chunk[BP] = chunk[VARIANT + '1']
 
-    elif CHR not in new_header and BP not in new_header and VARIANT in new_header:
-        # split the snp field
-        df = df.join(df[VARIANT].str.split('_|:', expand=True).add_prefix(VARIANT).fillna('NA'))
-        df[CHR] = df[VARIANT + '0'].str.replace('CHR|chr|_|-', '')
-        df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
-        df[BP] = df[VARIANT + '1']
+        elif CHR in new_header:
+            # clean the chr field
+            chunk[CHR] = chunk[CHR].str.replace('CHR|chr|_|-', '')
+            chunk[CHR] = chunk[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
 
-    else:
-        print("Exiting because, couldn't map the headers")
-        sys.exit()
+        elif CHR not in new_header and BP not in new_header and VARIANT in new_header:
+            # split the snp field
+            chunk = chunk.join(chunk[VARIANT].str.split('_|:', expand=True).add_prefix(VARIANT).fillna('NA'))
+            chunk[CHR] = chunk[VARIANT + '0'].str.replace('CHR|chr|_|-', '')
+            chunk[CHR] = chunk[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
+            chunk[BP] = chunk[VARIANT + '1']
 
-    df.to_csv(new_filename, sep="\t", na_rep="NA", index=False)
+        else:
+            print("Exiting because, couldn't map the headers")
+            sys.exit()
+
+        chunk.to_csv(new_filename, mode='a', sep="\t", na_rep="NA", index=False)
 
     print("\n")
     print("------> Output saved in file:", new_filename, "<------")
