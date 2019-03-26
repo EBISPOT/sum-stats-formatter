@@ -127,6 +127,7 @@ known_header_transformations = {
     'a1': 'effect_allele',
     'alleleB': 'effect_allele',
     'A1': 'effect_allele',
+    'allele1':'effect_allele',
     # other allele
     'a2': 'other_allele',
     'allele2': 'other_allele',
