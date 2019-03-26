@@ -41,6 +41,7 @@ known_header_transformations = {
     'mainp': 'pvalue',
     'pv-clinical_c_k57': 'pval',
     'frequentist_add_wald_pvalue_1': 'pval',
+    'P':'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -48,6 +49,7 @@ known_header_transformations = {
     'scaffold': 'chr',
     'chr_build36': 'chr',
     '#chrom': 'chr',
+    'CHR': 'chr',
     # base pair location
     'bp': 'bp',
     'pos': 'bp',
@@ -59,6 +61,7 @@ known_header_transformations = {
     'pos_build36': 'bp',  
     'position_b37': 'bp',
     'bp_hg19': 'bp',
+    'BP': 'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -76,6 +79,7 @@ known_header_transformations = {
     'odds_ratio': 'or',
     'oddsratio': 'or',
     'bcac_icogs1_or': 'or',
+    'OR': 'or',
     # or range
     'L95': 'ci_upper',
     'U95': 'ci_lower',
@@ -121,7 +125,8 @@ known_header_transformations = {
     'allele_b': 'effect_allele',
     'effectallele': 'effect_allele',
     'a1': 'effect_allele',
-    'alleleB': 'effect_allele',    
+    'alleleB': 'effect_allele',
+    'A1': 'effect_allele',
     # other allele
     'a2': 'other_allele',
     'allele2': 'other_allele',
@@ -139,6 +144,7 @@ known_header_transformations = {
     'a0': 'other_allele',
     'noneffect_allele': 'other_allele',
     'alleleB': 'other_allele',
+    'A2'; 'other_allele',
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
