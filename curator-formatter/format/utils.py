@@ -100,6 +100,7 @@ known_header_transformations = {
     'log_odds': 'beta',
     'maineffects': 'beta',
     'nbeta-clinical_c_k57': 'beta',
+    'Effect': 'beta',
     'frequentist_add_beta_1:add/sle=1': 'beta',
     # standard error
     'se': 'se',
@@ -113,6 +114,7 @@ known_header_transformations = {
     'standarderror': 'se',
     'nse-clinical_c_k57': 'se',
     'frequentist_add_se_1': 'se',
+    'StdErr': 'se',    
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -163,6 +165,7 @@ known_header_transformations = {
     'eaf_ukb': 'eaf',
     'allelefreq': 'eaf', 
     'controls_maf': 'eaf',
+    'effectAlleleFreq': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
