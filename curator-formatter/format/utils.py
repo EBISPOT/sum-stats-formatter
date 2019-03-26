@@ -144,7 +144,7 @@ known_header_transformations = {
     'a0': 'other_allele',
     'noneffect_allele': 'other_allele',
     'alleleB': 'other_allele',
-    'A2'; 'other_allele',
+    'A2': 'other_allele',
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
