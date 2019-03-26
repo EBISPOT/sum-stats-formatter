@@ -14,10 +14,12 @@ def process_file(file, headers):
     if file_extension == '.csv':
         sep = ','
      
-    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True)
-    df = df.drop(columns=headers)
-    
-    df.to_csv(new_filename, sep="\t", na_rep="NA", index=False)
+    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+
+    for chunk in df:
+        print(headers)
+        chunk = chunk.drop(columns=headers)
+        chunk.to_csv(new_filename, mode='a', sep="\t", na_rep="NA", index=False)
 
 
     print("\n")
