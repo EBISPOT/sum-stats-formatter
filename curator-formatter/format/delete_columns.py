@@ -18,7 +18,7 @@ def process_file(file, headers):
 
     for chunk in df:
         print(headers)
-        chunk = chunk.drop(columns=headers)
+        chunk = chunk.drop(headers, axis=1)
         chunk.to_csv(new_filename, mode='a', sep="\t", na_rep="NA", index=False)
 
 
