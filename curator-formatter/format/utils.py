@@ -114,7 +114,7 @@ known_header_transformations = {
     'standarderror': 'se',
     'nse-clinical_c_k57': 'se',
     'frequentist_add_se_1': 'se',
-    'StdErr': 'se',    
+    'StdErr': 'se',      
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
