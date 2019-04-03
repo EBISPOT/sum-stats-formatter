@@ -24,6 +24,7 @@ known_header_transformations = {
     'phase1_1kg_id':'snp',
     'SNP': 'snp',
     'íd': 'snp',
+    'MarkerName': 'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
@@ -43,6 +44,7 @@ known_header_transformations = {
     'pv-clinical_c_k57': 'pval',
     'frequentist_add_wald_pvalue_1': 'pval',
     'P':'pval',
+    'P.value': 'pval',    
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
