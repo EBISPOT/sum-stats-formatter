@@ -1,22 +1,24 @@
+import pandas as pd
+import os
 import argparse
 import glob
-from format.read_perform_write import *
 
-
-def rename_header(header_old, header_new, header):
-    if header_old in header and header_new not in header:
-        index_old = header.index(header_old)
-        header[index_old] = header_new
-        return header
-    else:
-        raise ValueError("Old header not in the file OR new header already exists in file:", header_old,
-                         header_new)
 
 def process_file(file, header_old, header_new):
-    open_close_perform(file=file, header_function=rename_header, args=dict(header_old=header_old, header_new=header_new))
+    mapper = {header_old: header_new}
+    filename, file_extension = os.path.splitext(file)
+    new_filename = 'renamed_' + filename + '.tsv'
+    sep = '\s+'
+    if file_extension == '.csv':
+        sep = ','
+    
+    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+    for chunk in df:
+        chunk.rename(columns = mapper, inplace = True)
+        chunk.to_csv(new_filename, mode='a', sep="\t", na_rep="NA", index=False)
 
     print("\n")
-    print("------> Renamed data saved in:", os.path.basename(file), "<------")
+    print("------> Renamed data saved in:", new_filename, "<------")
     
 
 def main():
