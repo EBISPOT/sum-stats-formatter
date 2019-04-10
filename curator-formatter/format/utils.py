@@ -25,6 +25,7 @@ known_header_transformations = {
     'SNP': 'snp',
     'íd': 'snp',
     'MarkerName': 'snp',
+    'rsID': 'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
