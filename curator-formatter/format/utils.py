@@ -47,6 +47,9 @@ known_header_transformations = {
     'P.value': 'pval',
     'ALL.RANDOM.PVAL': 'pval',
     'P_BOLT_LMM': 'pval',
+    'P_fathers_age_death': 'pval',
+    'P_parents_age_death': 'pval',
+    'P_top_1_percent': 'pval,
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -68,6 +71,7 @@ known_header_transformations = {
     'bp_hg19': 'bp',
     'BP': 'bp',
     'pos(b37)': 'bp',
+    'POS_b37': 'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -110,6 +114,9 @@ known_header_transformations = {
     'frequentist_add_beta_1:add/sle=1': 'beta',
     'ALL.RANDOM.BETA': 'beta',
     'BETA':'beta',
+    'BETA_fathers_age_death': 'beta',
+    'BETA_parents_age_death': 'beta',
+    'BETA_top_1_percent': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
@@ -124,6 +131,9 @@ known_header_transformations = {
     'frequentist_add_se_1': 'se',
     'StdErr': 'se',
     'SE': 'se',
+    'SE_fathers_age_death': 'se',
+    'SE_parents_age_death': 'se',
+    'SE_top_1_percent': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
