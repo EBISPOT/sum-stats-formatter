@@ -66,6 +66,7 @@ known_header_transformations = {
     'position_b37': 'bp',
     'bp_hg19': 'bp',
     'BP': 'bp',
+    'pos(b37)': 'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
