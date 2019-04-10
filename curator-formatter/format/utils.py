@@ -44,7 +44,8 @@ known_header_transformations = {
     'pv-clinical_c_k57': 'pval',
     'frequentist_add_wald_pvalue_1': 'pval',
     'P':'pval',
-    'P.value': 'pval',    
+    'P.value': 'pval',
+    'ALL.RANDOM.PVAL': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -105,6 +106,7 @@ known_header_transformations = {
     'nbeta-clinical_c_k57': 'beta',
     'Effect': 'beta',
     'frequentist_add_beta_1:add/sle=1': 'beta',
+    'ALL.RANDOM.BETA': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
@@ -171,6 +173,7 @@ known_header_transformations = {
     'allelefreq': 'eaf', 
     'controls_maf': 'eaf',
     'effectAlleleFreq': 'eaf',
+    'ALL.FREQ.VAR': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
