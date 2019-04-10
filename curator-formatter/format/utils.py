@@ -108,6 +108,7 @@ known_header_transformations = {
     'Effect': 'beta',
     'frequentist_add_beta_1:add/sle=1': 'beta',
     'ALL.RANDOM.BETA': 'beta',
+    'BETA':'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
@@ -120,7 +121,8 @@ known_header_transformations = {
     'standarderror': 'se',
     'nse-clinical_c_k57': 'se',
     'frequentist_add_se_1': 'se',
-    'StdErr': 'se',      
+    'StdErr': 'se',
+    'SE': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -137,6 +139,7 @@ known_header_transformations = {
     'A1': 'effect_allele',
     'Allele1':'effect_allele',
     'alleleB': 'effect_allele',
+    'ALLELE1': 'effect_allele',    
     # other allele
     'a2': 'other_allele',
     'Allele2': 'other_allele',
@@ -156,6 +159,7 @@ known_header_transformations = {
     'alleleB': 'other_allele',
     'A2': 'other_allele',
     'alleleA': 'other_allele',
+    'ALLELE0': 'other_allele',    
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
@@ -175,6 +179,7 @@ known_header_transformations = {
     'controls_maf': 'eaf',
     'effectAlleleFreq': 'eaf',
     'ALL.FREQ.VAR': 'eaf',
+    'A1FREQ': 'eaf',    
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
