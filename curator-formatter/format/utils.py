@@ -46,6 +46,7 @@ known_header_transformations = {
     'P':'pval',
     'P.value': 'pval',
     'ALL.RANDOM.PVAL': 'pval',
+    'P_BOLT_LMM': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
