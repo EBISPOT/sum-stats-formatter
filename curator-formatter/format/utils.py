@@ -49,7 +49,7 @@ known_header_transformations = {
     'P_BOLT_LMM': 'pval',
     'P_fathers_age_death': 'pval',
     'P_parents_age_death': 'pval',
-    'P_top_1_percent': 'pval,
+    'P_top_1_percent': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
