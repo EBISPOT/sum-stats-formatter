@@ -51,6 +51,7 @@ known_header_transformations = {
     'P_fathers_age_death': 'pval',
     'P_parents_age_death': 'pval',
     'P_top_1_percent': 'pval',
+    'P-value' : 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
