@@ -72,10 +72,10 @@ def process_file(file):
             chunk[CHR] = chunk[CHR].str.replace('CHR|chr|_|-', '')
             chunk[CHR] = chunk[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
             if first:
-                chunk.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA")
+                chunk.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
                 first = False
             else:
-                chunk.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA")
+                chunk.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA", index=False)
 
     elif CHR not in new_header and BP not in new_header and VARIANT in new_header:
         # split the snp field
@@ -99,6 +99,7 @@ def process_file(file):
     else:
         print("Exiting because, couldn't map the headers")
         sys.exit()
+    os.remove(temp_file)
 
 
     print("\n")
