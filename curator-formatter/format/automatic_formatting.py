@@ -47,17 +47,17 @@ def process_file(file):
     
     if CHR_BP in new_header:
         # split the chr_bp field
-        df = pd.read_csv(temp_file, usecols=[CHR_BP], comment='#', sep=sep, dtype=str, error_bad_lines=False, warn_bad_lines=True)
+        df = pd.read_csv(temp_file, usecols=[CHR_BP], comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True)
         df = df.join(df[CHR_BP].str.split('_|:', expand=True).add_prefix(CHR_BP).fillna('NA'))
         df[CHR] = df[CHR_BP + '0'].str.replace('CHR|chr|_|-', '')
         df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
         df[BP] = df[CHR_BP + '1']
         df = df.drop(CHR_BP, axis=1)
 
-        chunks = pd.read_csv(temp_file, comment='#', sep=sep, dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+        chunks = pd.read_csv(temp_file, comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
         first = True
         for chunk in chunks:
-            result = pd.merge(chunk, df, left_index=True, right_index=True)
+            result = pd.merge(chunk, df, left_index=True, right_index=True).drop(['Unnamed: 0'],axis=1)
             if first:
                 result.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
                 first = False
@@ -66,9 +66,10 @@ def process_file(file):
 
     elif CHR in new_header:
         # clean the chr field
-        chunks = pd.read_csv(temp_file, comment='#', sep=sep, dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+        chunks = pd.read_csv(temp_file, comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
         first = True
         for chunk in chunks:
+            chunk = chunk.drop(['Unnamed: 0'],axis=1)
             chunk[CHR] = chunk[CHR].str.replace('CHR|chr|_|-', '')
             chunk[CHR] = chunk[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
             if first:
@@ -79,17 +80,17 @@ def process_file(file):
 
     elif CHR not in new_header and BP not in new_header and VARIANT in new_header:
         # split the snp field
-        df = pd.read_csv(temp_file, usecols=[VARIANT], comment='#', sep=sep, dtype=str, error_bad_lines=False, warn_bad_lines=True)
+        df = pd.read_csv(temp_file, usecols=[VARIANT], comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True)
         df = df.join(df[VARIANT].str.split('_|:', expand=True).add_prefix(VARIANT).fillna('NA'))
         df[CHR] = df[VARIANT + '0'].str.replace('CHR|chr|_|-', '')
         df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
         df[BP] = df[VARIANT + '1']
         df = df.drop(VARIANT, axis=1)
 
-        chunks = pd.read_csv(temp_file, comment='#', sep=sep, dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+        chunks = pd.read_csv(temp_file, comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
         first = True
         for chunk in chunks:
-            result = pd.merge(chunk, df, left_index=True, right_index=True)
+            result = pd.merge(chunk, df, left_index=True, right_index=True).drop(['Unnamed: 0'],axis=1)
             if first:
                 result.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
                 first = False
