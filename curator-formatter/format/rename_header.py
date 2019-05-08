@@ -7,7 +7,7 @@ import glob
 def process_file(file, header_old, header_new):
     mapper = {header_old: header_new}
     filename, file_extension = os.path.splitext(file)
-    new_filename = 'renamed_' + filename + '.tsv'
+    new_filename = 'renamed_' + os.path.basename(filename) + '.tsv'
     sep = '\s+'
     if file_extension == '.csv':
         sep = ','
