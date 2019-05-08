@@ -172,7 +172,8 @@ known_header_transformations = {
     'alleleB': 'other_allele',
     'A2': 'other_allele',
     'alleleA': 'other_allele',
-    'ALLELE0': 'other_allele',    
+    'ALLELE0': 'other_allele',  
+    'allele2': 'other_allele',
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
@@ -192,7 +193,8 @@ known_header_transformations = {
     'controls_maf': 'eaf',
     'effectAlleleFreq': 'eaf',
     'ALL.FREQ.VAR': 'eaf',
-    'A1FREQ': 'eaf',    
+    'A1FREQ': 'eaf',   
+    'freqA1': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
