@@ -84,7 +84,8 @@ def process_file(file):
         df = df.join(df[VARIANT].str.split('_|:', expand=True).add_prefix(VARIANT).fillna('NA'))
         df[CHR] = df[VARIANT + '0'].str.replace('CHR|chr|_|-', '')
         df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
-        df[BP] = df[VARIANT + '1']
+        if VARIANT + '1' in df.columns:
+            df[BP] = df[VARIANT + '1']
         df = df.drop(VARIANT, axis=1)
 
         chunks = pd.read_csv(temp_file, comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
