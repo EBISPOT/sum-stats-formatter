@@ -14,7 +14,7 @@ def multi_delimiters_to_single(row):
 
 def process_file(file):
     filename, file_extension = os.path.splitext(file)
-    new_filename = 'formatted_' + filename + '.tsv'
+    new_filename = 'formatted_' + os.path.basename(filename) + '.tsv'
     temp_file  = filename + '.tmp'
     sep = '\s+'
     if file_extension == '.csv':

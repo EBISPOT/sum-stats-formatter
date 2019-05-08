@@ -8,7 +8,7 @@ from format.utils import *
 
 def process_file(file, headers):
     filename, file_extension = os.path.splitext(file)
-    new_filename = 'del_' + filename + '.tsv'
+    new_filename = 'del_' + os.path.basename(filename) + '.tsv'
 
     sep = '\s+'
     if file_extension == '.csv':
