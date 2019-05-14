@@ -26,6 +26,7 @@ known_header_transformations = {
     'íd': 'snp',
     'MarkerName': 'snp',
     'rsID': 'snp',
+    'RSID': 'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
@@ -74,6 +75,7 @@ known_header_transformations = {
     'BP': 'bp',
     'pos(b37)': 'bp',
     'POS_b37': 'bp',
+    'POS' : 'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -152,7 +154,7 @@ known_header_transformations = {
     'A1': 'effect_allele',
     'Allele1':'effect_allele',
     'alleleB': 'effect_allele',
-    'ALLELE1': 'effect_allele',    
+    'ALLELE1': 'effect_allele',
     # other allele
     'a2': 'other_allele',
     'Allele2': 'other_allele',
@@ -195,6 +197,7 @@ known_header_transformations = {
     'ALL.FREQ.VAR': 'eaf',
     'A1FREQ': 'eaf',   
     'freqA1': 'eaf',
+    'EAF_UKB': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
@@ -216,6 +219,7 @@ known_header_transformations = {
     'weight': 'n',
     'ncompletesamples': 'n',
     'controls_total': 'n_con',
+    'N' : 'n',
     # signed statistics
     'zscore': 'z',
     'z-score': 'z',
