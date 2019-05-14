@@ -197,7 +197,8 @@ known_header_transformations = {
     'ALL.FREQ.VAR': 'eaf',
     'A1FREQ': 'eaf',   
     'freqA1': 'eaf',
-    'EAF_UKB': 'eaf',
+    'EAF_UKB': 'eaf'
+    'EAF' : 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
@@ -220,6 +221,7 @@ known_header_transformations = {
     'ncompletesamples': 'n',
     'controls_total': 'n_con',
     'N' : 'n',
+    'N-analyzed': 'n',
     # signed statistics
     'zscore': 'z',
     'z-score': 'z',
