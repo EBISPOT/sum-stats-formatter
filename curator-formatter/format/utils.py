@@ -197,7 +197,7 @@ known_header_transformations = {
     'ALL.FREQ.VAR': 'eaf',
     'A1FREQ': 'eaf',   
     'freqA1': 'eaf',
-    'EAF_UKB': 'eaf'
+    'EAF_UKB': 'eaf',
     'EAF' : 'eaf',
     # number of studies
     'nstudy': 'nstudy',
