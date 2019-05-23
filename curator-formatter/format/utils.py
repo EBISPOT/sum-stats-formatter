@@ -27,6 +27,7 @@ known_header_transformations = {
     'MarkerName': 'snp',
     'rsID': 'snp',
     'RSID': 'snp',
+    'MARKERNAME': 'snp',    
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
@@ -138,6 +139,7 @@ known_header_transformations = {
     'SE_fathers_age_death': 'se',
     'SE_parents_age_death': 'se',
     'SE_top_1_percent': 'se',
+    'SEBETA': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -155,6 +157,7 @@ known_header_transformations = {
     'Allele1':'effect_allele',
     'alleleB': 'effect_allele',
     'ALLELE1': 'effect_allele',
+    'EFF_ALLELE': 'effect_allele',
     # other allele
     'a2': 'other_allele',
     'Allele2': 'other_allele',
@@ -176,6 +179,7 @@ known_header_transformations = {
     'alleleA': 'other_allele',
     'ALLELE0': 'other_allele',  
     'allele2': 'other_allele',
+    'NONEFF_ALLELE': 'other_allele',
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
@@ -199,6 +203,7 @@ known_header_transformations = {
     'freqA1': 'eaf',
     'EAF_UKB': 'eaf',
     'EAF' : 'eaf',
+    'EFF_ALLELE_FREQ': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
