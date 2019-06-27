@@ -41,6 +41,17 @@ CURATOR_STD_MAP = {
 
 VALID_CHR = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24']
 
+BUILD_MAP = {'28': 'NCBI28',
+             '29': 'NCBI29',
+             '30': 'NCBI30',
+             '31': 'NCBI31',
+             '33': 'NCBI33',
+             '34': 'NCBI34',
+             '35': 'NCBI35',
+             '36': 'NCBI36',
+             '37': 'GRCh37',
+             '38': 'GRCh38'}
+
 VALIDATORS = {
     SNP_DSET: Column(SNP_DSET, [MatchesPatternValidation(r'rs[0-9]+')]), # how do we handle the values that are like chr:bp:allele:snp?
     PVAL_DSET: Column(PVAL_DSET, [CanConvertValidation(float), InRangeValidation(0, 1)]),
