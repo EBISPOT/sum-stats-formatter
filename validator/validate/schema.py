@@ -9,7 +9,7 @@ from common_constants import *
 
 
 STD_COLS = (PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_L_DSET, RANGE_U_DSET, 
-            BETA_DSET, SE_DSET, EFFECT_DSET, OTHER_DSET, FREQ_DSET) #, SNP_DSET)
+            BETA_DSET, SE_DSET, FREQ_DSET) #, EFFECT_DSET, OTHER_DSET, SNP_DSET)
 
 CURATOR_STD_MAP = {
 
@@ -32,9 +32,9 @@ CURATOR_STD_MAP = {
     # standard error
     'se': SE_DSET,
     # effect allele
-    'effect_allele': EFFECT_DSET,
+    #'effect_allele': EFFECT_DSET,
     # other allele
-    'other_allele': OTHER_DSET,
+    #'other_allele': OTHER_DSET,
     # effect allele frequency
     'eaf': FREQ_DSET
 }
