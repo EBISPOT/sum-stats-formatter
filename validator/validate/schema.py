@@ -1,7 +1,7 @@
 import sys
 import pandas as pd
 from pandas_schema import Column
-from pandas_schema.validation import LeadingWhitespaceValidation, TrailingWhitespaceValidation, CanConvertValidation, MatchesPatternValidation, InRangeValidation, InListValidation
+from pandas_schema.validation import MatchesPatternValidation, InRangeValidation, InListValidation, CustomSeriesValidation, CanConvertValidation
 
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/', '../../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
@@ -54,7 +54,7 @@ BUILD_MAP = {'28': 'NCBI28',
 
 VALIDATORS = {
     SNP_DSET: Column(SNP_DSET, [MatchesPatternValidation(r'rs[0-9]+')]), # how do we handle the values that are like chr:bp:allele:snp?
-    PVAL_DSET: Column(PVAL_DSET, [CanConvertValidation(float), InRangeValidation(0, 1)]),
+    PVAL_DSET: Column(PVAL_DSET, [CanConvertValidation(float), CustomSeriesValidation(lambda s: s.astype(float).between(0,1), 'outside the range of 0 to 1')]),
     CHR_DSET: Column(CHR_DSET, [InListValidation(VALID_CHR)], allow_empty=True),
     BP_DSET: Column(BP_DSET, [CanConvertValidation(int), InRangeValidation(1, 999999999)], allow_empty=True),
     OR_DSET: Column(OR_DSET, [CanConvertValidation(float)], allow_empty=True),
