@@ -7,6 +7,9 @@ import pandas as pd
 from pandas_schema import Schema
 from validate.schema import *
 
+
+csv.field_size_limit(sys.maxsize)
+
 logging.basicConfig(level=logging.INFO, format='%(name)s (%(levelname)s): %(message)s')
 logger = logging.getLogger(__name__)
 
