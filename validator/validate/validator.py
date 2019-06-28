@@ -60,7 +60,6 @@ class Validator:
                 first_chunk = False
             else:
                 chunk.to_csv(newfile, mode='a', header=False, sep='\t', index=False, na_rep='NA')
-                
 
     def check_filename_valid(self):
         if not check_ext(self.file, 'tsv'):
