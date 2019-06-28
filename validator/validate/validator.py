@@ -12,23 +12,16 @@ logger = logging.getLogger(__name__)
 
 
 class Validator:
-    def __init__(self, file, stage, drop):
+    def __init__(self, file, stage):
         self.file = file
         self.stage = stage
         self.schema = None
         self.header = []
         self.cols_to_validate = []
         self.cols_to_read = []
-        self.sep = self.get_seperator() 
-        self.drop_bad_lines = drop
+        self.sep = get_seperator(self.file) 
+        self.bad_rows = []
     
-    def get_seperator(self):
-        filename, file_extension = os.path.splitext(self.file)
-        sep =  '\s+'
-        if file_extension == '.csv':
-            sep = ','
-        return sep
-
     def setup_schema(self):
         if self.stage == 'curated':
             self.cols_to_validate = [CURATOR_STD_MAP[h] for h in self.header if h in CURATOR_STD_MAP]
@@ -46,9 +39,8 @@ class Validator:
         self.header = self.get_header()
         self.check_filename_valid()
         if not self.check_file_is_square():
-            logger.error("Need to fix the table. Some rows have different numbers of columns to the header")
-            logger.info("Exiting before any more checks...")
-            sys.exit()
+            logger.error("Please fix the table. Some rows have different numbers of columns to the header")
+            logger.info("Rows with different numbers of columns to the header are not validated")
         self.setup_schema()    
         for chunk in self.df_iterator():
             to_validate = chunk[self.cols_to_read]
@@ -56,12 +48,16 @@ class Validator:
             errors = self.schema.validate(to_validate)
             for error in errors:
                 logger.error(error)
-
+                self.bad_rows.append(error.row)
+                
     def write_valid_lines_to_file(self):
-        pass
+        newfile = self.file + ".valid"
+        for chunk in self.df_iterator():
+            chunk.drop(self.bad_rows, inplace=True)
+            chunk.to_csv(newfile, sep='\t', index=False, na_rep='NA')
 
     def check_filename_valid(self):
-        if not check_ext_is_tsv(self.file):
+        if not check_ext(self.file, 'tsv'):
             return False
         pmid = None
         study = None
@@ -87,7 +83,6 @@ class Validator:
         df = pd.read_csv(self.file, 
                          sep=self.sep, 
                          dtype=str, 
-                         index_col=False,
                          error_bad_lines=False,
                          comment='#', 
                          chunksize=1000000)
@@ -107,10 +102,10 @@ class Validator:
                 count += 1
         return square
 
-def check_ext_is_tsv(filename):
+def check_ext(filename, ext):
     filename = filename.split('/')[-1]
     parts = filename.split('.')
-    if len(parts) == 2 and parts[-1] == 'tsv':
+    if len(parts) == 2 and parts[-1] == ext:
         return True
     return False
 
@@ -121,6 +116,12 @@ def check_build_is_legit(build):
         return True
     return False
 
+def get_seperator(file):
+    filename, file_extension = os.path.splitext(file)
+    sep =  '\s+'
+    if file_extension == '.csv':
+        sep = ','
+    return sep
 
 
 def main():
@@ -137,7 +138,7 @@ def main():
     handler.setLevel(logging.ERROR)
     logger.addHandler(handler)
 
-    validator = Validator(file=args.f, stage=args.stage, drop=args.dropbad)
+    validator = Validator(file=args.f, stage=args.stage)
     if not validator.check_filename_valid():
         logger.info("Invalid filename: {}".format(args.f)) 
         logger.info("Exiting before any more checks...")
@@ -146,6 +147,9 @@ def main():
         logger.info("Filename is good!")
         logger.info("Validating file...")
         validator.validate_data()
+        if args.dropbad:
+            logger.info("Writing good lines to {}.valid".format(args.f))
+            validator.write_valid_lines_to_file()
 
 
 if __name__ == '__main__':

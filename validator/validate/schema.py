@@ -8,13 +8,13 @@ sys.path.extend(sys_paths)
 from common_constants import *
 
 
-STD_COLS = (SNP_DSET, PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_L_DSET, RANGE_U_DSET, 
-            BETA_DSET, SE_DSET, EFFECT_DSET, OTHER_DSET, FREQ_DSET)
+STD_COLS = (PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_L_DSET, RANGE_U_DSET, 
+            BETA_DSET, SE_DSET, EFFECT_DSET, OTHER_DSET, FREQ_DSET) #, SNP_DSET)
 
 CURATOR_STD_MAP = {
 
     # variant id
-    'snp': SNP_DSET,
+    #'snp': SNP_DSET,
     # p-value
     'pval': PVAL_DSET,
     # chromosome
@@ -39,7 +39,7 @@ CURATOR_STD_MAP = {
     'eaf': FREQ_DSET
 }
 
-VALID_CHR = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24']
+VALID_CHR = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25']
 
 BUILD_MAP = {'28': 'NCBI28',
              '29': 'NCBI29',
