@@ -52,9 +52,14 @@ class Validator:
                 
     def write_valid_lines_to_file(self):
         newfile = self.file + ".valid"
+        first_chunk = True
         for chunk in self.df_iterator():
-            chunk.drop(self.bad_rows, inplace=True)
-            chunk.to_csv(newfile, sep='\t', index=False, na_rep='NA')
+            chunk.drop(self.bad_rows, inplace=True, errors='ignore')
+            if first_chunk:
+                chunk.to_csv(newfile, mode='w', sep='\t', index=False, na_rep='NA')
+                first_chunk = False
+            else:
+                chunk.to_csv(newfile, mode='a', header=False, sep='\t', index=False, na_rep='NA')
 
     def check_filename_valid(self):
         if not check_ext(self.file, 'tsv'):
