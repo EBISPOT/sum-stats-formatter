@@ -21,6 +21,10 @@ class Validator:
         self.cols_to_read = []
         self.sep = get_seperator(self.file) 
         self.bad_rows = []
+
+        if self.stage == 'curated':
+            # if curator format allow for more chromosome values
+            VALID_CHROMOSOMES.extend(['X', 'x', 'Y', 'y', 'MT', 'Mt', 'mt'])
     
     def setup_schema(self):
         if self.stage == 'curated':

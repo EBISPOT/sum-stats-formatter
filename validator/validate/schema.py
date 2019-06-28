@@ -39,10 +39,10 @@ CURATOR_STD_MAP = {
     'eaf': FREQ_DSET
 }
 
-VALID_CHR = ['1', '2', '3', '4', '5', '6', '7', '8', 
-             '9', '10', '11', '12', '13', '14', '15', '16', 
-             '17', '18', '19', '20', '21', '22', '23', '24', 
-             '25', 'X', 'x', 'Y', 'y', 'MT', 'Mt', 'mt']
+VALID_CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', 
+                     '9', '10', '11', '12', '13', '14', '15', '16', 
+                     '17', '18', '19', '20', '21', '22', '23', '24', 
+                     '25']
 
 BUILD_MAP = {'28': 'NCBI28',
              '29': 'NCBI29',
@@ -58,7 +58,7 @@ BUILD_MAP = {'28': 'NCBI28',
 VALIDATORS = {
     SNP_DSET: Column(SNP_DSET, [MatchesPatternValidation(r'rs[0-9]+')]), # how do we handle the values that are like chr:bp:allele:snp?
     PVAL_DSET: Column(PVAL_DSET, [CanConvertValidation(float), CustomSeriesValidation(lambda s: s.astype(float).between(0,1), 'outside the range of 0 to 1')]),
-    CHR_DSET: Column(CHR_DSET, [InListValidation(VALID_CHR)], allow_empty=True),
+    CHR_DSET: Column(CHR_DSET, [InListValidation(VALID_CHROMOSOMES)], allow_empty=True),
     BP_DSET: Column(BP_DSET, [CanConvertValidation(int), InRangeValidation(1, 999999999)], allow_empty=True),
     OR_DSET: Column(OR_DSET, [CanConvertValidation(float)], allow_empty=True),
     RANGE_U_DSET: Column(RANGE_U_DSET, [CanConvertValidation(float)], allow_empty=True),
