@@ -91,6 +91,7 @@ class Validator:
                          error_bad_lines=False,
                          comment='#', 
                          chunksize=1000000)
+        print(df.size)
         return df
 
     def check_file_is_square(self):
