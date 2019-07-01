@@ -1,11 +1,35 @@
 import sys
+import math
 import pandas as pd
 from pandas_schema import Column
-from pandas_schema.validation import MatchesPatternValidation, InRangeValidation, InListValidation, CustomSeriesValidation, CanConvertValidation
+from pandas_schema.validation import MatchesPatternValidation, InRangeValidation, InListValidation, CustomSeriesValidation, CustomElementValidation, CanConvertValidation, _SeriesValidation
 
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/', '../../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
 from common_constants import *
+
+
+class InInclusiveRangeValidation(_SeriesValidation):
+    """
+    Checks that each element in the series is within a given inclusive numerical range
+    """
+
+    def __init__(self, min: float = -math.inf, max: float = math.inf, **kwargs):
+        """
+        :param min: The minimum (inclusive) value to accept
+        :param max: The maximum (inclusive) value to accept
+        """
+        self.min = min
+        self.max = max
+        super().__init__(**kwargs)
+
+    @property
+    def default_message(self):
+        return 'was not in the range [{}, {})'.format(self.min, self.max)
+
+    def validate(self, series: pd.Series) -> pd.Series:
+        series = pd.to_numeric(series, errors='coerce')
+        return (series >= self.min) & (series <= self.max)
 
 
 STD_COLS = (PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_L_DSET, RANGE_U_DSET, 
@@ -57,9 +81,11 @@ BUILD_MAP = {'28': 'NCBI28',
 
 VALIDATORS = {
     SNP_DSET: Column(SNP_DSET, [MatchesPatternValidation(r'rs[0-9]+')]), # how do we handle the values that are like chr:bp:allele:snp?
-    PVAL_DSET: Column(PVAL_DSET, [CanConvertValidation(float), CustomSeriesValidation(lambda s: s.astype(float).between(0,1), 'outside the range of 0 to 1')]),
+    PVAL_DSET: Column(PVAL_DSET, [CanConvertValidation(float), InInclusiveRangeValidation(0, 1)]
+                       #CustomElementValidation(lambda s: float(s) >= 0 and float(s) <= 1, 'outside the range of 0 to 1')]
+                      ),
     CHR_DSET: Column(CHR_DSET, [InListValidation(VALID_CHROMOSOMES)], allow_empty=True),
-    BP_DSET: Column(BP_DSET, [CanConvertValidation(int), InRangeValidation(1, 999999999)], allow_empty=True),
+    BP_DSET: Column(BP_DSET, [CanConvertValidation(int) & InInclusiveRangeValidation(1, 999999999)], allow_empty=True),
     OR_DSET: Column(OR_DSET, [CanConvertValidation(float)], allow_empty=True),
     RANGE_U_DSET: Column(RANGE_U_DSET, [CanConvertValidation(float)], allow_empty=True),
     RANGE_L_DSET: Column(RANGE_L_DSET, [CanConvertValidation(float)], allow_empty=True),
@@ -69,3 +95,4 @@ VALIDATORS = {
     OTHER_DSET: Column(OTHER_DSET, [MatchesPatternValidation('[ACTGNactgn]+')], allow_empty=True),
     FREQ_DSET: Column(FREQ_DSET, [CanConvertValidation(float)], allow_empty=True)
 }
+

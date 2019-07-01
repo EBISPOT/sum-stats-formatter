@@ -9,5 +9,5 @@ setup(
     },
     url='https://github.com/EBISPOT/sum-stats-formatter',
     license='',
-    install_requires=['pandas==0.19.2', 'pandas_schema']
+    install_requires=['pandas_schema']
 )
