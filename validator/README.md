@@ -9,7 +9,8 @@ A file validator for validating GWAS summary statistics TSV files prior to and p
 
 ## Running the validator
 To run the validator on a file:
-`ss-validate -f <file_to_validate.tsv> --logfile <logfile_name>`
+- `ss-validate -f <file_to_validate.tsv> --logfile <logfile_name>`
+
 Information and errors are logged to the console and errors logged to the file specified. A console output might look like:
 ```
 (INFO): Filename is good!
