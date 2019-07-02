@@ -1,39 +1,15 @@
 import sys
-import math
-import pandas as pd
 from pandas_schema import Column
-from pandas_schema.validation import MatchesPatternValidation, InRangeValidation, InListValidation, CustomSeriesValidation, CustomElementValidation, CanConvertValidation, _SeriesValidation
+from pandas_schema.validation import MatchesPatternValidation, InRangeValidation, InListValidation, CustomSeriesValidation, CustomElementValidation, CanConvertValidation
+from validate.helpers import InInclusiveRangeValidation
 
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/', '../../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
 from common_constants import *
 
 
-class InInclusiveRangeValidation(_SeriesValidation):
-    """
-    Checks that each element in the series is within a given inclusive numerical range
-    """
-
-    def __init__(self, min: float = -math.inf, max: float = math.inf, **kwargs):
-        """
-        :param min: The minimum (inclusive) value to accept
-        :param max: The maximum (inclusive) value to accept
-        """
-        self.min = min
-        self.max = max
-        super().__init__(**kwargs)
-
-    @property
-    def default_message(self):
-        return 'was not in the range [{}, {})'.format(self.min, self.max)
-
-    def validate(self, series: pd.Series) -> pd.Series:
-        series = pd.to_numeric(series, errors='coerce')
-        return (series >= self.min) & (series <= self.max)
-
-
 STD_COLS = (PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_L_DSET, RANGE_U_DSET, 
-            BETA_DSET, SE_DSET, FREQ_DSET) #, EFFECT_DSET, OTHER_DSET, SNP_DSET)
+            BETA_DSET, SE_DSET, FREQ_DSET , EFFECT_DSET, OTHER_DSET, SNP_DSET)
 
 CURATOR_STD_MAP = {
 
@@ -42,25 +18,25 @@ CURATOR_STD_MAP = {
     # p-value
     'pval': PVAL_DSET,
     # chromosome
-    'chr': CHR_DSET, 
+    #'chr': CHR_DSET, 
     # base pair location
-    'bp': BP_DSET, 
+    #'bp': BP_DSET, 
     # odds ratio
-    'or': OR_DSET,
+    #'or': OR_DSET,
     # ci lower
-    'ci_lower': RANGE_L_DSET,
+    #'ci_lower': RANGE_L_DSET,
     # ci upper
-    'ci_upper': RANGE_U_DSET,
+    #'ci_upper': RANGE_U_DSET,
     # beta
-    'beta': BETA_DSET,
+    #'beta': BETA_DSET,
     # standard error
-    'se': SE_DSET,
+    #'se': SE_DSET,
     # effect allele
     #'effect_allele': EFFECT_DSET,
     # other allele
     #'other_allele': OTHER_DSET,
     # effect allele frequency
-    'eaf': FREQ_DSET
+    #'eaf': FREQ_DSET
 }
 
 VALID_CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', 

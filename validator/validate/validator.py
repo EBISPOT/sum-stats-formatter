@@ -7,10 +7,21 @@ import pandas as pd
 from pandas_schema import Schema
 from validate.schema import *
 
+"""
+GWAS Summary statistics file validator 
+- using pandas_schema https://github.com/TMiguelT/PandasSchema
+It can be run on files pre- ('standard') or post- harmonisation ('harmonised') 
+and also in the 'curator' format. 
+File names and numbers of fields on each row are checked. 
+Fields validated in the standard and harmonised stage are all the required fields 
+for HDF5 convertion. The curator format validation only checks the file name, 
+the table shape and the pvalue.
+"""
+
 
 csv.field_size_limit(sys.maxsize)
 
-logging.basicConfig(level=logging.INFO, format='%(name)s (%(levelname)s): %(message)s')
+logging.basicConfig(level=logging.INFO, format='(%(levelname)s): %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -96,6 +107,7 @@ class Validator:
                          sep=self.sep, 
                          dtype=str, 
                          error_bad_lines=False,
+                         warn_bad_lines=False,
                          comment='#', 
                          chunksize=1000000)
         return df
