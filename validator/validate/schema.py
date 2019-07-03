@@ -14,29 +14,29 @@ STD_COLS = (PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_L_DSET, RANGE_U_DSET,
 CURATOR_STD_MAP = {
 
     # variant id
-    #'snp': SNP_DSET,
+    'snp': SNP_DSET,
     # p-value
     'pval': PVAL_DSET,
     # chromosome
-    #'chr': CHR_DSET, 
+    'chr': CHR_DSET, 
     # base pair location
-    #'bp': BP_DSET, 
+    'bp': BP_DSET, 
     # odds ratio
-    #'or': OR_DSET,
+    'or': OR_DSET,
     # ci lower
-    #'ci_lower': RANGE_L_DSET,
+    'ci_lower': RANGE_L_DSET,
     # ci upper
-    #'ci_upper': RANGE_U_DSET,
+    'ci_upper': RANGE_U_DSET,
     # beta
-    #'beta': BETA_DSET,
+    'beta': BETA_DSET,
     # standard error
-    #'se': SE_DSET,
+    'se': SE_DSET,
     # effect allele
-    #'effect_allele': EFFECT_DSET,
+    'effect_allele': EFFECT_DSET,
     # other allele
-    #'other_allele': OTHER_DSET,
+    'other_allele': OTHER_DSET,
     # effect allele frequency
-    #'eaf': FREQ_DSET
+    'eaf': FREQ_DSET
 }
 
 VALID_CHROMOSOMES = ['1', '2', '3', '4', '5', '6', '7', '8', 

@@ -35,18 +35,20 @@ class Validator:
         self.cols_to_read = []
         self.sep = get_seperator(self.file) 
         self.bad_rows = []
+        self.required_fields = STD_COLS
 
         if self.stage == 'curated':
             # if curator format allow for more chromosome values
             VALID_CHROMOSOMES.extend(['X', 'x', 'Y', 'y', 'MT', 'Mt', 'mt'])
     
     def setup_schema(self):
+        self.header = self.get_header()
         if self.stage == 'curated':
-            self.cols_to_validate = [CURATOR_STD_MAP[h] for h in self.header if h in CURATOR_STD_MAP]
-            self.cols_to_read = [h for h in self.header if h in CURATOR_STD_MAP]
+            self.required_fields = [key for key, value in CURATOR_STD_MAP.items() if value == PVAL_DSET]
+            self.cols_to_validate = [CURATOR_STD_MAP[h] for h in self.header if h in self.required_fields]
         else:
-            self.cols_to_validate = [h for h in self.header if h in STD_COLS]
-            self.cols_to_read = [h for h in self.header if h in STD_COLS]
+            self.cols_to_validate = [h for h in self.header if h in self.required_fields]
+        self.cols_to_read = [h for h in self.header if h in self.required_fields]
         self.schema = Schema([VALIDATORS[h] for h in self.cols_to_validate])
 
     def get_header(self):
@@ -54,12 +56,10 @@ class Validator:
         return first_row.columns.values
 
     def validate_data(self):
-        self.header = self.get_header()
-        self.check_filename_valid()
+        self.setup_schema()    
         if not self.check_file_is_square():
             logger.error("Please fix the table. Some rows have different numbers of columns to the header")
             logger.info("Rows with different numbers of columns to the header are not validated")
-        self.setup_schema()    
         for chunk in self.df_iterator():
             to_validate = chunk[self.cols_to_read]
             to_validate.columns = self.cols_to_validate # sets the headers to standard format if neeeded
@@ -79,27 +79,22 @@ class Validator:
             else:
                 chunk.to_csv(newfile, mode='a', header=False, sep='\t', index=False, na_rep='NA')
 
-    def check_filename_valid(self):
+    def validate_filename(self):
         if not check_ext(self.file, 'tsv'):
+            logger.error("File extension should be .tsv")
             return False
-        pmid = None
-        study = None
-        trait = None
-        build = None
-        filename = self.file.split('/')[-1]
-        filename = filename.split('.')[0]
+        pmid, study, trait, build = None, None, None, None
+        filename = self.file.split('/')[-1].split('.')[0]
         filename_parts = filename.split('-')
-
         if len(filename_parts) != 4:
+            logger.error("Filename: {} should follow the pattern <pmid>-<study>-<trait>-build>.tsv".format(filename))
             return False
         else:
-            pmid = filename_parts[0]
-            study = filename_parts[1]
-            trait = filename_parts[2]
-            build = filename_parts[3]
-
+            pmid, study, trait, build = filename_parts
         if not check_build_is_legit(build):
+            logger.error("Build: {} is not an accepted build value".format(build))
             return False
+        logger.info("Filename looks good!")
         return True
 
     def df_iterator(self):
@@ -125,6 +120,14 @@ class Validator:
                     square = False
                 count += 1
         return square
+
+    def validate_headers(self):
+        self.setup_schema()
+        required_is_subset = set(self.required_fields).issubset(self.header)
+        if not required_is_subset:
+            logger.error("Required headers: {} are not in the file header: {}".format(self.required_fields, self.header))
+        return required_is_subset 
+        
 
 def check_ext(filename, ext):
     filename = filename.split('/')[-1]
@@ -163,17 +166,23 @@ def main():
     logger.addHandler(handler)
 
     validator = Validator(file=args.f, stage=args.stage)
-    if not validator.check_filename_valid():
+    
+    logger.info("Validating filename...")
+    if not validator.validate_filename():
         logger.info("Invalid filename: {}".format(args.f)) 
-        logger.info("Exiting before any more checks...")
+        logger.info("Exiting before any further checks")
         sys.exit()
-    else:
-        logger.info("Filename is good!")
-        logger.info("Validating file...")
-        validator.validate_data()
-        if args.dropbad:
-            logger.info("Writing good lines to {}.valid".format(args.f))
-            validator.write_valid_lines_to_file()
+    
+    logger.info("Validating headers...")
+    if not validator.validate_headers():
+        logger.info("Invalid headers...exiting before any further checks")            
+        sys.exit()
+
+    logger.info("Validating data...")
+    validator.validate_data()
+    if args.dropbad:
+        logger.info("Writing good lines to {}.valid".format(args.f))
+        validator.write_valid_lines_to_file()
 
 
 if __name__ == '__main__':
