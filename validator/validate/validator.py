@@ -41,7 +41,7 @@ class Validator:
             # if curator format allow for more chromosome values
             VALID_CHROMOSOMES.extend(['X', 'x', 'Y', 'y', 'MT', 'Mt', 'mt'])
     
-    def setup_schema(self):
+    def setup_field_validation(self):
         self.header = self.get_header()
         if self.stage == 'curated':
             self.required_fields = [key for key, value in CURATOR_STD_MAP.items() if value == PVAL_DSET]
@@ -49,6 +49,9 @@ class Validator:
         else:
             self.cols_to_validate = [h for h in self.header if h in self.required_fields]
         self.cols_to_read = [h for h in self.header if h in self.required_fields]
+        
+    def setup_schema(self):
+        self.setup_field_validation()
         self.schema = Schema([VALIDATORS[h] for h in self.cols_to_validate])
 
     def get_header(self):
@@ -122,7 +125,7 @@ class Validator:
         return square
 
     def validate_headers(self):
-        self.setup_schema()
+        self.setup_field_validation()
         required_is_subset = set(self.required_fields).issubset(self.header)
         if not required_is_subset:
             logger.error("Required headers: {} are not in the file header: {}".format(self.required_fields, self.header))
