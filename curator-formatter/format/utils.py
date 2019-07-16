@@ -124,6 +124,7 @@ known_header_transformations = {
     'BETA_fathers_age_death': 'beta',
     'BETA_parents_age_death': 'beta',
     'BETA_top_1_percent': 'beta',
+    'Beta': 'beta',    
     # standard error
     'se': 'se',
     'standard_error': 'se',
