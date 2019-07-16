@@ -209,6 +209,7 @@ known_header_transformations = {
     'EAF_UKB': 'eaf',
     'EAF' : 'eaf',
     'EFF_ALLELE_FREQ': 'eaf',
+    'Freq': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
