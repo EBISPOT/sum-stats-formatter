@@ -124,7 +124,8 @@ known_header_transformations = {
     'BETA_fathers_age_death': 'beta',
     'BETA_parents_age_death': 'beta',
     'BETA_top_1_percent': 'beta',
-    'Beta': 'beta',    
+    'Beta': 'beta',
+    'EFFECT_A1': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
@@ -144,6 +145,7 @@ known_header_transformations = {
     'SE_top_1_percent': 'se',
     'StdErr': 'se',    
     'SEBETA': 'se',
+    'STDERR': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -211,6 +213,7 @@ known_header_transformations = {
     'EAF' : 'eaf',
     'EFF_ALLELE_FREQ': 'eaf',
     'Freq': 'eaf',
+    'FREQ_A1': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
