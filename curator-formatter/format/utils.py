@@ -79,6 +79,7 @@ known_header_transformations = {
     'POS_b37': 'bp',
     'POS' : 'bp',
     'Position': 'bp',
+    'position_build36': 'bp',    
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -146,6 +147,7 @@ known_header_transformations = {
     'StdErr': 'se',    
     'SEBETA': 'se',
     'STDERR': 'se',
+    'se_error': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -165,6 +167,7 @@ known_header_transformations = {
     'ALLELE1': 'effect_allele',
     'EFF_ALLELE': 'effect_allele',
     'EffectAllele': 'effect_allele',
+    'coded_allele': 'effect_allele',
     # other allele
     'a2': 'other_allele',
     'Allele2': 'other_allele',
@@ -188,6 +191,7 @@ known_header_transformations = {
     'allele2': 'other_allele',
     'NONEFF_ALLELE': 'other_allele',
     'OtherAllele': 'other_allele',
+    'non_coded_allele': 'other_allele',    
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
