@@ -8,6 +8,7 @@ known_header_transformations = {
 
     # variant id
     'snp': 'snp',
+    '#SNP': 'snp',
     'markername': 'snp',
     'marker': 'snp',
     'rs': 'snp',
@@ -79,7 +80,8 @@ known_header_transformations = {
     'POS_b37': 'bp',
     'POS' : 'bp',
     'Position': 'bp',
-    'position_build36': 'bp',    
+    'position_build36': 'bp', 
+    'Position_b37': 'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -169,6 +171,7 @@ known_header_transformations = {
     'EFF_ALLELE': 'effect_allele',
     'EffectAllele': 'effect_allele',
     'coded_allele': 'effect_allele',
+    'Coded': 'effect_allele',
     # other allele
     'a2': 'other_allele',
     'Allele2': 'other_allele',
@@ -193,6 +196,7 @@ known_header_transformations = {
     'NONEFF_ALLELE': 'other_allele',
     'OtherAllele': 'other_allele',
     'non_coded_allele': 'other_allele',    
+    'Non_coded': 'other_allele',
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
@@ -219,6 +223,7 @@ known_header_transformations = {
     'EFF_ALLELE_FREQ': 'eaf',
     'Freq': 'eaf',
     'FREQ_A1': 'eaf',
+    'Coded_freq': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
@@ -242,6 +247,7 @@ known_header_transformations = {
     'controls_total': 'n_con',
     'N' : 'n',
     'N-analyzed': 'n',
+    'TotalN': 'n',
     # signed statistics
     'zscore': 'z',
     'z-score': 'z',
