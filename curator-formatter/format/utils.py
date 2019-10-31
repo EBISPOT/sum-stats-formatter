@@ -96,6 +96,7 @@ known_header_transformations = {
     'chr_pos_(b36)' : 'chr_bp',
     'chr_pos_(b37)' : 'chr_bp',
     'chr_pos_(b38)' : 'chr_bp',
+    'Chr': 'chr',
     # odds ratio
     'or': 'or',
     'odds_ratio': 'or',
@@ -228,7 +229,7 @@ known_header_transformations = {
     'Freq': 'eaf',
     'FREQ_A1': 'eaf',
     'Coded_freq': 'eaf',
-    'Effect-allele-frequency': 'eaf',    
+    'Effect-allele-frequency': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
