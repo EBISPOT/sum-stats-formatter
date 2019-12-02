@@ -153,7 +153,7 @@ known_header_transformations = {
     'StdErr': 'se',    
     'SEBETA': 'se',
     'STDERR': 'se',
-    'se_error': 'se',
+    'se_error': 'se',    
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
@@ -230,6 +230,7 @@ known_header_transformations = {
     'FREQ_A1': 'eaf',
     'Coded_freq': 'eaf',
     'Effect-allele-frequency': 'eaf',
+    'Freq1': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
