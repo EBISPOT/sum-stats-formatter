@@ -13,9 +13,14 @@ def process_file(file, header_old, header_new):
         sep = ','
     
     df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+    first = True
     for chunk in df:
         chunk.rename(columns = mapper, inplace = True)
-        chunk.to_csv(new_filename, mode='a', sep="\t", na_rep="NA", index=False)
+        if first:
+            chunk.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
+            first = False
+        else:
+            chunk.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA", index=False)
 
     print("\n")
     print("------> Renamed data saved in:", new_filename, "<------")
