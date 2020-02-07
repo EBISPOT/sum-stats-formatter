@@ -133,6 +133,7 @@ known_header_transformations = {
     'Beta': 'beta',
     'EFFECT': 'beta',
     'EFFECT_A1': 'beta',
+    'beta_SNP_add': 'beta',
     # standard error
     'se': 'se',
     'standard_error': 'se',
@@ -153,7 +154,8 @@ known_header_transformations = {
     'StdErr': 'se',    
     'SEBETA': 'se',
     'STDERR': 'se',
-    'se_error': 'se',    
+    'se_error': 'se',
+    'sebeta_SNP_add': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
