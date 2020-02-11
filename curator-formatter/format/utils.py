@@ -56,6 +56,7 @@ known_header_transformations = {
     'P_top_1_percent': 'pval',
     'P-value' : 'pval',
     'P-val': 'pval',
+    'Pvalue': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -84,6 +85,7 @@ known_header_transformations = {
     'position_build36': 'bp', 
     'Position_b37': 'bp',
     'Position_hg19': 'bp',
+    'Pos_GRCh37': 'bp',    
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -178,6 +180,7 @@ known_header_transformations = {
     'coded_allele': 'effect_allele',
     'Coded': 'effect_allele',
     'Effect-allele': 'effect_allele',
+    'Effect_allele':'effect_allele',
     # other allele
     'a2': 'other_allele',
     'Allele2': 'other_allele',
@@ -233,6 +236,7 @@ known_header_transformations = {
     'Coded_freq': 'eaf',
     'Effect-allele-frequency': 'eaf',
     'Freq1': 'eaf',
+    'Effect_allele_frequency': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
@@ -259,6 +263,7 @@ known_header_transformations = {
     'TotalN': 'n',
     'Sample-size': 'n',
     'Sample-size-cases': 'n_cas',
+    'SampleSize': 'n',
     # signed statistics
     'zscore': 'z',
     'z-score': 'z',
