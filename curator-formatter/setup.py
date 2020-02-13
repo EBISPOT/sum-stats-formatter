@@ -17,10 +17,12 @@ setup(
                             'valid-headers = format.show_known_headers:main',
                             'rename-file = format.rename_filename:main',
                             'compress = format.compress_file:main',
-                            'delete = format.delete_columns:main']
+                            'delete = format.delete_columns:main',
+                            'concat = format.cat_files:main']
     },
     url='https://github.com/EBISPOT/SumStats',
     license='',
     author='Olga Vrousgou',
     author_email='olgavrou@gmail.com',
+    install_requires=['tqdm', 'pandas', 'numpy']
 )

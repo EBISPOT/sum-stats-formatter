@@ -1,101 +1,108 @@
-from format.utils import *
-import csv
+import glob
+import sys
+import os
 import argparse
+from tqdm import tqdm
+import pandas as pd
 from format import peek
+from format.utils import *
 
 
-def cleanup_chromosome(chromosome):
-    if 'chr' in chromosome:
-        chromosome = chromosome.replace('chr', '')
-    if 'CHR' in chromosome:
-        chromosome = chromosome.replace('CHR', '')
-    if '_' in chromosome:
-        chromosome = chromosome.replace('_', '')
-    if '-' in chromosome:
-        chromosome = chromosome.replace('-', '')
-    return chromosome
+def multi_delimiters_to_single(row):
+    return "\t".join(row.split())
 
 
-def can_split_chr_pos(item):
-    return ':' in item or '_' in item
+def process_file(file):
+    filename, file_extension = os.path.splitext(file)
+    new_filename = 'formatted_' + os.path.basename(filename) + '.tsv'
+    temp_file  = filename + '.tmp'
+    sep = '\s+'
+    if file_extension == '.csv':
+        sep = ','
+    
 
+    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
 
-def split_chr_pos(item):
-    if ':' in item:
-        chromosome = item.split(":")[0]
-        bp = item.split(":")[1]
-    elif "_" in item:
-        chromosome = item.split("_")[0]
-        bp = item.split("_")[1]
-    else:
-        raise RuntimeError("Do not know how chromosome and base pair location are separated!")
-
-    chromosome = cleanup_chromosome(chromosome)
-
-    return str(chromosome), str(bp)
-
-
-def add_info_to_header(header):
-    if CHR_BP in header:
-        header.pop(header.index(CHR_BP))
-    header.append(CHR)
-    header.append(BP)
-    return header
-
-
-def process_row(row, header):
-    if CHR_BP in header:
-        # split up into chromosome and position
-        index_chrpos = header.index(CHR_BP)
-        chromosome, position = split_chr_pos(row[index_chrpos])
-        row.pop(index_chrpos)
-        row.append(chromosome)
-        row.append(position)
-    elif CHR in header:
-        index_chrpos = header.index(CHR)
-        chromosome = cleanup_chromosome(row[index_chrpos])
-        row[index_chrpos] = chromosome
-    elif CHR not in header and BP not in header:
-        index_snp = header.index(VARIANT)
-        if can_split_chr_pos(row[index_snp]):
-            chromosome, position = split_chr_pos(row[index_snp])
-            row.append(chromosome)
-            row.append(position)
-    return row
-
-
-def main():
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument('-f', help='The name of the file to be processed', required=True)
-    args = argparser.parse_args()
-
-    file = args.f
-    filename = get_filename(file)
-    what_changed = None
+    header = None
     new_header = None
-    is_header = True
+    what_changed = None
+    
+    first = True
+    for chunk in df:
 
-    lines = []
-    with open(file) as csv_file:
-        csv_reader = get_csv_reader(csv_file)
-        for row in csv_reader:
-            if is_header:
-                what_changed = mapped_headers(row[:])
-                new_header = refactor_header(row)
-                is_header = False
+        # map headers
+        header = chunk.columns.values
+        chunk.rename(columns=known_header_transformations, inplace=True)
+        new_header = chunk.columns.values
+        what_changed = dict(zip(header, new_header))
+        print(new_header)
+
+
+        if first:
+            chunk.to_csv(temp_file, mode='w', header=True, sep="\t", na_rep="NA")
+            first = False
+        else:
+            chunk.to_csv(temp_file, mode='a', header=False, sep="\t", na_rep="NA")
+
+    
+    if CHR_BP in new_header:
+        # split the chr_bp field
+        df = pd.read_csv(temp_file, usecols=[CHR_BP], comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True)
+        df = df.join(df[CHR_BP].str.split('_|:', expand=True).add_prefix(CHR_BP).fillna('NA'))
+        df[CHR] = df[CHR_BP + '0'].str.replace('CHR|chr|_|-', '')
+        df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
+        df[BP] = df[CHR_BP + '1']
+        df = df.drop(CHR_BP, axis=1)
+
+        chunks = pd.read_csv(temp_file, comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+        first = True
+        for chunk in chunks:
+            result = pd.merge(chunk, df, left_index=True, right_index=True).drop(['Unnamed: 0'],axis=1)
+            if first:
+                result.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
+                first = False
             else:
-                row = process_row(row, new_header)
-                lines.append(row)
+                result.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA", index=False)
 
-    new_filename = 'formatted_' + filename + '.tsv'
-    with open(new_filename, 'w') as result_file:
-        writer = csv.writer(result_file, delimiter='\t')
-        # if we have added chromosome and base pair location to the end of the file
-        # we also need to add it to the header
-        if len(new_header) + 1 == len(lines[-1]) or len(new_header) + 2 == len(lines[-1]):
-            new_header = add_info_to_header(new_header)
-        writer.writerows([new_header])
-        writer.writerows(lines)
+    elif CHR in new_header:
+        # clean the chr field
+        chunks = pd.read_csv(temp_file, comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+        first = True
+        for chunk in chunks:
+            chunk = chunk.drop(['Unnamed: 0'],axis=1)
+            chunk[CHR] = chunk[CHR].str.replace('CHR|chr|_|-', '')
+            chunk[CHR] = chunk[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
+            if first:
+                chunk.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
+                first = False
+            else:
+                chunk.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA", index=False)
+
+    elif CHR not in new_header and BP not in new_header and VARIANT in new_header:
+        # split the snp field
+        df = pd.read_csv(temp_file, usecols=[VARIANT], comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True)
+        df = df.join(df[VARIANT].str.split('_|:', expand=True).add_prefix(VARIANT).fillna('NA'))
+        df[CHR] = df[VARIANT + '0'].str.replace('CHR|chr|_|-', '')
+        df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
+        if VARIANT + '1' in df.columns:
+            df[BP] = df[VARIANT + '1']
+        df = df.drop(VARIANT, axis=1)
+
+        chunks = pd.read_csv(temp_file, comment='#', sep="\t", dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+        first = True
+        for chunk in chunks:
+            result = pd.merge(chunk, df, left_index=True, right_index=True).drop(['Unnamed: 0'],axis=1)
+            if first:
+                result.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
+                first = False
+            else:
+                result.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA", index=False)
+
+    else:
+        print("Exiting because, couldn't map the headers")
+        sys.exit()
+    os.remove(temp_file)
+
 
     print("\n")
     print("------> Output saved in file:", new_filename, "<------")
@@ -110,6 +117,25 @@ def main():
     print("Peeking into the new file...")
     print("\n")
     peek.peek(new_filename)
+
+
+def main():
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('-f', help='The name of the file to be processed')
+    argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
+    args = argparser.parse_args()
+
+    if args.f and args.dir is None:
+        file = args.f
+        process_file(file)
+    elif args.dir and args.f is None:
+        dir = args.dir
+        print("Processing the following files:")
+        for f in glob.glob("{}/*".format(dir)):
+            print(f)
+            process_file(f)
+    else:
+        print("You must specify either -f <file> OR -dir <directory containing files>")
 
 
 if __name__ == "__main__":

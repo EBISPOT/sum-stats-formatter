@@ -1,52 +1,55 @@
 import argparse
+import glob
+from tqdm import tqdm
 import os
+import pandas as pd
 from format.utils import *
 
 
-def open_close_perform(file, headers):
-    filename = get_filename(file)
-    header = None
-    is_header = True
-    lines = []
-    with open(file) as csv_file:
-        csv_reader = get_csv_reader(csv_file)
-        for row in csv_reader:
-            if is_header:
-                is_header = False
-                header = row
-            else:
-                for h in headers:
-                    row = remove_from_row(row=row, header=header[:], column=h)
-                lines.append(row)
+def process_file(file, headers):
+    filename, file_extension = os.path.splitext(file)
+    new_filename = 'del_' + os.path.basename(filename) + '.tsv'
 
-    for h in headers:
-        header = remove_from_row(row=header, header=header[:], column=h)
-    with open('.tmp.tsv', 'w') as result_file:
-        writer = csv.writer(result_file, delimiter='\t')
-        writer.writerows([header])
-        writer.writerows(lines)
+    sep = '\s+'
+    if file_extension == '.csv':
+        sep = ','
+     
+    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
 
-    os.rename('.tmp.tsv', filename + ".tsv")
+    first = True
+    for chunk in df:
+        chunk = chunk.drop(headers, axis=1)
+        if first:
+            chunk.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
+            first = False
+        else:
+            chunk.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA", index=False)
 
 
-def remove_from_row(row, header, column):
-    row.pop(header.index(column))
-    return row
+    print("\n")
+    print("------> Processed data saved in:", new_filename, "<------")
 
 
 def main():
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('-f', help='The name of the file to be processed', required=True)
-    argparser.add_argument('-headers', help='Header(s) that you want removed. If more than one, enter comma-separated', required=True)
+    argparser.add_argument('-f', help='The name of the file to be processed')
+    argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
+    argparser.add_argument('-headers', help='Header(s) that you want removed. If more than one, enter comma-separated, with no spaces', required=True)
     args = argparser.parse_args()
 
-    file = args.f
-    headers = args.headers.split(",")
+    headers = list(args.headers.split(","))
 
-    open_close_perform(file=file, headers=headers)
-
-    print("\n")
-    print("------> Processed data saved in:", file, "<------")
+    if args.f and args.dir is None:
+        file = args.f
+        process_file(file, headers)
+    elif args.dir and args.f is None:
+        dir = args.dir
+        print("Processing the following files:")
+        for f in glob.glob("{}/*".format(dir)):
+            print(f)
+            process_file(f, headers)
+    else:
+        print("You must specify either -f <file> OR -dir <directory containing files>")
 
 
 if __name__ == "__main__":

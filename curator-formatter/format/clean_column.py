@@ -1,6 +1,8 @@
 import argparse
 import os
 from format.utils import *
+from tqdm import tqdm
+
 
 
 def header_index(header, h):
@@ -14,22 +16,23 @@ def open_close_perform(file, h, fixture):
     header = None
     index_h = None
     is_header = True
-    lines = []
-    with open(file) as csv_file:
+
+    with open(file) as csv_file, open('.tmp.tsv', 'w') as result_file:
         csv_reader = get_csv_reader(csv_file)
-        for row in csv_reader:
+        writer = csv.writer(result_file, delimiter='\t')
+        row_count = get_row_count(file)
+        
+        
+        for row in tqdm(csv_reader, total=row_count, unit="rows"):
             if is_header:
                 is_header = False
                 header = row
                 index_h = header_index(header=header, h=h)
+                writer.writerows([header])
+
             else:
                 row = clean_row(index_h=index_h, row=row, fixture=fixture)
-                lines.append(row)
-
-    with open('.tmp.tsv', 'w') as result_file:
-        writer = csv.writer(result_file, delimiter='\t')
-        writer.writerows([header])
-        writer.writerows(lines)
+                writer.writerows([row])
 
     os.rename('.tmp.tsv', filename + ".tsv")
 
