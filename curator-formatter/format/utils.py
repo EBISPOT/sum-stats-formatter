@@ -183,6 +183,7 @@ known_header_transformations = {
     'Coded': 'effect_allele',
     'Effect-allele': 'effect_allele',
     'Effect_allele':'effect_allele',
+    'EFFECT_ALLELE': 'effect_allele',
     # other allele
     'a2': 'other_allele',
     'Allele2': 'other_allele',
@@ -209,6 +210,7 @@ known_header_transformations = {
     'non_coded_allele': 'other_allele',    
     'Non_coded': 'other_allele',
     'Other-allele': 'other_allele',
+    'OTHER_ALLELE': 'other_allele',
     # effect allele frequency
     'maf': 'eaf',
     'eafcontrols': 'eaf',
