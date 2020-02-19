@@ -57,6 +57,7 @@ known_header_transformations = {
     'P-value' : 'pval',
     'P-val': 'pval',
     'Pvalue': 'pval',
+    'p':'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -85,7 +86,7 @@ known_header_transformations = {
     'position_build36': 'bp', 
     'Position_b37': 'bp',
     'Position_hg19': 'bp',
-    'Pos_GRCh37': 'bp',    
+    'Pos_GRCh37': 'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -158,6 +159,7 @@ known_header_transformations = {
     'STDERR': 'se',
     'se_error': 'se',
     'sebeta_SNP_add': 'se',
+    'stderr': 'se'
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
