@@ -159,7 +159,7 @@ known_header_transformations = {
     'STDERR': 'se',
     'se_error': 'se',
     'sebeta_SNP_add': 'se',
-    'stderr': 'se'
+    'stderr': 'se',
     # effect allele
     'a1': 'effect_allele',
     'allele1': 'effect_allele',
