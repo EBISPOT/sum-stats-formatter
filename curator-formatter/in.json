@@ -9,7 +9,7 @@
       { 
          "field":"variant_id",
          "delimiter":":",
-         "leftName":"snp0",
+         "leftName":"chr",
          "rightName":"snp1"
       },
       { 
@@ -18,14 +18,6 @@
          "leftName":"snp2",
          "rightName":"snp3"
       }
-   ],
-   "keepColumns":[ 
-      "chr",
-      "bp",
-      "snp0",
-      "pval",
-      "beta",
-      "eaf"
    ],
    "findAndReplaceValue":[ 
       { 
@@ -39,23 +31,24 @@
          "replace":""
       },
       { 
-         "field":"snp0",
+         "field":"chr",
          "find":"^((?!^rs[0-9]*$).)*$",
          "replace":""
       }
    ],
-   "headerRename":[ 
-      { 
-         "chr":"chromosome"
+   "headerRename": { 
+         "chr": "chrom",
+         "snp0": "variant",
+         "bp": "base_pair_location",
+         "p_value":"pval",
+         "p-value": "p_value"
       },
-      { 
-         "snp0":"variant_id"
-      },
-      { 
-         "bp":"base_pair_location"
-      },
-      { 
-         "pval":"p_value"
-      }
+   "keepColumns":[ 
+      "chromosome",
+      "base_pair_location",
+      "p_value",
+      "effect_allele",
+      "beta",
+      "variant_id"
    ]
 }

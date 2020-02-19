@@ -1,11 +1,13 @@
 import argparse
 import json
 import os
+import hashlib
 import pathlib
 import format.peek as sspk
 import format.split_column as sssp
 import dask.dataframe as dd
 import pandas as pd
+from format.utils import header_mapper
 
 
 class Table():
@@ -31,10 +33,6 @@ class Table():
 
     def get_header(self):
         self.header = self.dd.columns.tolist()
-        #self.header = pd.read_csv(self.file, 
-        #        comment=self.ignore_pattern, 
-        #        sep=self.field_sep, 
-        #        nrows=0).columns.tolist()
         return self.header
         
     def dask_df(self):
@@ -44,16 +42,6 @@ class Table():
                 dtype=str, 
                 error_bad_lines=False, 
                 warn_bad_lines=True)
-
-    #def pandas_df(self):
-    #    self.df = pd.read_csv(self.file, 
-    #            comment=self.ignore_pattern, 
-    #            sep=self.field_sep, 
-    #            dtype=str, 
-    #            index_col=False,
-    #            error_bad_lines=False, 
-    #            warn_bad_lines=True,
-    #            chunksize=1000000)
 
     def fill_blanks_with_na(self):
         self.dd = self.dd.replace('', 'NA')
@@ -91,13 +79,16 @@ class Table():
                 print("The specified field '{}' for splitting on was not found".format(split['field']))
                 return False
             if split['leftName'] in self.field_names:
-                print("The split on field '{}' cannot be done because the left header, '{}', clashes with an existing header".format(split['field'], split['leftName']))
+                print("The split on field '{}' cannot be done because the left header, '{}', \
+                        clashes with an existing header".format(split['field'], split['leftName']))
                 return False
             if split['rightName'] in self.field_names:
-                print("The split on field '{}' cannot done because the right header, '{}', clashes with an existing header".format(split['field'], split['rightName']))
+                print("The split on field '{}' cannot done because the right header, '{}', \
+                        clashes with an existing header".format(split['field'], split['rightName']))
                 return False
             if split['leftName'] == split['rightName']:
-                print("The split on field '{}' cannot done because the right and left headers, '{}', clash with each other".format(split['field'], split['rightName']))
+                print("The split on field '{}' cannot done because the right and left headers, '{}', \
+                        clash with each other".format(split['field'], split['rightName']))
                 return False
             else:
                 self.field_names.extend([split['leftName'], split['rightName']])
@@ -110,7 +101,8 @@ class Table():
     def check_f_and_r_fields(self, find_replace):
         for item in find_replace:
             if item['field'] not in self.get_header():
-                print("Cannot perfom find and replace on field '{}', because field cannot be found".format(item['field']))
+                print("Cannot perfom find and replace on field '{}', \
+                        because field cannot be found".format(item['field']))
                 return False
         return True
         
@@ -118,9 +110,17 @@ class Table():
         for item in find_replace:
             self.find_and_replace(item['field'], item['find'], item['replace'])
 
-        
+    def perform_header_rename(self, header_rename):
+        try:
+            self.dd = self.dd.rename(columns=header_rename)
+            return True
+        except KeyError as e:
+            print(e)
+            return False
 
-
+    def perform_keep_cols(self, keep_cols):
+        keep_cols = [c for c in keep_cols if c in self.get_header()]
+        self.dd = self.dd[keep_cols]
 
 
 def parse_config(json_config):
@@ -143,14 +143,24 @@ def set_var_from_dict(dictionary, var_name, default):
     return dictionary[var_name] if var_name in dictionary else default
 
 
+def md5sum(file):
+    hash_md5 = hashlib.md5()
+    with open(file, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The name of the file to be processed', required=True)
     #argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
-    #argparser.add_argument('-concat', help='Concatenate the files first (if possible)', action='store_true', default='store_false')
+    #argparser.add_argument('-concat', help='Concatenate the files first (if possible)', 
+    #                        action='store_true', default='store_false')
     argparser.add_argument('-config', help='The name of the configuration file')
     args = argparser.parse_args()
     config = {}
+    print("-------------- File in --------------")
     print(sspk.peek(args.f))
     if not args.config:
         print("no configuration provided")
@@ -161,39 +171,39 @@ def main():
                 config["keepColumns"], config["headerRename"])
         table.dask_df()
         table.field_names.extend(table.get_header())
+
         # check for splits request
-        splits = config['splitColumns'] if config['splitColumns'] else None
+        splits = set_var_from_dict(config, 'splitColumns', None)
         if splits:
             if table.check_split_name_clashes(splits):
                 table.perform_splits(splits)
 
         #find and replace
-        find_replace = config['findAndReplaceValue'] if config['findAndReplaceValue'] else None
+        find_replace = set_var_from_dict(config, 'findAndReplaceValue', None)
         if find_replace:
             if table.check_f_and_r_fields(find_replace):
                 table.perform_find_replacements(find_replace)
+
         #rename columns
+        header_rename = set_var_from_dict(config, 'headerRename', None)
+        if header_rename:
+            table.perform_header_rename(header_rename)
+
         #keep cols
+        keep_cols = set_var_from_dict(config, 'keepColumns', None)
+        if keep_cols:
+            table.perform_keep_cols(keep_cols)
         table.to_csv()
+
         #md5
+        if config['md5']:
+            md5 = md5sum(table.outfile_name)
+            md5_outfile = table.outfile_name + '.md5'
+            with open(md5_outfile, 'w') as f:
+                f.write(md5)
+        
+        print("-------------- File out --------------")
         print(sspk.peek(table.outfile_name))
-
-
-    #if config["splitColumns"]:
-    #    for col in config["splitColumns"]:
-    #        spl.split(file=args.f, 
-    #                old_header=col["field"], 
-    #                left_header=col["leftName"], 
-    #                right_header=col["rightName"], 
-    #                delimiter=col["separator"])
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":

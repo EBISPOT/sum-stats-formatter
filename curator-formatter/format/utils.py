@@ -49,7 +49,7 @@ header_mapper = {
         'european_ancestry_pval_fix',
         'bcac_onco_icogs_gwas_p1df',
         'bcac_icogs1_risk_P1df',
-        'mainp': 'pvalue',
+        'mainp',
         'pv-clinical_c_k57',
         'frequentist_add_wald_pvalue_1',
         'P',
