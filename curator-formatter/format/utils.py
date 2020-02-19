@@ -3,6 +3,324 @@ import csv
 
 csv.field_size_limit(sys.maxsize)
 
+header_mapper = {
+
+    # Variant ID
+    # ==========
+    'variant_id': [
+        'snp',
+        '#SNP',
+        'markername',
+        'marker',
+        'rs',
+        'rsid',
+        'rs_number',
+        'rs_numbers',
+        'assay_name',
+        'id',
+        'id_dbsnp49',
+        'snp_rsid',
+        'MARKER',
+        'snpid',
+        'oldid',
+        'phase1_1kg_id',
+        'SNP',
+        'íd',
+        'MarkerName',
+        'rsID',
+        'RSID',
+        'MARKERNAME'
+        ],
+
+    # P-value
+    # =======
+    'p_value': [
+        'p',
+        'pvalue',
+        'p_value',
+        'pval',
+        'p_val',
+        'gc_pvalue',
+        'gwas_p',
+        'frequentist_add_pvalue',
+        'scan_p',
+        'scanp',
+        'p_wald', 
+        'european_ancestry_pval_fix',
+        'bcac_onco_icogs_gwas_p1df',
+        'bcac_icogs1_risk_P1df',
+        'mainp': 'pvalue',
+        'pv-clinical_c_k57',
+        'frequentist_add_wald_pvalue_1',
+        'P',
+        'P.value',
+        'ALL.RANDOM.PVAL',
+        'P_BOLT_LMM',
+        'P_fathers_age_death',
+        'P_parents_age_death',
+        'P_top_1_percent',
+        'P-value',
+        'P-val'
+        ],
+
+    # Chromosome
+    # ==========
+    'chromosome': [
+        'chr',
+        'chromosome',
+        'chrom',
+        'scaffold',
+        'chr_build36',
+        '#chrom',
+        'CHR',
+        'Chromosome'
+        ],
+
+    # Base pair location
+    # ==================
+    'base_pair_location': [
+        'bp',
+        'pos',
+        'position',
+        'phys_pos',
+        'base_pair',
+        'basepair',
+        'base_pair_location',
+        'pos_build36',  
+        'position_b37',
+        'bp_hg19',
+        'BP',
+        'pos(b37)',
+        'POS_b37',
+        'POS' ,
+        'Position',
+        'position_build36', 
+        'Position_b37',
+        'Position_hg19',
+        'Pos_GRCh37',
+        ],
+
+    # Odds ratio
+    # ==========
+    'odds_ratio': [
+        'or',
+        'odds_ratio',
+        'oddsratio',
+        'bcac_icogs1_or',
+        'OR'
+        ],
+
+    # Upper confidence interval
+    # =========================
+    'ci_upper': [
+        'U95',
+        'orupper',
+        'u95'
+        ],
+
+    # Lower confidence interval
+    # =========================
+    'ci_lower': [
+        'L95',
+        'orlower',
+        'l95'
+        ],
+
+    # Beta
+    # ====
+    'beta': [
+        'b',
+        'beta',
+        'effects',
+        'effect',
+        'gwas_beta',
+        'european_ancestry_beta_fix',
+        'stdbeta',
+        'bcac_onco_icogs_gwas_beta',  
+        'bcac_icogs1_risk_beta',
+        'log_odds',
+        'maineffects',
+        'nbeta-clinical_c_k57',
+        'Effect',
+        'frequentist_add_beta_1:add/sle=1',
+        'ALL.RANDOM.BETA',
+        'BETA',
+        'BETA_fathers_age_death',
+        'BETA_parents_age_death',
+        'BETA_top_1_percent',
+        'Beta',
+        'EFFECT',
+        'EFFECT_A1'
+        ],
+
+    # Standard error
+    # ==============
+    'standard_error': [
+        'se',
+        'standard_error',
+        'stderr',
+        'european_ancestry_se_fix',
+        'bcac_onco_icogs_gwas_se',
+        'bcac_icogs1_risk_se',
+        'log_odds_se',
+        'mainse',
+        'standarderror',
+        'nse-clinical_c_k57',
+        'frequentist_add_se_1',
+        'StdErr',
+        'SE',
+        'SE_fathers_age_death',
+        'SE_parents_age_death',
+        'SE_top_1_percent',
+        'StdErr',    
+        'SEBETA',
+        'STDERR',
+        'se_error'
+        ],
+
+    # Effect allele
+    # =============
+    'effect_allele': [
+        'a1',
+        'allele1',
+        'allele_1',
+        'effect_allele',
+        'alt' ,
+        'inc_allele',
+        'ea',
+        'alleleb',
+        'allele_b',
+        'effectallele',
+        'a1',
+        'alleleB',
+        'A1',
+        'Allele1',
+        'alleleB',
+        'ALLELE1',
+        'EFF_ALLELE',
+        'EffectAllele',
+        'coded_allele',
+        'Coded',
+        'Effect-allele'
+        ],
+    
+    # Other allele
+    # ============
+    'other_allele': [
+        'a2',
+        'Allele2',
+        'allele_2',
+        'other_allele',
+        'ref',
+        'non_effect_allele',
+        'dec_allele',
+        'nea',
+        'allelea',
+        'allele_a',
+        'reference_allele',
+        'allele0',
+        'referenceallele',
+        'a0',
+        'noneffect_allele',
+        'alleleB',
+        'A2',
+        'alleleA',
+        'ALLELE0',  
+        'allele2',
+        'NONEFF_ALLELE',
+        'OtherAllele',
+        'non_coded_allele',    
+        'Non_coded',
+        'Other-allele'
+        ],
+
+    # Effect allele frequency
+    # =======================
+    'effect_allele_frequency': [
+        'maf',
+        'eafcontrols',
+        'frq',
+        'ref_allele_frequency',
+        'frq_u',
+        'f_u',
+        'effect_allele_freq',
+        'effect_allele_frequency',
+        'freq1',
+        'alt_freq',
+        'a1_af',
+        'bcac_onco_icogs_gwas_eaf_controls',
+        'bcac_icogs1_european_controls_eaf',
+        'eaf_ukb',
+        'allelefreq', 
+        'controls_maf',
+        'effectAlleleFreq',
+        'ALL.FREQ.VAR',
+        'A1FREQ',   
+        'freqA1',
+        'EAF_UKB',
+        'EAF' ,
+        'EFF_ALLELE_FREQ',
+        'Freq',
+        'FREQ_A1',
+        'Coded_freq',
+        'Effect-allele-frequency',
+        'Freq1'
+        ],
+    
+    # Number of studies
+    # =================
+    'nstudy': [
+        'nstudy',
+        'n_study',
+        'nstudies',
+        'n_studies'
+        ],
+
+    # n
+    # =
+    'n': [
+        'n',
+        'N' ,
+        'N-analyzed',
+        'TotalN',
+        'Sample-size',
+        'weight',
+        'ncompletesamples'
+        ],
+
+    # n cases
+    # =======
+    'n_cas': [
+        'ncase',
+        'cases_n',
+        'n_cases',
+        'n_cas',
+        'n_case',
+        'cases_total',
+        'Sample-size-cases'
+        ],
+
+    # n cases
+    # =======
+    'n_con': [
+        'ncontrol',
+        'controls_n',
+        'n_control',
+        'n_con',
+        'n_controls',
+        'controls_total'
+        ],
+
+    # signed statistics
+    # =================
+    'z': [
+        'zscore',
+        'z-score',
+        'gc_zscore',
+        'z'
+        ],
+    }
+
 
 known_header_transformations = {
 
