@@ -21,7 +21,7 @@ def process_file(file):
         sep = ','
     
 
-    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
+    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
 
     header = None
     new_header = None

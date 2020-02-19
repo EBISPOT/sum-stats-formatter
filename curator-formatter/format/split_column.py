@@ -3,6 +3,7 @@ import glob
 from tqdm import tqdm
 import os
 import pandas as pd
+import dask.dataframe as dd
 from format.utils import *
 
 
@@ -20,27 +21,19 @@ def process_file(file, old_header, left_header, right_header, delimiter):
     if file_extension == '.csv':
         sep = ','
      
-    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
-
-    first = True
-    for chunk in df:
-        header = chunk.columns.values
-        if first:
-            if old_header in header:
-                chunk = chunk.join(chunk[old_header].str.split(delimiter, expand=True).add_prefix(old_header).fillna('NA'))
-                chunk[left_header] = chunk[old_header + '0'] 
-                chunk[right_header] = chunk[old_header + '1']
-            
-                chunk.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
-
-            else:
-                raise ValueError("Couldn't find header: " , old_header)
-            first = False
-        else:
-            chunk.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA", index=False)
-
+    df = dd.read_csv(file, comment='#', sep=sep, dtype=str, error_bad_lines=False, warn_bad_lines=True)
+    df = split_field(df, old_header, delimiter, left_header, right_header)
+    df = df.replace('', 'NA')
+    df.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False, single_file=True)
 
     print("------> Split data saved in:", new_filename, "<------")
+
+
+def split_field(df, field, delimiter, left_name, right_name):
+    df = df.join(df[field].str.partition(delimiter, expand=True).rename(columns={0:left_name, 2:right_name}).drop(columns=[1]))
+    return df
+
+
 
 def main():
     argparser = argparse.ArgumentParser()

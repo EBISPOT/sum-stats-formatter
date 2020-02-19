@@ -2,30 +2,20 @@ import argparse
 import glob
 from tqdm import tqdm
 import os
+import dask.dataframe as dd
 import pandas as pd
 from format.utils import *
 
-
-def process_file(file, headers):
+def process_file(file, drop_headers):
     filename, file_extension = os.path.splitext(file)
     new_filename = 'del_' + os.path.basename(filename) + '.tsv'
-
     sep = '\s+'
     if file_extension == '.csv':
         sep = ','
-     
-    df = pd.read_csv(file, comment='#', sep=sep, dtype=str, index_col=False, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
-
-    first = True
-    for chunk in df:
-        chunk = chunk.drop(headers, axis=1)
-        if first:
-            chunk.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False)
-            first = False
-        else:
-            chunk.to_csv(new_filename, mode='a', header=False, sep="\t", na_rep="NA", index=False)
-
-
+    header =  pd.read_csv(file, comment='#', sep=sep, index_col=0, nrows=0).columns.tolist()
+    header = [h for h in header if h not in drop_headers]
+    df = dd.read_csv(file, comment='#', sep=sep, usecols=header, dtype=str, error_bad_lines=False, warn_bad_lines=True)
+    df.to_csv(new_filename, mode='w', header=True, sep="\t", na_rep="NA", index=False, single_file=True)
     print("\n")
     print("------> Processed data saved in:", new_filename, "<------")
 
@@ -41,7 +31,8 @@ def main():
 
     if args.f and args.dir is None:
         file = args.f
-        process_file(file, headers)
+        if os.path.exists(file):
+            process_file(file, headers)
     elif args.dir and args.f is None:
         dir = args.dir
         print("Processing the following files:")
@@ -49,7 +40,7 @@ def main():
             print(f)
             process_file(f, headers)
     else:
-        print("You must specify either -f <file> OR -dir <directory containing files>")
+        print("You must specify either a single file with `-f <file>` OR many files with `-dir <directory containing files>`")
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ def peek(file, num_lines=10):
                     index_col=False, error_bad_lines=False, 
                     warn_bad_lines=True, nrows=num_lines,
                     na_filter=False)
-    return df
+    return tabulate(df, headers='keys', tablefmt='psql', showindex=False)
 
 
 def main():
@@ -25,8 +25,8 @@ def main():
     num_lines = args.n
     print("\n")
     print("------> Peeking into file:", file, "<------\n")
-    df = peek(file, num_lines)
-    print(tabulate(df, headers='keys', tablefmt='psql', showindex=False))
+    head = peek(file, num_lines)
+    print(head)
 
 
 if __name__ == "__main__":
