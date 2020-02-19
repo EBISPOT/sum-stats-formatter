@@ -82,6 +82,8 @@ class Table():
                 left_name=left_name, 
                 right_name=right_name)
 
+    def find_and_replace(self, field, find, replace):
+        self.dd[field] = self.dd[field].str.replace(r'{}'.format(find), replace)
 
     def check_split_name_clashes(self, splits):
         for split in splits:
@@ -112,6 +114,10 @@ class Table():
                 return False
         return True
         
+    def perform_find_replacements(self, find_replace):
+        for item in find_replace:
+            self.find_and_replace(item['field'], item['find'], item['replace'])
+
         
 
 
@@ -165,9 +171,7 @@ def main():
         find_replace = config['findAndReplaceValue'] if config['findAndReplaceValue'] else None
         if find_replace:
             if table.check_f_and_r_fields(find_replace):
-                print('perform find and replace')
-            #    table.perform_find_replacements(find_replace)
-            pass
+                table.perform_find_replacements(find_replace)
         #rename columns
         #keep cols
         table.to_csv()

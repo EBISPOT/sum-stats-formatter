@@ -32,6 +32,16 @@
          "field":"chromosome",
          "find":"CHR|chr|-|_",
          "replace":""
+      },
+      { 
+         "field":"variant_id",
+         "find":"^((?!^rs[0-9]*$).)*$",
+         "replace":""
+      },
+      { 
+         "field":"snp0",
+         "find":"^((?!^rs[0-9]*$).)*$",
+         "replace":""
       }
    ],
    "headerRename":[ 
