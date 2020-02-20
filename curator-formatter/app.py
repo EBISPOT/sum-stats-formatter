@@ -11,11 +11,10 @@ class Home:
     def __init__(self, master):
         self.master = master
         self.frame = tk.Frame(self.master)
-        #self.title("Sumstats file formatter")
-        #self.minsize(640, 400)
-        #self.wm_iconbitmap('icon.ico')
+        self.master.title("Table Manipulator")
+        self.master.wm_iconbitmap('icon.ico')
  
-        self.file_browse_lab = ttk.LabelFrame(self.frame, text = "Summary statistics file formatter")
+        self.file_browse_lab = ttk.LabelFrame(self.frame, text = "Select a sumstats file")
         self.file_browse_lab.grid(column = 0, row = 1, padx = 2, pady = 2, sticky='W')
 
         self.file_button()
@@ -35,6 +34,15 @@ class Home:
         self.split_lab = ttk.LabelFrame(self.frame, text = "Column splits")
         self.split_lab.grid(column = 0, row = 8, padx = 2, pady = 2, sticky='W')
         self.frame.pack()
+        self.split_col_tab = []
+        self.config = {"outFilePrefix":"formatted_",
+                       "md5":"True",
+                       "fieldSeparator":"\t",
+                       "removeLinesStarting":"#",
+                       "splitColumns": [],
+                       "keepColumns": [],
+                       "findAndReplaceValue": [],
+                       "headerRename": []}
 
     def outfile_prefix(self):
         self.outfile_prefix = tk.Entry(self.outfile_prefix_lab, width=20)
@@ -69,7 +77,7 @@ class Home:
         self.label.configure(text = pathlib.Path(self.filename).name)
         self.preview_button()
         self.table()
-        self.split_window_button()
+        self.split_cols_button()
 
     def set_table_params(self):
         self.prefix = self.outfile_prefix.get() if self.outfile_prefix.get() else "formatted_"
@@ -92,6 +100,9 @@ class Home:
         if self.table():
             print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
             print(self.table_top.peek())
+        self.get_split_data()
+        print(self.config)
+        
 
     def table(self):
         if self.set_table_params():
@@ -103,25 +114,50 @@ class Home:
             return True
         return False
 
-    def split_window_button(self):
-        self.split_window_button = ttk.Button(self.frame, text = "Split columns -->", command = self.split_window())
+    def split_cols_button(self):
+        self.split_window_button = ttk.Button(self.frame, text = "Split columns", command = self.split_cols)
         self.split_window_button.grid(column = 4, row = 1, sticky="E")
 
-    def split_window(self):
-        print("split")
+    def split_cols(self):
+        self.header_lab = ttk.LabelFrame(self.frame, text = "File headers")
+        self.header_lab.grid(column = 0, row =8, padx = 2, pady = 2, sticky='W')
+        self.split_params = ["separator", "leftName", "rightName"] 
+
+        for index, field in enumerate(self.split_params):
+            split_col_label = tk.Label(self.header_lab, text=field)
+            split_col_label.grid(row=0, column = index + 1)
+
+        for index, field in enumerate(self.table_top.get_header()): #Rows
+            split_row_label = tk.Label(self.header_lab, text=field)
+            self.split_col_tab.append({"field": field, "separator": None, "leftName": None, "rightName": None})
+            for j, item in enumerate(self.split_params): #Columns
+                split_row_label.grid(row=index+1, column=0, sticky="E")
+                split_col_data = tk.Entry(self.header_lab)
+                split_col_data.grid(row=index+1, column=j+1)
+                self.split_col_tab[index][item] = split_col_data
+
+    def get_split_data(self):
+        for field in self.split_col_tab:
+            if all([field['separator'].get(), field['leftName'].get(), field['rightName'].get()]):
+                if field['field'] not in [item['field'] for item in self.config['splitColumns']]:
+                    self.config['splitColumns'].append(
+                                            {"field": field['field'],
+                                             "separator": field['separator'].get(),
+                                             "leftName": field['leftName'].get(),
+                                             "rightName": field['rightName'].get()})
 
 
 
-class SplitCols:
-    def __init__(self, table):
-        super(Root, self).__init__()
-        self.title("Sumstats file formatter - split columns")
-        self.minsize(640, 400)
-        self.wm_iconbitmap('icon.ico')
-        self.table = table
 
-    def col_splits(self):
-        self.table_top.get_header()
+        
+
+
+
+
+
+
+
+
         
 
 
