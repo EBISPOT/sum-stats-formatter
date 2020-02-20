@@ -11,6 +11,7 @@ class Home:
     def __init__(self, master):
         self.master = master
         self.frame = tk.Frame(self.master)
+        self.frame2 = tk.Frame(self.master)
         self.master.title("Table Manipulator")
         self.master.wm_iconbitmap('icon.ico')
  
@@ -23,7 +24,7 @@ class Home:
         self.outfile_prefix_lab.grid(column = 0, row = 3, padx = 2, pady = 2, sticky='W')
         self.outfile_prefix()
 
-        self.field_sep_lab = ttk.LabelFrame(self.frame, text = "Field separator")
+        self.field_sep_lab = ttk.LabelFrame(self.frame, text = "Field delimiter")
         self.field_sep_lab.grid(column = 0, row = 4, padx = 2, pady = 2, sticky='W')
         self.field_sep()
 
@@ -35,6 +36,7 @@ class Home:
         self.split_lab.grid(column = 0, row = 8, padx = 2, pady = 2, sticky='W')
         self.frame.pack()
         self.split_col_tab = []
+        self.column_shuffle_tab =[]
         self.config = {"outFilePrefix":"formatted_",
                        "md5":"True",
                        "fieldSeparator":"\t",
@@ -76,8 +78,9 @@ class Home:
         self.label.grid(column = 1, row = 2, sticky="W")
         self.label.configure(text = pathlib.Path(self.filename).name)
         self.preview_button()
-        self.table()
-        self.split_cols_button()
+        self.tablegen()
+        self.split_cols()
+        self.column_shuffle()
 
     def set_table_params(self):
         self.prefix = self.outfile_prefix.get() if self.outfile_prefix.get() else "formatted_"
@@ -97,57 +100,100 @@ class Home:
         self.preview_button.grid(column = 3, row = 1, sticky="E")
 
     def perform_peek(self):
-        if self.table():
-            print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
-            print(self.table_top.peek())
         self.get_split_data()
         print(self.config)
+        self.tablegen()
+        if self.table:
+            self.table.field_names.extend(self.table.get_header())
+            # check for splits request
+            splits = set_var_from_dict(self.config, 'splitColumns', None)
+            if splits:
+                if self.table.check_split_name_clashes(splits):
+                    self.table.perform_splits(splits)
+            self.column_shuffle()
+            print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
+            print(self.table.peek())
         
 
-    def table(self):
+    def tablegen(self):
         if self.set_table_params():
-            self.table_top = tabmani.Table(self.filename, 
+            self.table = tabmani.Table(self.filename, 
                                self.prefix, 
                                self.sep, 
                                self.comment)
-            self.table_top.dask_df()
+            self.table.dask_df()
             return True
         return False
 
-    def split_cols_button(self):
-        self.split_window_button = ttk.Button(self.frame, text = "Split columns", command = self.split_cols)
-        self.split_window_button.grid(column = 4, row = 1, sticky="E")
-
+    
     def split_cols(self):
-        self.header_lab = ttk.LabelFrame(self.frame, text = "File headers")
-        self.header_lab.grid(column = 0, row =8, padx = 2, pady = 2, sticky='W')
-        self.split_params = ["separator", "leftName", "rightName"] 
+        header_lab = ttk.LabelFrame(self.frame, text = "Columns IN")
+        header_lab.grid(column = 0, row =8, padx = 2, pady = 2, sticky='W')
+        split_params = ["delimiter", "leftName", "rightName"] 
 
-        for index, field in enumerate(self.split_params):
-            split_col_label = tk.Label(self.header_lab, text=field)
+        for index, field in enumerate(split_params):
+            split_col_label = tk.Label(header_lab, text=field)
             split_col_label.grid(row=0, column = index + 1)
 
-        for index, field in enumerate(self.table_top.get_header()): #Rows
-            split_row_label = tk.Label(self.header_lab, text=field)
-            self.split_col_tab.append({"field": field, "separator": None, "leftName": None, "rightName": None})
-            for j, item in enumerate(self.split_params): #Columns
+        for index, field in enumerate(self.table.get_header()): #Rows
+            split_row_label = tk.Label(header_lab, text=field)
+            self.split_col_tab.append({"field": field, "delimiter": None, "leftName": None, "rightName": None})
+            for j, item in enumerate(split_params): #Columns
                 split_row_label.grid(row=index+1, column=0, sticky="E")
-                split_col_data = tk.Entry(self.header_lab)
+                split_col_data = tk.Entry(header_lab)
                 split_col_data.grid(row=index+1, column=j+1)
                 self.split_col_tab[index][item] = split_col_data
 
+
     def get_split_data(self):
+        self.config["splitColumns"] = []
         for field in self.split_col_tab:
-            if all([field['separator'].get(), field['leftName'].get(), field['rightName'].get()]):
+            if all([field['delimiter'].get(), field['leftName'].get(), field['rightName'].get()]):
                 if field['field'] not in [item['field'] for item in self.config['splitColumns']]:
                     self.config['splitColumns'].append(
                                             {"field": field['field'],
-                                             "separator": field['separator'].get(),
+                                             "delimiter": field['delimiter'].get(),
                                              "leftName": field['leftName'].get(),
                                              "rightName": field['rightName'].get()})
+    
+
+
+    def column_shuffle(self):
+        for widget in self.frame2.winfo_children():
+            widget.destroy()
+        self.frame2.pack()
+        self.header_lab = ttk.LabelFrame(self.frame2, text = "Columns OUT")
+        self.header_lab.grid(column = 0, row =9, padx = 2, pady = 2, sticky='W')
+        split_params = ["find", "replace", "keep column", "rename column"] 
+
+        for index, field in enumerate(split_params):
+            col_label = tk.Label(self.header_lab, text=field)
+            col_label.grid(row=0, column = index + 1)
+
+        for index, field in enumerate(self.table.get_header()): #Rows
+            row_label = tk.Label(self.header_lab, text=field)
+            self.column_shuffle_tab.append({"field": field, "find": None, "replace": None})
+            for j, item in enumerate(split_params): #Columns
+                row_label.grid(row=index+1, column=0, sticky="E")
+                col_data = tk.Entry(self.header_lab)
+                col_data.grid(row=index+1, column=j+1)
+                self.column_shuffle_tab[index][item] = col_data
 
 
 
+    def header_rename(self):
+        self.header_lab = ttk.LabelFrame(self.frame, text = "Headers")
+        self.header_lab.grid(column = 0, row =10, padx = 2, pady = 2, sticky='W')
+
+    def keep_cols(self):
+        pass
+
+    def md5(self):
+        pass
+
+
+def set_var_from_dict(dictionary, var_name, default):
+    return dictionary[var_name] if var_name in dictionary else default
 
         
 
