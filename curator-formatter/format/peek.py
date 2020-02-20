@@ -4,13 +4,10 @@ import os
 from tabulate import tabulate
 
 
-def peek(file, num_lines=10):
+def peek(file, num_lines=10, sep='\s+', ignore='#'):
     filename, file_extension = os.path.splitext(file)
-    sep = '\s+'
-    if file_extension == '.csv':
-        sep = ','
     df = pd.read_csv(file, sep=sep, dtype=str, 
-                    index_col=False, error_bad_lines=False, 
+                    comment=ignore, error_bad_lines=False, 
                     warn_bad_lines=True, nrows=num_lines,
                     na_filter=False)
     return tabulate(df, headers='keys', tablefmt='psql', showindex=False)

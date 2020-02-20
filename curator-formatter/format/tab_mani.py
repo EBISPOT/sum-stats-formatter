@@ -3,22 +3,19 @@ import json
 import os
 import hashlib
 import pathlib
+from tabulate import tabulate
 import format.peek as sspk
 import format.split_column as sssp
 import dask.dataframe as dd
-import pandas as pd
 from format.utils import header_mapper
 
 
 class Table():
-    def __init__(self, file, outfile_prefix, field_sep, 
-            remove_starting, keep_cols, header_mapping):
+    def __init__(self, file, outfile_prefix, field_sep, remove_starting):
         self.file = file
         self.outfile_prefix = outfile_prefix
         self.field_sep = field_sep
         self.ignore_pattern = remove_starting
-        self.keep_cols = keep_cols
-        self.header_mapping = header_mapping
         self.field_names = []
 
     def get_extension(self):
@@ -36,12 +33,20 @@ class Table():
         return self.header
         
     def dask_df(self):
-        self.dd = dd.read_csv(self.file, 
+        if self.ignore_pattern:
+            self.dd = dd.read_csv(self.file, 
                 comment=self.ignore_pattern, 
                 sep=self.field_sep, 
                 dtype=str, 
                 error_bad_lines=False, 
                 warn_bad_lines=True)
+        else:
+            self.dd = dd.read_csv(self.file, 
+                sep=self.field_sep, 
+                dtype=str, 
+                error_bad_lines=False, 
+                warn_bad_lines=True)
+
 
     def fill_blanks_with_na(self):
         self.dd = self.dd.replace('', 'NA')
@@ -61,7 +66,6 @@ class Table():
                 na_rep="NA", 
                 index=False, 
                 single_file=True)
-
 
     def split_column(self, field, delimiter, left_name, right_name):
         self.dd = sssp.split_field(df=self.dd, 
@@ -122,6 +126,9 @@ class Table():
         keep_cols = [c for c in keep_cols if c in self.get_header()]
         self.dd = self.dd[keep_cols]
 
+    def peek(self):
+        return tabulate(self.dd.head(10), headers='keys', tablefmt='psql', showindex=False)
+
 
 def parse_config(json_config):
     try:
@@ -130,8 +137,6 @@ def parse_config(json_config):
             config["outFilePrefix"] = set_var_from_dict(config, "outFilePrefix", "formatted_") 
             config["separator"] = set_var_from_dict(config, "separator", "\s+") 
             config["removeLinesStarting"] = set_var_from_dict(config, "removeLinesStarting", "#") 
-            config["keepColumns"] = set_var_from_dict(config, "keepColumns", None) 
-            config["headerRename"] = set_var_from_dict(config, "headerRename", None) 
             return config
     except FileNotFoundError:
         print("JSON config: {} was not found".format(json_config))
@@ -159,16 +164,17 @@ def main():
     #                        action='store_true', default='store_false')
     argparser.add_argument('-config', help='The name of the configuration file')
     args = argparser.parse_args()
+
     config = {}
     print("-------------- File in --------------")
     print(sspk.peek(args.f))
+
     if not args.config:
         print("no configuration provided")
     else:
         config = parse_config(args.config)
         table = Table(args.f, config["outFilePrefix"], 
-                config["separator"], config["removeLinesStarting"], 
-                config["keepColumns"], config["headerRename"])
+                config["separator"], config["removeLinesStarting"])
         table.dask_df()
         table.field_names.extend(table.get_header())
 
@@ -201,7 +207,7 @@ def main():
             md5_outfile = table.outfile_name + '.md5'
             with open(md5_outfile, 'w') as f:
                 f.write(md5)
-        
+
         print("-------------- File out --------------")
         print(sspk.peek(table.outfile_name))
 
