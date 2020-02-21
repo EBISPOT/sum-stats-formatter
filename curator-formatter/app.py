@@ -6,14 +6,56 @@ import pathlib
 import format.tab_mani as tabmani
  
  
- 
+
+class ScrolledFrame(tk.Frame):
+
+    def __init__(self, parent, vertical=True, horizontal=False):
+        super().__init__(parent)
+
+        # canvas for inner frame
+        self._canvas = tk.Canvas(self)
+        self._canvas.grid(row=0, column=0, sticky='news') # changed
+
+        # create right scrollbar and connect to canvas Y
+        self._vertical_bar = tk.Scrollbar(self, orient='vertical', command=self._canvas.yview)
+        if vertical:
+            self._vertical_bar.grid(row=0, column=1, sticky='ns')
+        self._canvas.configure(yscrollcommand=self._vertical_bar.set)
+
+        # create bottom scrollbar and connect to canvas X
+        self._horizontal_bar = tk.Scrollbar(self, orient='horizontal', command=self._canvas.xview)
+        if horizontal:
+            self._horizontal_bar.grid(row=1, column=0, sticky='we')
+        self._canvas.configure(xscrollcommand=self._horizontal_bar.set)
+
+        # inner frame for widgets
+        self.inner = tk.Frame(self._canvas, bg='red')
+        self._window = self._canvas.create_window((0, 0), window=self.inner, anchor='nw')
+
+        # autoresize inner frame
+        self.columnconfigure(0, weight=1) # changed
+        self.rowconfigure(0, weight=1) # changed
+
+        # resize when configure changed
+        self.inner.bind('<Configure>', self.resize)
+        self._canvas.bind('<Configure>', self.frame_width)
+
+    def frame_width(self, event):
+        # resize inner frame to canvas size
+        canvas_width = event.width
+        self._canvas.itemconfig(self._window, width = canvas_width)
+
+    def resize(self, event=None): 
+        self._canvas.configure(scrollregion=self._canvas.bbox('all'))
+
+
 class Home:
     def __init__(self, master):
         self.master = master
         self.frame = tk.Frame(self.master)
         self.frame2 = tk.Frame(self.master)
-        self.master.title("Table Manipulator")
-        self.master.wm_iconbitmap('icon.ico')
+        #self.master.title("Table Manipulator")
+        #self.master.wm_iconbitmap('icon.ico')
  
         self.file_browse_lab = ttk.LabelFrame(self.frame, text = "Select a sumstats file")
         self.file_browse_lab.grid(column = 0, row = 1, padx = 2, pady = 2, sticky='W')
@@ -34,7 +76,7 @@ class Home:
 
         self.split_lab = ttk.LabelFrame(self.frame, text = "Column splits")
         self.split_lab.grid(column = 0, row = 8, padx = 2, pady = 2, sticky='W')
-        self.frame.pack()
+        self.frame.pack(fill=tk.X)
         self.split_col_tab = []
         self.column_shuffle_tab =[]
         self.config = {"outFilePrefix":"formatted_",
@@ -66,7 +108,6 @@ class Home:
     def ignore_pattern(self):
         self.ignore_pattern = tk.Entry(self.ignore_pattern_lab, width=1)
         self.ignore_pattern.grid(column = 0, row = 7, sticky="W")
-
         
     def file_button(self):
         self.file_button = ttk.Button(self.file_browse_lab, text = "Select a file", command = self.fileDialog)
@@ -140,7 +181,7 @@ class Home:
             self.split_col_tab.append({"field": field, "delimiter": None, "leftName": None, "rightName": None})
             for j, item in enumerate(split_params): #Columns
                 split_row_label.grid(row=index+1, column=0, sticky="E")
-                split_col_data = tk.Entry(header_lab)
+                split_col_data = tk.Entry(header_lab, width=12)
                 split_col_data.grid(row=index+1, column=j+1)
                 self.split_col_tab[index][item] = split_col_data
 
@@ -156,15 +197,12 @@ class Home:
                                              "leftName": field['leftName'].get(),
                                              "rightName": field['rightName'].get()})
     
-
-
     def column_shuffle(self):
         for widget in self.frame2.winfo_children():
             widget.destroy()
-        self.frame2.pack()
         self.header_lab = ttk.LabelFrame(self.frame2, text = "Columns OUT")
         self.header_lab.grid(column = 0, row =9, padx = 2, pady = 2, sticky='W')
-        split_params = ["find", "replace", "keep column", "rename column"] 
+        split_params = ["find", "replace", "keep", "rename"] 
 
         for index, field in enumerate(split_params):
             col_label = tk.Label(self.header_lab, text=field)
@@ -175,9 +213,10 @@ class Home:
             self.column_shuffle_tab.append({"field": field, "find": None, "replace": None})
             for j, item in enumerate(split_params): #Columns
                 row_label.grid(row=index+1, column=0, sticky="E")
-                col_data = tk.Entry(self.header_lab)
+                col_data = tk.Entry(self.header_lab, width=9)
                 col_data.grid(row=index+1, column=j+1)
                 self.column_shuffle_tab[index][item] = col_data
+        self.frame2.pack(fill=tk.X)
 
 
 
@@ -195,27 +234,16 @@ class Home:
 def set_var_from_dict(dictionary, var_name, default):
     return dictionary[var_name] if var_name in dictionary else default
 
-        
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
 
 
 def main(): 
     root = tk.Tk()
-    app = Home(root)
-    root.mainloop()
+    window = ScrolledFrame(root)
+    window.pack(expand=True, fill='both')
+    Home(window.inner)
+    root.mainloop() 
+    
+
 
 if __name__ == '__main__':
     main()
