@@ -84,9 +84,7 @@ class Home:
                        "fieldSeparator":"\t",
                        "removeLinesStarting":"#",
                        "splitColumns": [],
-                       "keepColumns": [],
-                       "findAndReplaceValue": [],
-                       "headerRename": []}
+                       "columnConfig": []}
 
     def outfile_prefix(self):
         self.outfile_prefix = tk.Entry(self.outfile_prefix_lab, width=20)
@@ -142,6 +140,7 @@ class Home:
 
     def perform_peek(self):
         self.get_split_data()
+        self.get_col_shuffle_data()
         print(self.config)
         self.tablegen()
         if self.table:
@@ -151,7 +150,7 @@ class Home:
             if splits:
                 if self.table.check_split_name_clashes(splits):
                     self.table.perform_splits(splits)
-            self.column_shuffle()
+            self.reset_column_shuffle()
             print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
             print(self.table.peek())
         
@@ -196,10 +195,27 @@ class Home:
                                              "delimiter": field['delimiter'].get(),
                                              "leftName": field['leftName'].get(),
                                              "rightName": field['rightName'].get()})
-    
-    def column_shuffle(self):
+
+    def get_col_shuffle_data(self):
+        self.config["columnConfig"] = []        
+        for field in self.column_shuffle_tab:
+            if field['field'] not in [item['field'] for item in self.config['columnConfig']]:
+                self.config['columnConfig'].append(
+                                            {"field": field['field'],
+                                             "find": field['find'].get(),
+                                             "replace": field['replace'].get(),
+                                             "keep": field['keep'].get(),
+                                             "rename": field['rename'].get()}) 
+
+
+    def reset_column_shuffle(self):
         for widget in self.frame2.winfo_children():
             widget.destroy()
+        self.column_shuffle_tab = []
+        self.column_shuffle()
+
+
+    def column_shuffle(self):
         self.header_lab = ttk.LabelFrame(self.frame2, text = "Columns OUT")
         self.header_lab.grid(column = 0, row =9, padx = 2, pady = 2, sticky='W')
         split_params = ["find", "replace", "keep", "rename"] 
@@ -210,11 +226,16 @@ class Home:
 
         for index, field in enumerate(self.table.get_header()): #Rows
             row_label = tk.Label(self.header_lab, text=field)
-            self.column_shuffle_tab.append({"field": field, "find": None, "replace": None})
+            self.column_shuffle_tab.append({"field": field, "find": None, "replace": None, "keep": None, "rename": None})
+            # get existing values from config
+            field_config = next((i for i in self.config["columnConfig"] if i["field"] == field), None)
             for j, item in enumerate(split_params): #Columns
                 row_label.grid(row=index+1, column=0, sticky="E")
                 col_data = tk.Entry(self.header_lab, width=9)
                 col_data.grid(row=index+1, column=j+1)
+                if field_config:
+                    if item in field_config:
+                        col_data.insert(0, field_config[item])
                 self.column_shuffle_tab[index][item] = col_data
         self.frame2.pack(fill=tk.X)
 
