@@ -141,6 +141,7 @@ class Home:
     def perform_peek(self):
         self.get_split_data()
         self.get_col_shuffle_data()
+        print("\n>>>>>>>>>>>>>>>>>>>>> config <<<<<<<<<<<<<<<<<<<<<")
         print(self.config)
         self.tablegen()
         if self.table:
@@ -150,9 +151,48 @@ class Home:
             if splits:
                 if self.table.check_split_name_clashes(splits):
                     self.table.perform_splits(splits)
+            column_config = set_var_from_dict(self.config, 'columnConfig', None)
+            if column_config:
+                find_replace = []
+                for field in column_config:
+                    if "find" and "replace" in field:
+                        find_replace.append(field)
+                if find_replace:
+                    if self.table.check_f_and_r_fields(find_replace):
+                        self.table.perform_find_replacements(find_replace)
+                header_rename = {}
+                for field in column_config:
+                    if "rename" in field:
+                        if field["rename"]:
+                            header_rename[field["field"]] = field["rename"]
+                if header_rename:
+                    self.table.perform_header_rename(header_rename)
+                keep_cols = []
+                for field in column_config:
+                    if "keep" in field:
+                        if field["keep"]:
+                            field_name = field["rename"] if "rename" in field else field["field"]
+                            keep_cols.append(field_name)
+                if keep_cols:
+                    self.table.perform_keep_cols(keep_cols)
+
+                print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
+                print(self.table.peek()) 
+                # need to reset fields so they stay in view
+                header_rename = {}
+                for field in column_config:
+                    if "rename" in field:
+                        if field["rename"]:
+                            header_rename[field["rename"]] = field["field"]
+                if header_rename:
+                    self.table.perform_header_rename(header_rename)
+                self.table.perform_keep_cols(self.table.get_header())
+            else:
+                print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
+                print(self.table.peek()) 
+
             self.reset_column_shuffle()
-            print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
-            print(self.table.peek())
+
         
 
     def tablegen(self):
