@@ -173,8 +173,7 @@ def main():
         print("no configuration provided")
     else:
         config = parse_config(args.config)
-        table = Table(args.f, config["outFilePrefix"], 
-                config["separator"], config["removeLinesStarting"])
+        table = Table(args.f, config["outFilePrefix"], config["separator"], config["removeLinesStarting"])
         table.dask_df()
         table.field_names.extend(table.get_header())
 
@@ -185,18 +184,31 @@ def main():
                 table.perform_splits(splits)
 
         #find and replace
-        find_replace = set_var_from_dict(config, 'findAndReplaceValue', None)
+        find_replace = []
+        column_config = set_var_from_dict(config, 'columnConfig', None)
+        for field in column_config:
+            if "find" and "replace" in field:
+                find_replace.append(field)
         if find_replace:
             if table.check_f_and_r_fields(find_replace):
                 table.perform_find_replacements(find_replace)
 
         #rename columns
-        header_rename = set_var_from_dict(config, 'headerRename', None)
+        header_rename = {}
+        for field in column_config:
+            if "rename" in field:
+                header_rename[field["field"]] = field["rename"]
         if header_rename:
+            print(header_rename)
             table.perform_header_rename(header_rename)
 
         #keep cols
-        keep_cols = set_var_from_dict(config, 'keepColumns', None)
+        keep_cols = []
+        for field in column_config:
+            if "keep" in field:
+                if field["keep"]:
+                    field_name = field["rename"] if "rename" in field else field["field"]
+                    keep_cols.append(field_name)
         if keep_cols:
             table.perform_keep_cols(keep_cols)
         table.to_csv()

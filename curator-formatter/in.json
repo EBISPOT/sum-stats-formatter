@@ -1,7 +1,5 @@
 { 
-   "files":"testfile*.tsv.gz",
    "outFilePrefix":"formatted_",
-   "concatenateFiles":"False",
    "md5":"True",
    "fieldSeparator":"\t",
    "removeLinesStarting":"#",
@@ -19,36 +17,31 @@
          "rightName":"snp3"
       }
    ],
-   "findAndReplaceValue":[ 
+   "columnConfig":[ 
       { 
          "field":"chromosome",
          "find":"CHR|chr|-|_",
-         "replace":""
+         "replace":"",
+         "keep":"True"
       },
       { 
          "field":"variant_id",
          "find":"^((?!^rs[0-9]*$).)*$",
-         "replace":""
+         "replace":"",
+         "rename":"snippy",
+         "keep":"True"
       },
       { 
-         "field":"chr",
-         "find":"^((?!^rs[0-9]*$).)*$",
-         "replace":""
-      }
-   ],
-   "headerRename": { 
-         "chr": "chrom",
-         "snp0": "variant",
-         "bp": "base_pair_location",
-         "p_value":"pval",
-         "p-value": "p_value"
+         "field":"effect_allele",
+         "keep":"True"
       },
-   "keepColumns":[ 
-      "chromosome",
-      "base_pair_location",
-      "p_value",
-      "effect_allele",
-      "beta",
-      "variant_id"
+      { 
+         "field":"beta",
+         "keep":"True"
+      },
+      { 
+         "field":"pval",
+         "keep":"False"
+      }
    ]
 }
