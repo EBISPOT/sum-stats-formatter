@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+import sys
 import re
 import pathlib
+import json
 import format.tab_mani as tabmani
  
  
@@ -13,7 +15,7 @@ class ScrolledFrame(tk.Frame):
         super().__init__(parent)
 
         # canvas for inner frame
-        self._canvas = tk.Canvas(self)
+        self._canvas = tk.Canvas(self, width=640, height=400)
         self._canvas.grid(row=0, column=0, sticky='news') # changed
 
         # create right scrollbar and connect to canvas Y
@@ -29,7 +31,7 @@ class ScrolledFrame(tk.Frame):
         self._canvas.configure(xscrollcommand=self._horizontal_bar.set)
 
         # inner frame for widgets
-        self.inner = tk.Frame(self._canvas, bg='red')
+        self.inner = tk.Frame(self._canvas)
         self._window = self._canvas.create_window((0, 0), window=self.inner, anchor='nw')
 
         # autoresize inner frame
@@ -57,7 +59,7 @@ class Home:
         #self.master.title("Table Manipulator")
         #self.master.wm_iconbitmap('icon.ico')
  
-        self.file_browse_lab = ttk.LabelFrame(self.frame, text = "Select a sumstats file")
+        self.file_browse_lab = ttk.LabelFrame(self.frame, text = "Select a tabular file")
         self.file_browse_lab.grid(column = 0, row = 1, padx = 2, pady = 2, sticky='W')
 
         self.file_button()
@@ -82,9 +84,10 @@ class Home:
         self.config = {"outFilePrefix":"formatted_",
                        "md5":"True",
                        "fieldSeparator":"\t",
-                       "removeLinesStarting":"#",
+                       "removeComments":"#",
                        "splitColumns": [],
                        "columnConfig": []}
+
 
     def outfile_prefix(self):
         self.outfile_prefix = tk.Entry(self.outfile_prefix_lab, width=20)
@@ -112,7 +115,7 @@ class Home:
         self.file_button.grid(column = 0, row = 2, sticky="W")
 
     def fileDialog(self):
-        self.filename = filedialog.askopenfilename(initialdir =  "/", title = "Select a file")
+        self.filename = filedialog.askopenfilename(initialdir =  "/", title = "Specify a file")
         self.label = ttk.Label(self.file_browse_lab, text = "")
         self.label.grid(column = 1, row = 2, sticky="W")
         self.label.configure(text = pathlib.Path(self.filename).name)
@@ -120,6 +123,7 @@ class Home:
         self.tablegen()
         self.split_cols()
         self.column_shuffle()
+        self.apply_config_button()
 
     def set_table_params(self):
         self.prefix = self.outfile_prefix.get() if self.outfile_prefix.get() else "formatted_"
@@ -139,10 +143,11 @@ class Home:
         self.preview_button.grid(column = 3, row = 1, sticky="E")
 
     def perform_peek(self):
+        self.get_options_data()
         self.get_split_data()
         self.get_col_shuffle_data()
         print("\n>>>>>>>>>>>>>>>>>>>>> config <<<<<<<<<<<<<<<<<<<<<")
-        print(self.config)
+        print(json.dumps(self.config, sort_keys=True, indent=4))
         self.tablegen()
         if self.table:
             self.table.field_names.extend(self.table.get_header())
@@ -158,8 +163,7 @@ class Home:
                     if "find" and "replace" in field:
                         find_replace.append(field)
                 if find_replace:
-                    if self.table.check_f_and_r_fields(find_replace):
-                        self.table.perform_find_replacements(find_replace)
+                    self.table.perform_find_replacements(find_replace)
                 header_rename = {}
                 for field in column_config:
                     if "rename" in field:
@@ -171,13 +175,11 @@ class Home:
                 for field in column_config:
                     if "keep" in field:
                         if field["keep"]:
-                            field_name = field["rename"] if "rename" in field else field["field"]
+                            field_name = field["rename"] if "rename" in field and len(field["rename"]) > 0 else field["field"]
                             keep_cols.append(field_name)
-                if keep_cols:
-                    self.table.perform_keep_cols(keep_cols)
 
-                print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
-                print(self.table.peek()) 
+                print("\n>>>>>>>>>>>>>>>>>>>>> Table preview <<<<<<<<<<<<<<<<<<<<<")
+                print(self.table.peek(keep_cols))
                 # need to reset fields so they stay in view
                 header_rename = {}
                 for field in column_config:
@@ -186,13 +188,13 @@ class Home:
                             header_rename[field["rename"]] = field["field"]
                 if header_rename:
                     self.table.perform_header_rename(header_rename)
+
                 self.table.perform_keep_cols(self.table.get_header())
             else:
-                print("\n>>>>>>>>>>>>>>>>>>>>> File preview <<<<<<<<<<<<<<<<<<<<<")
-                print(self.table.peek()) 
+                print("\n>>>>>>>>>>>>>>>>>>>>> Table preview <<<<<<<<<<<<<<<<<<<<<")
+                print(self.table.peek())
 
             self.reset_column_shuffle()
-
         
 
     def tablegen(self):
@@ -244,8 +246,14 @@ class Home:
                                             {"field": field['field'],
                                              "find": field['find'].get(),
                                              "replace": field['replace'].get(),
-                                             "keep": field['keep'].get(),
-                                             "rename": field['rename'].get()}) 
+                                             "keep": field['keep'].var.get(),
+                                             "rename": field['rename'].get()})
+
+    def get_options_data(self):
+        self.config["outFilePrefix"] = self.outfile_prefix.get() if self.outfile_prefix else "formatted_"
+        #self.config["md5"] = self.md5.get() if self.md5 else True
+        self.config["fieldSeparator"] = self.field_sep_val.get() if self.field_sep_val else "\s+"
+        self.config["removeComments"] = self.ignore_pattern.get() if self.ignore_pattern else None
 
 
     def reset_column_shuffle(self):
@@ -271,34 +279,49 @@ class Home:
             field_config = next((i for i in self.config["columnConfig"] if i["field"] == field), None)
             for j, item in enumerate(split_params): #Columns
                 row_label.grid(row=index+1, column=0, sticky="E")
-                col_data = tk.Entry(self.header_lab, width=9)
+                if item == 'keep':
+                    v = tk.BooleanVar()
+                    col_data = tk.Checkbutton(self.header_lab, onvalue=True, offvalue=False, variable=v)
+                    col_data.var = v
+                    col_data.select()
+                else:
+                    col_data = tk.Entry(self.header_lab, width=9)
                 col_data.grid(row=index+1, column=j+1)
                 if field_config:
                     if item in field_config:
-                        col_data.insert(0, field_config[item])
+                        if item == 'keep':
+                            col_data.deselect() if not field_config[item] else col_data.select()
+                        else:
+                            col_data.insert(0, field_config[item])
                 self.column_shuffle_tab[index][item] = col_data
         self.frame2.pack(fill=tk.X)
-
 
 
     def header_rename(self):
         self.header_lab = ttk.LabelFrame(self.frame, text = "Headers")
         self.header_lab.grid(column = 0, row =10, padx = 2, pady = 2, sticky='W')
 
-    def keep_cols(self):
-        pass
 
-    def md5(self):
-        pass
+    def apply_config_button(self):
+        self.apply_config_button = ttk.Button(self.frame, text = "Apply config", command = self.apply_config)
+        self.apply_config_button.grid(column = 3, row = 2, sticky="E")
 
+    def apply_config(self):
+        print("File to format: {}\nConfig: {}\n>>>> formatting...".format(str(self.table.file), str(json.dumps(self.config, sort_keys=True, indent=4))))
+        tabmani.apply_config_to_file(self.filename, self.config)
+        self.table.set_outfile_name()
+        print("Formatted file written to >>>> {}".format(str(self.table.outfile_name)))
+        sys.exit()
+                
+       
 
 def set_var_from_dict(dictionary, var_name, default):
     return dictionary[var_name] if var_name in dictionary else default
 
 
-
 def main(): 
     root = tk.Tk()
+    root.title("Table Manipulator")
     window = ScrolledFrame(root)
     window.pack(expand=True, fill='both')
     Home(window.inner)

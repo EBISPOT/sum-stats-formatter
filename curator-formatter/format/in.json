@@ -19,11 +19,13 @@
       "beta",
       "eaf"
    ],
-   "findAndReplaceValue":[ 
+   "columnConfig":[ 
       { 
          "field":"chr",
          "find":"CHR|chr|-|_",
-         "replace":""
+         "replace":"",
+         "keep": "True",
+         "rename":"chromsome"
       }
    ],
    "headerRename":[ 

@@ -5,12 +5,11 @@ from tabulate import tabulate
 
 
 def peek(file, num_lines=10, sep='\s+', ignore='#'):
-    filename, file_extension = os.path.splitext(file)
     df = pd.read_csv(file, sep=sep, dtype=str, 
                     comment=ignore, error_bad_lines=False, 
                     warn_bad_lines=True, nrows=num_lines,
                     na_filter=False)
-    return tabulate(df, headers='keys', tablefmt='psql', showindex=False)
+    return tabulate(df, headers='keys', tablefmt="fancy_grid", disable_numparse=True, showindex=False)
 
 
 def main():
