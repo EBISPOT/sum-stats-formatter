@@ -7,8 +7,12 @@ from tabulate import tabulate
 import format.peek as sspk
 import format.split_column as sssp
 import dask.dataframe as dd
+from dask.diagnostics import ProgressBar
+import pandas as pd
 from format.utils import header_mapper
 
+pbar = ProgressBar()
+pbar.register()
 
 class Table():
     def __init__(self, file, outfile_prefix, field_sep, remove_starting):
@@ -46,6 +50,22 @@ class Table():
                 dtype=str, 
                 error_bad_lines=False, 
                 warn_bad_lines=True)
+
+
+    def partial_df(self, nrows=10):
+        if self.ignore_pattern:
+            self.dd = pd.read_csv(self.file, 
+                comment=self.ignore_pattern, 
+                sep=self.field_sep, 
+                dtype=str, 
+                error_bad_lines=False, 
+                warn_bad_lines=True, nrows=nrows)
+        else:
+            self.dd = pd.read_csv(self.file, 
+                sep=self.field_sep, 
+                dtype=str, 
+                error_bad_lines=False, 
+                warn_bad_lines=True, nrows=nrows)
 
 
     def fill_blanks_with_na(self):
