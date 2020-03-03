@@ -1,5 +1,3 @@
-import h5py
-
 SNP_DSET = 'variant_id'
 MANTISSA_DSET = 'mantissa'
 EXP_DSET = 'exponent'

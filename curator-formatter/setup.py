@@ -1,26 +1,27 @@
 from distutils.core import setup
 
 setup(
-    name='format',
+    name='ss-format',
     version='0.1-SNAPSHOT',
     packages=['format'],
     entry_points={
-        "console_scripts": ['peek = format.peek:main',
-                            'format = format.automatic_formatting:main',
-                            'rename = format.rename_header:main',
-                            'merge = format.merge_columns:main',
-                            'clean = format.clean_column:main',
-                            'split = format.split_column:main',
-                            'swap = format.swap_columns:main',
-                            'allele-swap = format.allele_swap:main',
-                            'help-ss = format.help:main',
-                            'valid-headers = format.show_known_headers:main',
-                            'rename-file = format.rename_filename:main',
-                            'compress = format.compress_file:main',
-                            'delete = format.delete_columns:main']
+        "console_scripts": ['ss-peek = format.peek:main',
+                            'ss-format = format.automatic_formatting:main',
+                            'ss-rename = format.rename_header:main',
+                            'ss-merge = format.merge_columns:main',
+                            'ss-clean = format.clean_column:main',
+                            'ss-split = format.split_column:main',
+                            'ss-swap = format.swap_columns:main',
+                            'ss-allele-swap = format.allele_swap:main',
+                            'ss-help-ss = format.help:main',
+                            'ss-valid-headers = format.show_known_headers:main',
+                            'ss-rename-file = format.rename_filename:main',
+                            'ss-compress = format.compress_file:main',
+                            'ss-delete = format.delete_columns:main',
+                            'ss-concat = format.cat_files:main',
+                            'tabman = format.tab_man:main']
     },
-    url='https://github.com/EBISPOT/SumStats',
+    url='https://github.com/EBISPOT/sum-stats-formatter',
     license='',
-    author='Olga Vrousgou',
-    author_email='olgavrou@gmail.com',
+    install_requires=['tqdm', 'pandas', 'numpy']
 )
