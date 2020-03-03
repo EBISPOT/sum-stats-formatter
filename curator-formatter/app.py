@@ -7,7 +7,6 @@ import pathlib
 import json
 import format.tab_mani as tabmani
  
- 
 
 class ScrolledFrame(tk.Frame):
 
@@ -203,7 +202,7 @@ class Home:
                                self.prefix, 
                                self.sep, 
                                self.comment)
-            self.table.dask_df()
+            self.table.partial_df()
             return True
         return False
 
@@ -307,6 +306,10 @@ class Home:
         self.apply_config_button.grid(column = 3, row = 2, sticky="E")
 
     def apply_config(self):
+        self.get_options_data()
+        self.get_split_data()
+        self.get_col_shuffle_data()
+
         print("File to format: {}\nConfig: {}\n>>>> formatting...".format(str(self.table.file), str(json.dumps(self.config, sort_keys=True, indent=4))))
         tabmani.apply_config_to_file(self.filename, self.config)
         self.table.set_outfile_name()
