@@ -19,7 +19,7 @@ setup(
                             'ss-compress = format.compress_file:main',
                             'ss-delete = format.delete_columns:main',
                             'ss-concat = format.cat_files:main',
-                            'tabmani = format.tab_mani:main']
+                            'tabman = format.tab_man:main']
     },
     url='https://github.com/EBISPOT/sum-stats-formatter',
     license='',

@@ -5,7 +5,7 @@ import sys
 import re
 import pathlib
 import json
-import format.tab_mani as tabmani
+import format.tab_man as tabman
  
 
 class ScrolledFrame(tk.Frame):
@@ -198,7 +198,7 @@ class Home:
 
     def tablegen(self):
         if self.set_table_params():
-            self.table = tabmani.Table(self.filename, 
+            self.table = tabman.Table(self.filename, 
                                self.prefix, 
                                self.sep, 
                                self.comment)
@@ -311,7 +311,7 @@ class Home:
         self.get_col_shuffle_data()
 
         print("File to format: {}\nConfig: {}\n>>>> formatting...".format(str(self.table.file), str(json.dumps(self.config, sort_keys=True, indent=4))))
-        tabmani.apply_config_to_file(self.filename, self.config)
+        tabman.apply_config_to_file(self.filename, self.config)
         self.table.set_outfile_name()
         print("Formatted file written to >>>> {}".format(str(self.table.outfile_name)))
         sys.exit()
