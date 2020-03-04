@@ -1,4 +1,4 @@
-dask[dataframe]
+dask[dataframe]==2.10.0
 fsspec==0.6.2
 locket==0.2.0
 memory-profiler==0.57.0
