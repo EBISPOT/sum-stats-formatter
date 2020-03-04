@@ -22,6 +22,5 @@ setup(
                             'tabman = format.tab_man:main']
     },
     url='https://github.com/EBISPOT/sum-stats-formatter',
-    license='',
-    install_requires=['tqdm', 'pandas', 'numpy']
+    license=''
 )
