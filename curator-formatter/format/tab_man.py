@@ -8,9 +8,15 @@ import format.peek as sspk
 import format.split_column as sssp
 import format.tab_man_gui as tmg
 import dask.dataframe as dd
+from dask_jobqueue import LSFCluster
+from dask.distributed import Client
 from dask.diagnostics import ProgressBar
 import pandas as pd
 from format.utils import header_mapper
+
+cluster = LSFCluster()
+cluster.scale(8)
+client = Client(cluster)
 
 pbar = ProgressBar()
 pbar.register()
