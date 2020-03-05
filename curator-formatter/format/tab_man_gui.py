@@ -328,11 +328,13 @@ class Home:
         config_out = self.filename + ".tabman_config.json"
         with open(config_out, "w") as f:
             json.dump(self.config, f)
-        sub = bsub("gwas_ss_format", M="12000", R="rusage[mem=12000]", N="", verbose=True)
+        sub = bsub("gwas_ss_format", M="24000", R="rusage[mem=24000]", N="")
         command = "tabman -f {} -config {}".format(self.filename, config_out)
         print(">>>> Submitting job to cluster, job id below")
         print(sub(command).job_id)
-        print("You will receive an email when the job is finished")
+        print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear
+                in the same directory as the input file. ")
+        sys.exit()
                 
        
 
