@@ -330,9 +330,9 @@ class Home:
             json.dump(self.config, f)
         sub = bsub("command", M="12000", R="rusage[mem=12000]", verbose=True)
         command = "tabman -f {} -config {}".format(self.filename, config_out)
-        print(">>>> Submitting job to cluster, job id:"
+        print(">>>> Submitting job to cluster, job id:")
         print(sub(command).job_id)
-        print("You will receive an email when the job is finished"
+        print("You will receive an email when the job is finished")
                 
        
 
