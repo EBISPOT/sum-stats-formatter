@@ -4,6 +4,7 @@ from tkinter import filedialog
 import sys
 import re
 import pathlib
+from bsub import bsub
 import json
 import format.tab_man as tabman
  
@@ -123,6 +124,7 @@ class Home:
         self.split_cols()
         self.column_shuffle()
         self.apply_config_button()
+        self.apply_config_bsub_button()
 
     def set_table_params(self):
         self.prefix = self.outfile_prefix.get() if self.outfile_prefix.get() else "formatted_"
@@ -300,7 +302,6 @@ class Home:
         self.header_lab = ttk.LabelFrame(self.frame, text = "Headers")
         self.header_lab.grid(column = 0, row =10, padx = 2, pady = 2, sticky='W')
 
-
     def apply_config_button(self):
         self.apply_config_button = ttk.Button(self.frame, text = "Apply config", command = self.apply_config)
         self.apply_config_button.grid(column = 3, row = 2, sticky="E")
@@ -309,12 +310,29 @@ class Home:
         self.get_options_data()
         self.get_split_data()
         self.get_col_shuffle_data()
-
         print("File to format: {}\nConfig: {}\n>>>> formatting...".format(str(self.table.file), str(json.dumps(self.config, sort_keys=True, indent=4))))
         tabman.apply_config_to_file(self.filename, self.config)
         self.table.set_outfile_name()
         print("Formatted file written to >>>> {}".format(str(self.table.outfile_name)))
         sys.exit()
+
+    def apply_config_bsub_button(self):
+        self.apply_config_bsub_button = ttk.Button(self.frame, text = "Apply config (send to cluster)", command = self.apply_config_bsub)
+        self.apply_config_bsub_button.grid(column = 3, row = 3, sticky="E")
+
+    def apply_config_bsub(self):
+        self.get_options_data()
+        self.get_split_data()
+        self.get_col_shuffle_data()
+        print("File to format: {}\nConfig: {}".format(str(self.table.file), str(json.dumps(self.config, sort_keys=True, indent=4))))
+        config_out = self.filename + ".tabman_config.json"
+        with open(config_out, "w") as f:
+            json.dump(self.config, f)
+        sub = bsub("command", M="12000", R="rusage[mem=12000]", verbose=True)
+        command = "tabman -f {} -config {}".format(self.filename, config_out)
+        print(">>>> Submitting job to cluster, job id:"
+        print(sub(command).job_id)
+        print("You will receive an email when the job is finished"
                 
        
 
