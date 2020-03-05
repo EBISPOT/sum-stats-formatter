@@ -332,8 +332,7 @@ class Home:
         command = "tabman -f {} -config {}".format(self.filename, config_out)
         print(">>>> Submitting job to cluster, job id below")
         print(sub(command).job_id)
-        print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear
-                in the same directory as the input file. ")
+        print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in the same directory as the input file.")
         sys.exit()
                 
        
