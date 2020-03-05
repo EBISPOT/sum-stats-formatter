@@ -328,9 +328,9 @@ class Home:
         config_out = self.filename + ".tabman_config.json"
         with open(config_out, "w") as f:
             json.dump(self.config, f)
-        sub = bsub("command", M="12000", R="rusage[mem=12000]", verbose=True)
+        sub = bsub("gwas_ss_format", N, M="12000", R="rusage[mem=12000]", verbose=True)
         command = "tabman -f {} -config {}".format(self.filename, config_out)
-        print(">>>> Submitting job to cluster, job id:")
+        print(">>>> Submitting job to cluster, job id below")
         print(sub(command).job_id)
         print("You will receive an email when the job is finished")
                 
