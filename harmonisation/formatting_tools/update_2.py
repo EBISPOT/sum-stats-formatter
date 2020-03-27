@@ -37,31 +37,22 @@ def open_process_file(file, vcf_ref, out_dir, from_build, to_build, chromosomes)
     filename = file.split("/")[-1].split(".")[0]
     path = os.path.dirname(file)
     vcf_df = spark.read.csv(vcf_ref, sep="\t", comment="#", schema=VCF_SCHEMA).select("POS", "ID")
-    ssdf = spark.read.csv(file, sep="\t", header=True)#.withColumn("chrom", pf.concat(pf.lit("chr"), pf.col(CHR_DSET)))
+    ssdf = spark.read.csv(file, sep="\t", header=True)
     ssdf = ssdf.join(vcf_df, (pf.col("ID") == pf.col(SNP_DSET)), how="left")
     mapped_df = ssdf.filter(ssdf["ID"].isNotNull())
     unmapped_df = ssdf.filter(ssdf["ID"].isNull()).withColumn("end", 1 + ssdf[BP_DSET])
-    print(unmapped_df.show(10))
     liftover_expr = "lift_over_coordinates(chromosome, base_pair_location, end, '{chain_file}', .95)".format(chain_file=chain_file)
     lifted_df = unmapped_df.withColumn('lifted', pf.expr(liftover_expr))
-    lifted_df = lifted_df.withColumn("POS", pf.col('lifted.start'))
-    lifted_df = lifted_df.drop("lifted", "end")
+    lifted_df = lifted_df.withColumn("POS", pf.col('lifted.start')).drop("lifted", "end")
 
     
     out_df = mapped_df.union(lifted_df)
+    out_df = out_df.withColumn(BP_DSET, out_df["POS"]).drop("POS", "ID")
     
-    
-    #to_liftover = ssdf.filter(col("ID") == None)    
-    
-    #output_df = glow.transform('lift_over_variants', input_df, )
-    #print("mapped")
-    #print(mapped_df.show(10))
-    #print("unmapped")
-    print(lifted_df.show(10))
     print(out_df.show(10))
 
     outfile = os.path.join(out_dir, filename)
-    out_df.coalesce(1).write.csv(outfile)
+    out_df.coalesce(1).write.csv(outfile, mode="overwrite", sep="\t", header=True, nullValue="NA", emptyValue="NA")
 
     
     # any null POS:
