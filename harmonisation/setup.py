@@ -6,7 +6,7 @@ setup(
     packages=['formatting_tools'],
     entry_points={
         "console_scripts": ['ss-format = formatting_tools.sumstats_formatting:main',
-                            'ss-update-locations = formatting_tools.update_locations:main',
+                            'ss-update-locations = formatting_tools.update_2:main',
                             'ss-chrom-check = formatting_tools.chrom_check:main',
                             'ss-chrom-split = formatting_tools.split_by_chromosome:main',
                             'ss-strand-count = formatting_tools.sum_strand_counts:main',
