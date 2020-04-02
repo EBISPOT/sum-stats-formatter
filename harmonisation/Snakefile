@@ -138,7 +138,7 @@ rule update_locations_from_ensembl:
     shell:
         "filename={wildcards.ss_file}; "
         "from_build=$(echo -n $filename | tail -c 2); "
-        "python ./formatting_tools/update_2.py -f {input.in_ss} "
+        "ss-update-locations -f {input.in_ss} "
         "-vcf {params.local_vcf}homo_sapiens-chr{wildcards.chromosome}.vcf.gz "
         "-d build_38/{wildcards.ss_file} "
         "-from_build $from_build "
