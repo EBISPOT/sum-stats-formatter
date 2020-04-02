@@ -65,96 +65,125 @@ rule get_tbi_files:
 
 # split files into fractions (e.g. parallel step limit and then again by the deeper parallel step)
 
-rule split_file:
-    input:
-        "formatted/{ss_file}.tsv"
-    output:
-        expand("formatted/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=range_of_splits, split=next_range_of_splits)
-    params:
-        splits=config["parallel_step"],
-        next_splits=config["parallel_step_deeper"]
-    shell:
-        "echo 'Splitting file for parallel processing...' >> reports/{wildcards.ss_file}.txt; "
-        "mkdir -p formatted/{wildcards.ss_file}; "
-        "cp formatted/{wildcards.ss_file}.tsv formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv; "
-        "./formatting_tools/split_file.sh formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv {params.splits}; "
-        "for split in formatted/{wildcards.ss_file}/bpsplit*.tsv; "
-        "do ./formatting_tools/split_file.sh $split {params.next_splits}; done; "
-        "echo 'Mapping RSIDs to locations with Ensembl:' >>  reports/{wildcards.ss_file}.txt"
+#rule split_file:
+#    input:
+#        "formatted/{ss_file}.tsv"
+#    output:
+#        expand("formatted/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=range_of_splits, split=next_range_of_splits)
+#    params:
+#        splits=config["parallel_step"],
+#        next_splits=config["parallel_step_deeper"]
+#    shell:
+#        "echo 'Splitting file for parallel processing...' >> reports/{wildcards.ss_file}.txt; "
+#        "mkdir -p formatted/{wildcards.ss_file}; "
+#        "cp formatted/{wildcards.ss_file}.tsv formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv; "
+#        "./formatting_tools/split_file.sh formatted/{wildcards.ss_file}/{wildcards.ss_file}.tsv {params.splits}; "
+#        "for split in formatted/{wildcards.ss_file}/bpsplit*.tsv; "
+#        "do ./formatting_tools/split_file.sh $split {params.next_splits}; done; "
+#        "echo 'Mapping RSIDs to locations with Ensembl:' >>  reports/{wildcards.ss_file}.txt"
 
 # map rsids to chr:bp location
 
-rule retrieve_ensembl_mapping_data:
-    input:
-        "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
-    output:
-        "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out"
-    resources:
-        load=1
-    shell:
-        "./formatting_tools/var2location_local.pl {input} formatting_tools/ensembl.registry; wait; "
-        #"./formatting_tools/var2location.pl {input}; wait; "
-        "cat {input}.log >> reports/{wildcards.ss_file}.txt"
+#rule retrieve_ensembl_mapping_data:
+#    input:
+#        "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
+#    output:
+#        "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out"
+#    resources:
+#        load=1
+#    shell:
+#        "./formatting_tools/var2location_local.pl {input} formatting_tools/ensembl.registry; wait; "
+#        #"./formatting_tools/var2location.pl {input}; wait; "
+#        "cat {input}.log >> reports/{wildcards.ss_file}.txt"
 
+
+#rule update_locations_from_ensembl:
+#    input:
+#        "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out",
+#        in_ss="formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
+#    output:
+#        "build_38/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
+#    params:
+#        to_build=config["desired_build"],
+#    shell:
+#        "filename={wildcards.ss_file}; "
+#        "from_build=$(echo -n $filename | tail -c 2); "
+#        "ss-update-locations -f {input.in_ss} "
+#        "-d build_38/{wildcards.ss_file} "
+#        "-from_build $from_build "
+#        "-to_build {params.to_build} "
+#        "--log reports/{wildcards.ss_file}.txt "
+#        "-config config.yaml"
+
+
+# split the file by chromosome
+
+rule split_by_chrom:
+    input:
+        "formatted/{ss_file, \d+-GSCT\d+-EFO_\d+}.tsv"
+    output:
+        "formatted/{ss_file}/chr_{chromosome}.tsv"
+    shell:
+        "ss-chrom-split -f {input} -chr {wildcards.chromosome} -d formatted/"
 
 rule update_locations_from_ensembl:
     input:
-        "formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv.out",
-        in_ss="formatted/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
+        expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz", local_vcf=config["vcf_local_path"]),
+        in_ss="formatted/{ss_file}/chr_{chromosome}.tsv"
     output:
-        "build_38/{ss_file}/bpsplit_{step}_bpsplit_{split}_{ss_file}.tsv"
+        "build_38/{ss_file}/chr_{chromosome}.tsv"
     params:
         to_build=config["desired_build"],
+        local_vcf=config["vcf_local_path"]
     shell:
         "filename={wildcards.ss_file}; "
         "from_build=$(echo -n $filename | tail -c 2); "
-        "ss-update-locations -f {input.in_ss} "
+        "python ./formatting_tools/update_2.py -f {input.in_ss} "
+        "-vcf {params.local_vcf}homo_sapiens-chr{wildcards.chromosome}.vcf.gz "
         "-d build_38/{wildcards.ss_file} "
         "-from_build $from_build "
         "-to_build {params.to_build} "
         "--log reports/{wildcards.ss_file}.txt "
         "-config config.yaml"
 
-
-rule cat_all_splits:
-    input:
-        expand("build_38/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=range_of_splits, split=next_range_of_splits)
-    output:
-        "build_38/{ss_file}/{ss_file}.tsv"
-    shell:
-        "echo 'Collating splits...' >> reports/{wildcards.ss_file}.txt; "
-        "./formatting_tools/cat_splits_alt.sh {wildcards.ss_file}; wait; "
-        "olc2=$(wc -l build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv | awk '{{print $1}}'); "
-        "echo Number of output lines: $olc2 >> reports/{wildcards.ss_file}.txt; "
-        "ss-chrom-check -f build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv "
-        "--log reports/{wildcards.ss_file}.txt "
-        "-config config.yaml"
-        
+##rule cat_all_splits:
+#    input:
+#        expand("build_38/{{ss_file}}/bpsplit_{step}_bpsplit_{split}_{{ss_file}}.tsv", step=range_of_splits, split=next_range_of_splits)
+#    output:
+#        "build_38/{ss_file}/{ss_file}.tsv"
+#    shell:
+#        "echo 'Collating splits...' >> reports/{wildcards.ss_file}.txt; "
+#        "./formatting_tools/cat_splits_alt.sh {wildcards.ss_file}; wait; "
+#        "olc2=$(wc -l build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv | awk '{{print $1}}'); "
+#        "echo Number of output lines: $olc2 >> reports/{wildcards.ss_file}.txt; "
+#        "ss-chrom-check -f build_38/{wildcards.ss_file}/{wildcards.ss_file}.tsv "
+#        "--log reports/{wildcards.ss_file}.txt "
+#        "-config config.yaml"
 
 # split the file by chromosome
 
-rule split_by_chrom:
-    input:
-        "build_38/{ss_file}/{ss_file, \d+-GSCT\d+-EFO_\d+}.tsv"
-    output:
-        "build_38/{ss_file}/chr_{chromosome}.tsv"
-    shell:
-        "ss-chrom-split -f {input} -chr {wildcards.chromosome} -d build_38/"
-
-# collect unmapped chromosomes and add to log
-
-
-# split files into fractions (e.g. 16)
-
-rule split_by_bp:
-    input:
-        "build_38/{ss_file, \d+-GSCT\d+-EFO_\d+}/chr_{chromosome}.tsv"
-    output:
-        expand("build_38/{{ss_file}}/bpsplit_{step}_chr_{{chromosome}}.tsv", step=range_of_splits)
-    params:
-        splits=config["parallel_step"]
-    shell:
-        "./formatting_tools/split_file.sh {input} {params.splits}"
+#rule split_by_chrom:
+#    input:
+#        "build_38/{ss_file}/{ss_file, \d+-GSCT\d+-EFO_\d+}.tsv"
+#    output:
+#        "build_38/{ss_file}/chr_{chromosome}.tsv"
+#    shell:
+#        "ss-chrom-split -f {input} -chr {wildcards.chromosome} -d build_38/"
+#
+## collect unmapped chromosomes and add to log
+#
+#
+## split files into fractions (e.g. 16)
+#
+#rule split_by_bp:
+#    input:
+#        "build_38/{ss_file, \d+-GSCT\d+-EFO_\d+}/chr_{chromosome}.tsv"
+#    output:
+#        expand("build_38/{{ss_file}}/bpsplit_{step}_chr_{{chromosome}}.tsv", step=range_of_splits)
+#    params:
+#        splits=config["parallel_step"]
+#    shell:
+#        "./formatting_tools/split_file.sh {input} {params.splits}"
 
 
 # run sumstat_harmoniser.py to get strand counts
@@ -163,9 +192,9 @@ rule generate_strand_counts:
     input:
         expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz", local_vcf=config["vcf_local_path"]),
         expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz.tbi", local_vcf=config["vcf_local_path"]),
-        in_ss="build_38/{ss_file}/bpsplit_{step}_chr_{chromosome}.tsv"
+        in_ss="build_38/{ss_file}/chr_{chromosome}.tsv"
     output:
-        "harm_splits/{ss_file}/output/strand_count_bpsplit_{step, \d+}_chr_{chromosome}.tsv"
+        "harm_splits/{ss_file}/output/strand_count_chr_{chromosome}.tsv"
     params:
         local_vcf=config["vcf_local_path"]
     shell:
@@ -177,18 +206,18 @@ rule generate_strand_counts:
         "--effAl_col effect_allele "
         "--otherAl_col other_allele "
         "--rsid_col variant_id "
-        "--strand_counts harm_splits/{wildcards.ss_file}/output/strand_count_bpsplit_{wildcards.step}_chr_{wildcards.chromosome}.tsv" 
-        
+        "--strand_counts harm_splits/{wildcards.ss_file}/output/strand_count_chr_{wildcards.chromosome}.tsv"
 
-# make strand counts 
+
+# make strand counts
 
 rule make_strand_count:
     input:
-        expand("harm_splits/{{ss_file}}/output/strand_count_bpsplit_{step}_chr_{chromosome}.tsv", step=range_of_splits, chromosome=config["chromosomes"])
+        expand("harm_splits/{{ss_file}}/output/strand_count_chr_{chromosome}.tsv", chromosome=config["chromosomes"])
     output:
         "harm_splits/{ss_file}/output/total_strand_count.csv"
     shell:
-        "ss-strand-count -i harm_splits/{wildcards.ss_file}/output/ -o harm_splits/{wildcards.ss_file}/output/ -config config.yaml" 
+        "ss-strand-count -i harm_splits/{wildcards.ss_file}/output/ -o harm_splits/{wildcards.ss_file}/output/ -config config.yaml"
 
 
 # run sumstat_harmoniser.py for each split
@@ -198,17 +227,17 @@ rule run_harmonisation_per_split:
         expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz", local_vcf=config["vcf_local_path"]),
         expand("{local_vcf}homo_sapiens-chr{{chromosome}}.vcf.gz.tbi", local_vcf=config["vcf_local_path"]),
         "harm_splits/{ss_file}/output/total_strand_count.csv",
-        in_ss="build_38/{ss_file}/bpsplit_{step, \d+}_chr_{chromosome}.tsv"
+        in_ss="build_38/{ss_file}/chr_{chromosome}.tsv"
     output:
-        "harm_splits/{ss_file}/output/bpsplit_{step, \d+}_chr_{chromosome}.output.tsv"
+        "harm_splits/{ss_file}/output/chr_{chromosome}.output.tsv"
     params:
         local_vcf=config["vcf_local_path"]
     shell:
         "palin_mode=$(grep palin_mode harm_splits/{wildcards.ss_file}/output/total_strand_count.csv | cut -f2 );"
         "./formatting_tools/sumstat_harmoniser/bin/sumstat_harmoniser --sumstats {input.in_ss} "
         "--vcf {params.local_vcf}homo_sapiens-chr{wildcards.chromosome}.vcf.gz "
-        "--hm_sumstats harm_splits/{wildcards.ss_file}/output/bpsplit_{wildcards.step}_chr_{wildcards.chromosome}.output.tsv "
-        "--hm_statfile harm_splits/{wildcards.ss_file}/output/bpsplit_{wildcards.step}_chr_{wildcards.chromosome}.log.tsv.gz "
+        "--hm_sumstats harm_splits/{wildcards.ss_file}/output/chr_{wildcards.chromosome}.output.tsv "
+        "--hm_statfile harm_splits/{wildcards.ss_file}/output/chr_{wildcards.chromosome}.log.tsv.gz "
         "--chrom_col chromosome "
         "--pos_col base_pair_location "
         "--effAl_col effect_allele "
@@ -224,22 +253,22 @@ rule run_harmonisation_per_split:
         "--palin_mode $palin_mode"
 
 
-# concatenate harmonised splits 
+# concatenate harmonised splits
 
-rule concatenate_bp_splits:
-    input:
-        expand("harm_splits/{{ss_file}}/output/bpsplit_{step}_chr_{{chromosome}}.output.tsv", step=range_of_splits)
-    output:
-        "harm_splits/{ss_file}/output/merge_chr_{chromosome}.output.tsv"
-    shell:
-        "./formatting_tools/cat_bpsplits.sh {wildcards.ss_file} {wildcards.chromosome}"
+#rule concatenate_bp_splits:
+#    input:
+#        expand("harm_splits/{{ss_file}}/output/bpsplit_{step}_chr_{{chromosome}}.output.tsv", step=range_of_splits)
+#    output:
+#        "harm_splits/{ss_file}/output/merge_chr_{chromosome}.output.tsv"
+#    shell:
+#        "./formatting_tools/cat_bpsplits.sh {wildcards.ss_file} {wildcards.chromosome}"
 
 
 # concatenate chromosomes into one file
 
 rule concatenate_chr_splits:
     input:
-        expand("harm_splits/{{ss_file}}/output/merge_chr_{chromosome}.output.tsv", chromosome=config["chromosomes"])
+        expand("harm_splits/{{ss_file}}/output/chr_{chromosome}.output.tsv", chromosome=config["chromosomes"])
     output:
         "harmonised/{ss_file}.tsv"
     shell:

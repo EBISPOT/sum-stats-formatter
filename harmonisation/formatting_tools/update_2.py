@@ -22,8 +22,8 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
 
 
 VCF_SCHEMA = StructType([
-    StructField("CHROM", IntegerType(), False),
-    StructField("POS", IntegerType(), False),
+    StructField("CHROM", StringType(), False),
+    StructField("POS", StringType(), False),
     StructField("ID", StringType(), False),
     StructField("REF", StringType(), False),
     StructField("ALT", StringType(), False),
@@ -64,7 +64,7 @@ def open_process_file(file, vcf_ref, out_dir, from_build, to_build, chromosomes)
     out_df = out_df.withColumn(BP_DSET, out_df["POS"]).drop("POS", "ID")
     
     outfile = os.path.join(out_dir, filename)
-    out_df.toPandas().to_csv(outfile, sep="\t", header=True)
+    out_df.toPandas().to_csv(outfile, sep="\t", header=True, index=False)
 
     
 def main():
