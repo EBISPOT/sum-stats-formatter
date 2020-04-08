@@ -58,6 +58,10 @@ class EnsemblRestClient(object):
             self.last_req = time.time()
             self.req_count = 0
 
+    def get_rsid(self, rsid):
+        variant_info = self.perform_rest_action('/variation/human/{}?'.format(rsid))
+        return variant_info
+
     def map_bp_to_build_with_rest(self, chromosome, bp, build_orig, build_mapped):
         map_build = self.perform_rest_action(
             '/map/human/{orig}/{chromosome}:{bp}:{bp}/{mapped}?'.format(

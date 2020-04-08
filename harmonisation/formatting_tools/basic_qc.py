@@ -4,6 +4,7 @@ import argparse
 import logging
 
 from formatting_tools.sumstats_formatting import *
+from formatting_tools.ensembl_rest_client import EnsemblRestClient
 sys_paths = ['SumStats/sumstats/','../SumStats/sumstats/','../../SumStats/sumstats/']
 sys.path.extend(sys_paths)
 from common_constants import *
@@ -109,17 +110,30 @@ def map_chr_values_to_numbers(row, header):
     return row
 
 
+
 def drop_last_element_from_filename(filename):
     filename_parts = filename.split('-')
     return '-'.join(filename_parts[:-1])
 
 
 def resolve_invalid_rsids(row, header):
+    client = EnsemblRestClient()
     hm_rsid_idx = header.index('hm_rsid')
     snp_idx = header.index(SNP_DSET)
     # if possible, set variant_id to harmonised rsid
     if row[hm_rsid_idx].startswith('rs'):
-        row[snp_idx] = row[hm_rsid_idx]
+        # check that if rsID already present is not synonym of that found in vcf
+        if row[snp_idx].startswith('rs') and row[snp_idx] not row[hm_rsid_idx]:
+            rs_info = client.get_rsid(row[snp_idx])
+            if rs_info not "NA":
+                synonyms = rs_info["synonyms"]
+                synonyms.append(rs_info["name"])
+                if row[hm_rsid_idx] in synonyms:
+                    row[snp_idx] = row[hm_rsid_idx]
+                else:
+                    row[snp_idx] = 'NA'
+        else:
+            row[snp_idx] = row[hm_rsid_idx]
     # if variant_id is doesn't begin 'rs' 
     if not row[snp_idx].startswith('rs'):
         row[snp_idx] = 'NA'
