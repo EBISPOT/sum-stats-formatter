@@ -50,18 +50,19 @@ def open_process_file(file, vcf_ref, out_dir, from_build, to_build, chromosomes)
     
     # Map the sumstats SNPs to position in VCF
     ssdf = ssdf.join(vcf_df, (pf.col("ID") == pf.col(SNP_DSET)), how="left")
-    mapped_df = ssdf.filter(ssdf["ID"].isNotNull())
+    #mapped_df = ssdf.filter(ssdf["ID"].isNotNull())
     
     # Filter the unmapped ones, 
-    unmapped_df = ssdf.filter(ssdf["ID"].isNull()).withColumn("end", 1 + ssdf[BP_DSET])
-    unmapped_df = unmapped_df.withColumn("chrom", pf.concat(pf.lit("chr"), ssdf[CHR_DSET].cast("string")))
-    unmapped_df = unmapped_df.withColumn("chrom", pf.when(ssdf[CHR_DSET] == 23, "chrX").when(ssdf[CHR_DSET] == 24, "chrY").otherwise(unmapped_df.chrom))
+    #mapped_df = ssdf.filter(ssdf["ID"].isNull()).withColumn("end", 1 + ssdf[BP_DSET])
+    mapped_df = ssdf.withColumn("end", 1 + ssdf[BP_DSET])
+    mapped_df = mapped_df.withColumn("chrom", pf.concat(pf.lit("chr"), ssdf[CHR_DSET].cast("string")))
+    mapped_df = mapped_df.withColumn("chrom", pf.when(ssdf[CHR_DSET] == 23, "chrX").when(ssdf[CHR_DSET] == 24, "chrY").otherwise(mapped_df.chrom))
     liftover_expr = "lift_over_coordinates(chrom, base_pair_location, end, '{chain_file}', .95)".format(chain_file=chain_file)
-    lifted_df = unmapped_df.withColumn('lifted', pf.expr(liftover_expr))
-    lifted_df = lifted_df.withColumn("POS", pf.col('lifted.start')).drop("lifted", "end", "chrom")
-
-    out_df = mapped_df.union(lifted_df)
-    out_df = out_df.withColumn(BP_DSET, out_df["POS"]).drop("POS", "ID")
+    lifted_df = mapped_df.withColumn('lifted', pf.expr(liftover_expr))
+    lifted_df = lifted_df.withColumn("LO_POS", pf.col('lifted.start')).drop("lifted", "end", "chrom")
+    out_df = lifted_df.withColumn("check", pf.col('POS') - pf.col('LO_POS'))
+    #out_df = mapped_df.union(lifted_df)
+    #out_df = out_df.withColumn(BP_DSET, out_df["POS"]).drop("POS", "ID")
     
     outfile = os.path.join(out_dir, filename + ".tsv")
     out_df.toPandas().to_csv(outfile, sep="\t", header=True, index=False)
