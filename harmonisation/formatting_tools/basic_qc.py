@@ -123,9 +123,9 @@ def resolve_invalid_rsids(row, header):
     # if possible, set variant_id to harmonised rsid
     if row[hm_rsid_idx].startswith('rs'):
         # check that if rsID already present is not synonym of that found in vcf
-        if row[snp_idx].startswith('rs') and row[snp_idx] not row[hm_rsid_idx]:
+        if row[snp_idx].startswith('rs') and row[snp_idx] != row[hm_rsid_idx]:
             rs_info = client.get_rsid(row[snp_idx])
-            if rs_info not "NA":
+            if rs_info != "NA":
                 synonyms = rs_info["synonyms"]
                 synonyms.append(rs_info["name"])
                 if row[hm_rsid_idx] in synonyms:
