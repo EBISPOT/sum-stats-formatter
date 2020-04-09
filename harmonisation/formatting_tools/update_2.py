@@ -65,7 +65,7 @@ def open_process_file(file, vcf_ref, out_dir, from_build, to_build, chromosomes)
     #out_df = out_df.withColumn(BP_DSET, out_df["POS"]).drop("POS", "ID")
     
     outfile = os.path.join(out_dir, filename + ".tsv")
-    out_df.toPandas().to_csv(outfile, sep="\t", header=True, index=False)
+    out_df.write.csv(outfile, mode="overwrite", sep="\t", header=True, nullValue="NA", emptyValue="NA")
 
     
 def main():
