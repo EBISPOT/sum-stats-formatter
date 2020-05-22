@@ -29,17 +29,7 @@ harmonised_file=$(basename $harmonised_file_path .tsv)
 
 if [ ! -d "$ss_path" ]; then
 	echo "No directory for $study"
-#	echo "Checking database to try and generate..."
-#        ss_dir=$(python2 /nfs/spot/data/test/sumstats/formatting_tools/generate_sumstats_dir_name.py --study $study)
-#	echo $ss_dir
 
-#	if [[ $ss_dir =~ "ERROR" ]]; then
-#		echo "ERROR: Could not find ${study} in the database" | mail -s "File failed to copy" jhayhurst@ebi.ac.uk
-#	else
-#		echo "making dir: ${ftp_path}${ss_dir}"
-#		mkdir $ftp_path$ss_dir
-#		ss_path=$ftp_path$ss_dir
-#	fi
 else
 	# If path with study accession, get the name of that directory:
 	ss_dirname=$(echo $ss_path | rev | cut -f1 -d "/" | rev)
