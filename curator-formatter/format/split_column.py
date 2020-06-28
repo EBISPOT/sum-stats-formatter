@@ -30,7 +30,11 @@ def process_file(file, old_header, left_header, right_header, delimiter):
 
 
 def split_field(df, field, delimiter, left_name, right_name):
-    df = df.join(df[field].str.partition(delimiter, expand=True).rename(columns={0:left_name, 2:right_name}).drop(columns=[1]))
+    newdf = df.join(df[field].str.partition(delimiter, expand=True))
+    if 1 in newdf and 2 in newdf:
+        df = newdf.rename(columns={0:left_name, 2:right_name}).drop(columns=[1])
+    else:
+        print("could not perform split")
     return df
 
 
