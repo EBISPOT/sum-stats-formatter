@@ -28,7 +28,8 @@ known_header_transformations = {
     'MarkerName': 'snp',
     'rsID': 'snp',
     'RSID': 'snp',
-    'MARKERNAME': 'snp',    
+    'MARKERNAME': 'snp', 
+    'VariantID': 'snp',
     # p-value
     'p': 'pval',
     'pvalue': 'pval',
@@ -58,6 +59,7 @@ known_header_transformations = {
     'P-val': 'pval',
     'Pvalue': 'pval',
     'p':'pval',
+    'P_value': 'pval',
     # chromosome
     'chr': 'chr',
     'chromosome': 'chr',
@@ -87,6 +89,7 @@ known_header_transformations = {
     'Position_b37': 'bp',
     'Position_hg19': 'bp',
     'Pos_GRCh37': 'bp',
+    'POSITION':'bp',
     # chromosome combined with base pair location
     'chr_pos' : 'chr_bp',
     'chrpos' : 'chr_bp',
@@ -241,6 +244,7 @@ known_header_transformations = {
     'Effect-allele-frequency': 'eaf',
     'Freq1': 'eaf',
     'Effect_allele_frequency': 'eaf',
+    'controls_MAF': 'eaf',
     # number of studies
     'nstudy': 'nstudy',
     'n_study': 'nstudy',
