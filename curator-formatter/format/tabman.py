@@ -4,13 +4,14 @@ import os
 import pandas as pd
 import numpy as np
 import pandas.io.formats.excel
+from bsub import bsub
 import sys
 import pathlib
 import hashlib
 import format.peek as sspk
 import format.split_column as sssp
 from format.utils import header_mapper
-from common_constants import *
+from format.common_constants import *
 
 
 SEP_MAP = {
@@ -132,7 +133,10 @@ class Table():
                 right_name=right_name)
 
     def find_and_replace(self, field, find, replace):
-        self.pd[field] = self.pd[field].str.replace(r'{}'.format(find), replace)
+        self.pd[field] = self.pd[field].str.replace(r'{}'.format(find), r'{}'.format(replace))
+
+    def extract(self, field, extract):
+        self.pd[field] = self.pd[field].str.extract(r'({})'.format(extract))
 
     def check_split_name_clashes(self, splits):
         for split in splits:
@@ -160,6 +164,11 @@ class Table():
         for item in find_replace:
             if item['field'] in self.get_header() and item['find']:
                 self.find_and_replace(item['field'], item['find'], item['replace'])
+
+    def perform_extract(self, extract):
+        for item in extract:
+            if item['field'] in self.get_header() and item['extract']:
+                self.extract(item['field'], item['extract'])
 
     def perform_header_rename(self, header_rename):
         try:
@@ -241,7 +250,7 @@ class Config():
         self.splits_config = self.splits_config.append(self.columns_in_df, ignore_index=True)
         self.splits_config.to_excel(writer, index=False, sheet_name="splits")
         self.find_replace_config = self.find_replace_config.append(self.columns_in_df, ignore_index=True)
-        self.find_replace_config.to_excel(writer, index=False, sheet_name="find_and_replace")
+        self.find_replace_config.to_excel(writer, index=False, sheet_name="find_and_replace", columns=['FIELD','FIND','REPLACE','EXTRACT'])
         self.columns_out_config.to_excel(writer, index=False, sheet_name="columns_out")
         
         splits_sheet = writer.sheets['splits']
@@ -249,7 +258,7 @@ class Config():
         columns_out_sheet = writer.sheets['columns_out']
 
         splits_sheet.set_column('A:D', 18, text_format)
-        find_and_replace_sheet.set_column('A:C', 18, text_format)
+        find_and_replace_sheet.set_column('A:D', 18, text_format)
         columns_out_sheet.set_column('A:B', 18, text_format)
 
         writer.save()
@@ -280,7 +289,8 @@ class Config():
             self.splits_config = pd.read_excel(self.config_file, dtype=str, sheet_name="splits").dropna().rename(columns={"FIELD": "field", "SEPARATOR": "separator", "LEFT_NAME":"leftName", "RIGHT_NAME": "rightName"}).to_dict('records')
             self.find_replace_config = pd.read_excel(self.config_file, dtype=str, sheet_name="find_and_replace")
             self.columns_out_config = pd.read_excel(self.config_file, dtype=str, sheet_name="columns_out")
-            self.column_config = pd.merge(self.find_replace_config, self.columns_out_config, how='right', on='FIELD').replace({np.nan: ""}).rename(columns={"FIELD": "field", "FIND": "find", "REPLACE": "replace", "OUT_NAME": "rename"}).to_dict('records')
+            self.column_config = pd.merge(self.find_replace_config, self.columns_out_config, how='right', on='FIELD').replace({np.nan: ""}).rename(columns={"FIELD": "field", "FIND": "find", "REPLACE": "replace", "EXTRACT": "extract", "OUT_NAME": "rename"}).to_dict('records')
+            print(self.column_config)
             self.config["outFilePrefix"] = set_var_from_dict(self.file_config, "outFilePrefix", "formatted_") 
             self.config["fieldSeparator"] = set_var_from_dict(self.file_config, "fieldSeparator", self.field_sep) 
             self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]] if self.config["fieldSeparator"] in SEP_MAP else  self.config["fieldSeparator"]
@@ -320,7 +330,7 @@ def md5sum(file):
 
 def apply_config_to_file(file, config, preview=False):
     table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
-    table.pandas_df()
+    table.partial_df() if preview else table.pandas_df() 
     table.field_names.extend(table.get_header())
 
     # check for splits request
@@ -337,6 +347,15 @@ def apply_config_to_file(file, config, preview=False):
             find_replace.append(field)
     if find_replace:
         table.perform_find_replacements(find_replace)
+
+    #extract
+    extract = []
+    column_config = set_var_from_dict(config, 'columnConfig', None)
+    for field in column_config:
+        if "extract" in field:
+            extract.append(field)
+    if extract:
+        table.perform_extract(extract)
 
     #rename columns
     header_rename = {}
@@ -367,6 +386,14 @@ def apply_config_to_file(file, config, preview=False):
     print(sspk.peek(table.outfile_name))
 
 
+def apply_config_to_file_use_cluster(file, config):
+    sub = bsub("gwas_ss_format", M="24000", R="rusage[mem=24000]", N="")
+    command = "tabman -f {} -config {} -mode apply".format(self.filename, config)
+    print(">>>> Submitting job to cluster, job id below")
+    print(sub(command).job_id)
+    print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in the same directory as the input file.")
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', required=True)
@@ -374,7 +401,7 @@ def main():
     argparser.add_argument('-preview', help='Show a preview (top 10 lines) of the input/output file(s)', action='store_true', default='store_false', required=False)
     argparser.add_argument('-config', help='Path to the configuration file', required=False)
     argparser.add_argument('-config_type', help='Type of configuration file', default='xlsx', choices=['xlsx', 'json'], required=False)
-    argparser.add_argument('-mode', help='"gen" to generate the configuration file, "apply" to apply the configuration file', choices=['gen', 'apply'], required=False)
+    argparser.add_argument('-mode', help='"gen" to generate the configuration file, "apply" to apply the configuration file', choices=['gen', 'apply', 'apply-cluster'], required=False)
     args = argparser.parse_args()
 
     config = {}    
@@ -400,13 +427,12 @@ def main():
                 config_dict = parse_config(args.config, args.config_type)
                 print("Applying configuration...")
                 apply_config_to_file(args.f, config_dict, args.preview)
+            elif args.mode == 'apply-cluster':
+                print("Applying configuration using cluster job...")                
+                apply_config_to_file_use_cluster(args.f, args.config, args.preview)
     else:
         print("Please provide some argunents")
         argparser.print_help()
-
-        
-        
-
 
 
 if __name__ == '__main__':
