@@ -5,7 +5,6 @@ colored==1.4.2
 dask==2.10.1
 distributed==2.10.0
 et-xmlfile==1.0.1
-format===0.1-SNAPSHOT
 fsspec==0.6.2
 HeapDict==1.0.1
 jdcal==1.4.1
@@ -25,14 +24,12 @@ pytz==2019.3
 PyYAML==5.3
 six==1.14.0
 sortedcontainers==2.1.0
--e git+https://github.com/EBISPOT/sum-stats-formatter.git@eaa413f91f45392fd0afe8842b01c7aab7c2be40#egg=ss_format&subdirectory=curator-formatter
 ss-validate==0.3.0
 tabulate==0.8.6
 tblib==1.6.0
 toolz==0.10.0
 tornado==6.0.3
 tqdm==4.41.1
-wxPython==4.0.7.post2
 xlrd==1.2.0
 XlsxWriter==1.2.9
 zict==1.0.0

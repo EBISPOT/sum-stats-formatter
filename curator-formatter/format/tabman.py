@@ -210,9 +210,10 @@ class Config():
        
 
     def generate_config_template(self):
-        self.file_config = pd.read_excel("tab_man_template.xlsx", sheet_name="file")
-        self.splits_config = pd.read_excel("tab_man_template.xlsx", sheet_name="splits")
-        self.find_replace_config = pd.read_excel("tab_man_template.xlsx", sheet_name="find_and_replace")
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        self.file_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="file")
+        self.splits_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="splits")
+        self.find_replace_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="find_and_replace")
         self.columns_in_df = pd.DataFrame(self.columns_in, columns=['FIELD'])  
         self.columns_out_config = self.suggest_header_mapping()
         if self.config_type == 'xlsx':
@@ -388,18 +389,21 @@ def apply_config_to_file(file, config, preview=False):
 
 def apply_config_to_file_use_cluster(file, config):
     sub = bsub("gwas_ss_format", M="24000", R="rusage[mem=24000]", N="")
-    command = "tabman -f {} -config {} -mode apply".format(self.filename, config)
+    command = "tabman -f {} -config {} -mode apply".format(file, config)
     print(">>>> Submitting job to cluster, job id below")
     print(sub(command).job_id)
     print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in the same directory as the input file.")
 
+
+def env_variable_else(env_var_name, default):
+        return os.environ.get(env_var_name) if os.environ.get(env_var_name) else default
 
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', required=True)
     argparser.add_argument('-sep', help='The seperator/delimiter of the input file used to seperate the fields', default='whitespace', choices=['whitespace', 'tab', 'comma', 'pipe'], required=False)
     argparser.add_argument('-preview', help='Show a preview (top 10 lines) of the input/output file(s)', action='store_true', default='store_false', required=False)
-    argparser.add_argument('-config', help='Path to the configuration file', required=False)
+    argparser.add_argument('-config', help='Name configuration file. You can set a path to the configuration file directory in the environment variable SS_FORMAT_CONFIG_DIR', required=False)
     argparser.add_argument('-config_type', help='Type of configuration file', default='xlsx', choices=['xlsx', 'json'], required=False)
     argparser.add_argument('-mode', help='"gen" to generate the configuration file, "apply" to apply the configuration file', choices=['gen', 'apply', 'apply-cluster'], required=False)
     args = argparser.parse_args()
@@ -418,18 +422,19 @@ def main():
             argparser.print_help()
             sys.exit()
         else:
+            config_path = os.path.join(env_variable_else('SS_FORMAT_CONFIG_DIR', './'), args.config)
             if args.mode == 'gen':
                 table = Table(args.f, field_sep=sep)
                 print("Generating configuration template...")
-                generate_config_template(table, args.config, args.config_type)
+                generate_config_template(table, config_path, args.config_type)
             elif args.mode == 'apply':
                 print("Parsing config...")
-                config_dict = parse_config(args.config, args.config_type)
+                config_dict = parse_config(config_path, args.config_type)
                 print("Applying configuration...")
                 apply_config_to_file(args.f, config_dict, args.preview)
             elif args.mode == 'apply-cluster':
                 print("Applying configuration using cluster job...")                
-                apply_config_to_file_use_cluster(args.f, args.config, args.preview)
+                apply_config_to_file_use_cluster(args.f, config_path)
     else:
         print("Please provide some argunents")
         argparser.print_help()
