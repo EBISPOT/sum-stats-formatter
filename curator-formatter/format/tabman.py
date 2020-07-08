@@ -332,7 +332,7 @@ def md5sum(file):
 
 def apply_config_to_file(file, config, preview=False):
     table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
-    table.partial_df() if preview else table.pandas_df() 
+    table.partial_df() if preview is True else table.pandas_df() 
     table.field_names.extend(table.get_header())
 
     # check for splits request
