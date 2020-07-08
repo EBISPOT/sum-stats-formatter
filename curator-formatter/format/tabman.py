@@ -15,7 +15,7 @@ from format.common_constants import *
 
 
 SEP_MAP = {
-            'whitespace': '\\s+', 
+            'space': '\\s+', 
             'tab': '\\t',
             'comma': ',',
             'pipe': '|'
@@ -38,7 +38,7 @@ def parse_config(config_name, config_type):
 
 
 class Table():
-    def __init__(self, file, field_sep='\\t', outfile_prefix='outfile_', remove_starting=None):
+    def __init__(self, file, field_sep='\s+', outfile_prefix='outfile_', remove_starting=None):
         self.file = file
         self.outfile_prefix = outfile_prefix
         self.field_sep = field_sep
@@ -179,8 +179,11 @@ class Table():
             return False
 
     def perform_keep_cols(self, keep_cols):
+        print(self.get_header())
         add_cols = [c for c in keep_cols if c not in self.get_header()]
+        print(add_cols)
         keep_cols = [c for c in keep_cols if c in self.get_header()]
+        print(keep_cols)
         self.pd = self.pd[keep_cols]
         for c in add_cols:
             self.pd[c] = "NA"
@@ -194,7 +197,7 @@ class Table():
 
 
 class Config():
-    def __init__(self, columns_in=None, config_file='tabman_config.json', config_type='xlsx', field_sep='\\t'):
+    def __init__(self, columns_in=None, config_file='tabman_config.json', config_type='xlsx', field_sep='\s+'):
         self.columns_in = columns_in
         self.config_file = config_file
         self.config_type = config_type
@@ -294,7 +297,7 @@ class Config():
             print(self.column_config)
             self.config["outFilePrefix"] = set_var_from_dict(self.file_config, "outFilePrefix", "formatted_") 
             self.config["fieldSeparator"] = set_var_from_dict(self.file_config, "fieldSeparator", self.field_sep) 
-            self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]] if self.config["fieldSeparator"] in SEP_MAP else  self.config["fieldSeparator"]
+            self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]] if self.config["fieldSeparator"] in SEP_MAP else self.config["fieldSeparator"]
             self.config["removeComments"] = set_var_from_dict(self.file_config, "removeComments", "#") 
             self.config["splitColumns"].extend(self.splits_config)
             self.config["columnConfig"].extend(self.column_config)
@@ -330,6 +333,7 @@ def md5sum(file):
 
 
 def apply_config_to_file(file, config, preview=False):
+    print(config["fieldSeparator"])
     table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
     table.partial_df() if preview else table.pandas_df() 
     table.field_names.extend(table.get_header())
@@ -401,7 +405,7 @@ def env_variable_else(env_var_name, default):
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', required=True)
-    argparser.add_argument('-sep', help='The seperator/delimiter of the input file used to seperate the fields', default='whitespace', choices=['whitespace', 'tab', 'comma', 'pipe'], required=False)
+    argparser.add_argument('-sep', help='The seperator/delimiter of the input file used to seperate the fields', default='space', choices=['space', 'tab', 'comma', 'pipe'], required=False)
     argparser.add_argument('-preview', help='Show a preview (top 10 lines) of the input/output file(s)', action='store_true', default='store_false', required=False)
     argparser.add_argument('-config', help='Name configuration file. You can set a path to the configuration file directory in the environment variable SS_FORMAT_CONFIG_DIR', required=False)
     argparser.add_argument('-config_type', help='Type of configuration file', default='xlsx', choices=['xlsx', 'json'], required=False)
