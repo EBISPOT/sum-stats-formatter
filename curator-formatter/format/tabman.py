@@ -181,9 +181,7 @@ class Table():
     def perform_keep_cols(self, keep_cols):
         print(self.get_header())
         add_cols = [c for c in keep_cols if c not in self.get_header()]
-        print(add_cols)
         keep_cols = [c for c in keep_cols if c in self.get_header()]
-        print(keep_cols)
         self.pd = self.pd[keep_cols]
         for c in add_cols:
             self.pd[c] = "NA"
@@ -333,7 +331,6 @@ def md5sum(file):
 
 
 def apply_config_to_file(file, config, preview=False):
-    print(config["fieldSeparator"])
     table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
     table.partial_df() if preview else table.pandas_df() 
     table.field_names.extend(table.get_header())
