@@ -215,7 +215,7 @@ class Config():
         self.file_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="file")
         self.splits_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="splits")
         self.find_replace_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="find_and_replace")
-        self.columns_in_df = pd.DataFrame(self.columns_in, columns=['FIELD'])  
+        self.columns_in_df = pd.DataFrame(self.columns_in, columns=['IN'])  
         self.columns_out_config = self.suggest_header_mapping()
         if self.config_type == 'xlsx':
             self.generate_xlsx_config()
@@ -269,7 +269,7 @@ class Config():
         columns_out = {}
         for field in self.columns_in:
             if field in header_mapper.keys():
-                columns_out[field] = None
+                columns_out[field] = field
             else:
                 for key, value_list in header_mapper.items():
                     if field in value_list:
@@ -277,10 +277,13 @@ class Config():
                         break
                     else:
                         columns_out[field] = None
+        mandatory_fields_not_in_columns = []
         for mandatory_field in MAND_COLS:
             if mandatory_field not in columns_out and mandatory_field not in columns_out.values():
-                columns_out[mandatory_field] = None
-        return pd.DataFrame(columns_out.items(), columns=['FIELD', 'OUT_NAME'])
+                mandatory_fields_not_in_columns.append(mandatory_field)
+        cols_df = pd.DataFrame(columns_out.items(), columns=['IN', 'OUT'])
+        cols_df = cols_df.append(pd.DataFrame(mandatory_fields_not_in_columns, columns=['OUT']), ignore_index=True)
+        return cols_df
 
     def generate_json_config(self):
         pass
@@ -290,7 +293,7 @@ class Config():
             self.file_config = pd.read_excel(self.config_file, dtype=str, sheet_name="file", usecols=['ATTRIBUTE', 'VALUE']).dropna().set_index('ATTRIBUTE')['VALUE'].to_dict()
             self.splits_config = pd.read_excel(self.config_file, dtype=str, sheet_name="splits").dropna().rename(columns={"FIELD": "field", "SEPARATOR": "separator", "LEFT_NAME":"leftName", "RIGHT_NAME": "rightName"}).to_dict('records')
             self.find_replace_config = pd.read_excel(self.config_file, dtype=str, sheet_name="find_and_replace")
-            self.columns_out_config = pd.read_excel(self.config_file, dtype=str, sheet_name="columns_out")
+            self.columns_out_config = pd.read_excel(self.config_file, dtype=str, sheet_name="columns_out").rename(columns={"IN":"FIELD", "OUT":"OUT_NAME"}).dropna(subset=['OUT_NAME'])
             self.column_config = pd.merge(self.find_replace_config, self.columns_out_config, how='right', on='FIELD').replace({np.nan: ""}).rename(columns={"FIELD": "field", "FIND": "find", "REPLACE": "replace", "EXTRACT": "extract", "OUT_NAME": "rename"}).to_dict('records')
             print(self.column_config)
             self.config["outFilePrefix"] = set_var_from_dict(self.file_config, "outFilePrefix", "formatted_") 
