@@ -86,13 +86,15 @@ class Table():
                 sep=self.field_sep,
                 dtype=str,
                 error_bad_lines=False,
-                warn_bad_lines=True)
+                warn_bad_lines=True,
+                engine='python')
         else:
             self.pd = pd.read_csv(self.file,
                 sep=self.field_sep,
                 dtype=str,
                 error_bad_lines=False,
-                warn_bad_lines=True)
+                warn_bad_lines=True,
+                engine='python')
 
 
     def partial_df(self, nrows=10):
@@ -102,13 +104,17 @@ class Table():
                 sep=self.field_sep,
                 dtype=str,
                 error_bad_lines=False,
-                warn_bad_lines=True, nrows=nrows)
+                warn_bad_lines=True, 
+                nrows=nrows,
+                engine='python')
         else:
             self.pd = pd.read_csv(self.file,
                 sep=self.field_sep,
                 dtype=str,
                 error_bad_lines=False,
-                warn_bad_lines=True, nrows=nrows)
+                warn_bad_lines=True,
+                nrows=nrows,
+                engine='python')
 
 
     def set_outfile_name(self, preview=False):
