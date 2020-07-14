@@ -410,6 +410,14 @@ def apply_config_to_file_use_cluster(file, config):
 def env_variable_else(env_var_name, default):
         return os.environ.get(env_var_name) if os.environ.get(env_var_name) else default
 
+
+def check_args(args):
+    config_ext = args.config.split(".")[-1]
+    if args.config_type != config_ext:
+        print("Please give your -config file the extension and try again: '.{}'".format(args.config_type))
+        sys.exit()
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', required=True)
@@ -435,6 +443,7 @@ def main():
             argparser.print_help()
             sys.exit()
         else:
+            check_args(args)
             config_path = os.path.join(env_variable_else('SS_FORMAT_CONFIG_DIR', './'), args.config)
             if args.mode == 'gen':
                 table = Table(args.f, field_sep=sep)
