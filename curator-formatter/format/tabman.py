@@ -111,13 +111,17 @@ class Table():
                 warn_bad_lines=True, nrows=nrows)
 
 
-    def set_outfile_name(self):
+    def set_outfile_name(self, preview=False):
         self.get_filename()
         self.get_parent_dir()
-        self.outfile_name = os.path.join(self.parent_dir, self.outfile_prefix + self.filename + '.tsv')
+        if preview is False:
+            self.outfile_name = os.path.join(self.parent_dir, self.outfile_prefix + self.filename + '.tsv')
+        else:
+            self.outfile_name = os.path.join(self.parent_dir, self.outfile_prefix + self.filename + '.PREVIEW.tsv')
 
-    def to_csv(self):
-        self.set_outfile_name()
+
+    def to_csv(self, preview=False):
+        self.set_outfile_name(preview)
         self.pd.to_csv(self.outfile_name,
                 mode='w',
                 header=True,
@@ -179,7 +183,6 @@ class Table():
             return False
 
     def perform_keep_cols(self, keep_cols):
-        print(self.get_header())
         add_cols = [c for c in keep_cols if c not in self.get_header()]
         keep_cols = [c for c in keep_cols if c in self.get_header()]
         self.pd = self.pd[keep_cols]
@@ -204,7 +207,7 @@ class Config():
                         "outFilePrefix":"formatted_",
                         "md5":"True",
                         "fieldSeparator":self.field_sep,
-                        "removeLinesStarting":"#",
+                        "removeLinesStarting":"",
                         "splitColumns":[],
                         "columnConfig":[]
                      }
@@ -215,7 +218,7 @@ class Config():
         self.file_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="file")
         self.splits_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="splits")
         self.find_replace_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="find_and_replace")
-        self.columns_in_df = pd.DataFrame(self.columns_in, columns=['IN'])  
+        self.columns_in_df = pd.DataFrame(self.columns_in, columns=['IN']).rename(columns={"IN":"FIELD"})
         self.columns_out_config = self.suggest_header_mapping()
         if self.config_type == 'xlsx':
             self.generate_xlsx_config()
@@ -238,20 +241,18 @@ class Config():
         workbook  = writer.book
         file_sheet = writer.sheets['file']
 
+        # define cell formats
         text_format = workbook.add_format()
         text_format.set_num_format('@')       
-        
+
         file_sheet.set_column('A:C', 18, text_format)
         file_sheet.data_validation('B2', {'validate': 'list',
                                   'source': ['space', 'tab', 'comma', 'pipe']})
         file_sheet.data_validation('B6', {'validate': 'list',
                                   'source': ['True', 'False']})
-        file_sheet.data_validation('B7', {'validate': 'integer',
-                                 'criteria': 'greater than',
-                                 'value': 0})
-        self.splits_config = self.splits_config.append(self.columns_in_df, ignore_index=True)
+        self.splits_config = self.splits_config.append(self.columns_in_df, ignore_index=True, sort=True)
         self.splits_config.to_excel(writer, index=False, sheet_name="splits")
-        self.find_replace_config = self.find_replace_config.append(self.columns_in_df, ignore_index=True)
+        self.find_replace_config = self.find_replace_config.append(self.columns_in_df, ignore_index=True, sort=True)
         self.find_replace_config.to_excel(writer, index=False, sheet_name="find_and_replace", columns=['FIELD','FIND','REPLACE','EXTRACT'])
         self.columns_out_config.to_excel(writer, index=False, sheet_name="columns_out")
         
@@ -272,7 +273,7 @@ class Config():
                 columns_out[field] = field
             else:
                 for key, value_list in header_mapper.items():
-                    if field in value_list:
+                    if field in value_list and key not in columns_out.values():
                         columns_out[field] = key
                         break
                     else:
@@ -282,7 +283,7 @@ class Config():
             if mandatory_field not in columns_out and mandatory_field not in columns_out.values():
                 mandatory_fields_not_in_columns.append(mandatory_field)
         cols_df = pd.DataFrame(columns_out.items(), columns=['IN', 'OUT'])
-        cols_df = cols_df.append(pd.DataFrame(mandatory_fields_not_in_columns, columns=['OUT']), ignore_index=True)
+        cols_df = cols_df.append(pd.DataFrame(mandatory_fields_not_in_columns, columns=['OUT']), ignore_index=True, sort=True)
         return cols_df
 
     def generate_json_config(self):
@@ -299,7 +300,7 @@ class Config():
             self.config["outFilePrefix"] = set_var_from_dict(self.file_config, "outFilePrefix", "formatted_") 
             self.config["fieldSeparator"] = set_var_from_dict(self.file_config, "fieldSeparator", self.field_sep) 
             self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]] if self.config["fieldSeparator"] in SEP_MAP else self.config["fieldSeparator"]
-            self.config["removeComments"] = set_var_from_dict(self.file_config, "removeComments", "#") 
+            self.config["removeComments"] = set_var_from_dict(self.file_config, "removeComments", "") 
             self.config["splitColumns"].extend(self.splits_config)
             self.config["columnConfig"].extend(self.column_config)
             print(self.config)
@@ -313,7 +314,7 @@ class Config():
                 config = json.load(f)
                 config["outFilePrefix"] = set_var_from_dict(config, "outFilePrefix", "formatted_") 
                 config["fieldSeparator"] = set_var_from_dict(config, "fieldSeparator", self.field_sep) 
-                config["removeComments"] = set_var_from_dict(config, "removeComments", "#") 
+                config["removeComments"] = set_var_from_dict(config, "removeComments", "") 
                 return config
         except FileNotFoundError:
             print("JSON config: {} was not found".format(self.config_file))
@@ -338,6 +339,7 @@ def apply_config_to_file(file, config, preview=False):
     table.partial_df() if preview is True else table.pandas_df() 
     table.field_names.extend(table.get_header())
 
+    print(preview)
     # check for splits request
     splits = set_var_from_dict(config, 'splitColumns', None)
     if splits:
@@ -378,10 +380,10 @@ def apply_config_to_file(file, config, preview=False):
         keep_cols.append(field_name)
     if keep_cols:
         table.perform_keep_cols(keep_cols)
-    table.to_csv()
+    table.to_csv(preview)
 
     #md5
-    if config['md5']:
+    if config['md5'] is True:
         md5 = md5sum(table.outfile_name)
         md5_outfile = table.outfile_name + '.md5'
         with open(md5_outfile, 'w') as f:
@@ -392,7 +394,7 @@ def apply_config_to_file(file, config, preview=False):
 
 
 def apply_config_to_file_use_cluster(file, config):
-    sub = bsub("gwas_ss_format", M="24000", R="rusage[mem=24000]", N="")
+    sub = bsub("gwas_ss_format", M="36000", R="rusage[mem=36000]", N="")
     command = "tabman -f {} -config {} -mode apply".format(file, config)
     print(">>>> Submitting job to cluster, job id below")
     print(sub(command).job_id)
@@ -406,7 +408,7 @@ def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', required=True)
     argparser.add_argument('-sep', help='The seperator/delimiter of the input file used to seperate the fields', default='space', choices=['space', 'tab', 'comma', 'pipe'], required=False)
-    argparser.add_argument('-preview', help='Show a preview (top 10 lines) of the input/output file(s)', action='store_true', default='store_false', required=False)
+    argparser.add_argument('-preview', help='Show a preview (top 10 lines) of the input/output file(s)', action='store_true', required=False)
     argparser.add_argument('-config', help='Name configuration file. You can set a path to the configuration file directory in the environment variable SS_FORMAT_CONFIG_DIR', required=False)
     argparser.add_argument('-config_type', help='Type of configuration file', default='xlsx', choices=['xlsx', 'json'], required=False)
     argparser.add_argument('-mode', help='"gen" to generate the configuration file, "apply" to apply the configuration file', choices=['gen', 'apply', 'apply-cluster'], required=False)
@@ -417,8 +419,9 @@ def main():
     sep = SEP_MAP[args.sep]
 
     if not args.mode:
-        print("-------------- File in preview--------------")
-        print(sspk.peek(args.f))
+        print("Using field separator: {}".format(sep))
+        print("-------------- File preview--------------")
+        print(sspk.peek(args.f, sep=sep))
         print("Please provide some other argunents if you want to format a file")
     elif args.mode:
         if not args.config:
