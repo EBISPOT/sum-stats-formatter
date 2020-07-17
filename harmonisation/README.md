@@ -1,5 +1,7 @@
 # Summary Statistics harmonisation
 
+## This is now deprecated. Please go [here](https://github.com/EBISPOT/gwas-sumstats-harmoniser) for the currently maintained harmonisation pipeline.
+
 
 Harmonisation scripts to run the processes outlined below.
 
