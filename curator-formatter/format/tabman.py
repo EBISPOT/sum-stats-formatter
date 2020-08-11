@@ -220,10 +220,9 @@ class Config():
        
 
     def generate_config_template(self):
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        self.file_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="file")
-        self.splits_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="splits")
-        self.find_replace_config = pd.read_excel(os.path.join(script_dir,"tab_man_template.xlsx"), sheet_name="find_and_replace")
+        self.file_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"), sheet_name="file")
+        self.splits_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"), sheet_name="splits")
+        self.find_replace_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"), sheet_name="find_and_replace")
         self.columns_in_df = pd.DataFrame(self.columns_in, columns=['IN']).rename(columns={"IN":"FIELD"})
         self.columns_out_config = self.suggest_header_mapping()
         if self.config_type == 'xlsx':

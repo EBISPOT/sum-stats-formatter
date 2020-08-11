@@ -4,6 +4,7 @@ setup(
     name='ss-format',
     version='0.1-SNAPSHOT',
     packages=['format'],
+    data_files=[('data_files',['format/tab_man_template.xlsx'])],
     entry_points={
         "console_scripts": ['ss-peek = format.peek:main',
                             'ss-format = format.automatic_formatting:main',
