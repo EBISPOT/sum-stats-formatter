@@ -117,6 +117,10 @@ class Table():
                 engine='python')
 
 
+    def drop_cols(self, cols):
+        self.pd.drop(columns=cols, inplace=True)
+
+
     def set_outfile_name(self, preview=False):
         self.get_filename()
         self.get_parent_dir()
@@ -202,6 +206,10 @@ class Table():
         else:
             return tabulate(self.pd.head(10), headers='keys', tablefmt="fancy_grid", disable_numparse=True, showindex=False)
 
+    def convert_log10_pvalues(self):
+        self.pd.rename(columns={'p_value':'log10_p_value'}, inplace=True)
+        self.pd['p_value'] = np.power(10, self.pd['log10_p_value'].astype(float))
+
 
 class Config():
     def __init__(self, columns_in=None, config_file='tabman_config.json', config_type='xlsx', field_sep='\s+'):
@@ -211,7 +219,8 @@ class Config():
         self.field_sep = field_sep
         self.config = { 
                         "outFilePrefix":"formatted_",
-                        "md5":"True",
+                        "md5":False,
+                        "convertLogPvalue":False,
                         "fieldSeparator":self.field_sep,
                         "removeLinesStarting":"",
                         "splitColumns":[],
@@ -254,6 +263,8 @@ class Config():
         file_sheet.data_validation('B2', {'validate': 'list',
                                   'source': ['space', 'tab', 'comma', 'pipe']})
         file_sheet.data_validation('B6', {'validate': 'list',
+                                  'source': ['True', 'False']})
+        file_sheet.data_validation('B7', {'validate': 'list',
                                   'source': ['True', 'False']})
         self.splits_config = self.splits_config.append(self.columns_in_df, ignore_index=True, sort=True)
         self.splits_config.to_excel(writer, index=False, sheet_name="splits")
@@ -299,15 +310,19 @@ class Config():
             self.file_config = pd.read_excel(self.config_file, dtype=str, sheet_name="file", usecols=['ATTRIBUTE', 'VALUE']).dropna().set_index('ATTRIBUTE')['VALUE'].to_dict()
             self.splits_config = pd.read_excel(self.config_file, dtype=str, sheet_name="splits").dropna().rename(columns={"FIELD": "field", "SEPARATOR": "separator", "LEFT_NAME":"leftName", "RIGHT_NAME": "rightName"}).to_dict('records')
             self.find_replace_config = pd.read_excel(self.config_file, dtype=str, sheet_name="find_and_replace")
-            self.columns_out_config = pd.read_excel(self.config_file, dtype=str, sheet_name="columns_out").rename(columns={"IN":"FIELD", "OUT":"OUT_NAME"}).dropna(subset=['OUT_NAME'])
+            col_config_df = pd.read_excel(self.config_file, dtype=str, sheet_name="columns_out").rename(columns={"IN":"FIELD", "OUT":"OUT_NAME"})
+            self.columns_out_config = col_config_df.dropna(subset=['OUT_NAME'])
+            self.cols_to_drop = col_config_df.loc[~col_config_df.index.isin(self.columns_out_config.index)]['FIELD'].to_list()
             self.column_config = pd.merge(self.find_replace_config, self.columns_out_config, how='right', on='FIELD').replace({np.nan: ""}).rename(columns={"FIELD": "field", "FIND": "find", "REPLACE": "replace", "EXTRACT": "extract", "OUT_NAME": "rename"}).to_dict('records')
-            print(self.column_config)
             self.config["outFilePrefix"] = set_var_from_dict(self.file_config, "outFilePrefix", "formatted_") 
             self.config["fieldSeparator"] = set_var_from_dict(self.file_config, "fieldSeparator", self.field_sep) 
             self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]] if self.config["fieldSeparator"] in SEP_MAP else self.config["fieldSeparator"]
             self.config["removeComments"] = set_var_from_dict(self.file_config, "removeComments", "") 
+            self.config["md5"] = set_var_from_dict(self.file_config, "md5", False) 
+            self.config["convertLogPvalue"] = set_var_from_dict(self.file_config, "convertLogPvalue", False) 
             self.config["splitColumns"].extend(self.splits_config)
             self.config["columnConfig"].extend(self.column_config)
+            self.config["dropCols"] = self.cols_to_drop
             print(self.config)
             
         except FileNotFoundError:
@@ -343,6 +358,9 @@ def apply_config_to_file(file, config, preview=False):
     table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
     table.partial_df() if preview is True else table.pandas_df() 
     table.field_names.extend(table.get_header())
+    
+    # drop unwanted cols
+    table.drop_cols(config["dropCols"])
 
     print(preview)
     # check for splits request
@@ -385,6 +403,11 @@ def apply_config_to_file(file, config, preview=False):
         keep_cols.append(field_name)
     if keep_cols:
         table.perform_keep_cols(keep_cols)
+    
+    if all([config['convertLogPvalue'], 'p_value' in keep_cols]):
+        print('converting pvals')
+        table.convert_log10_pvalues()
+        
     table.to_csv(preview)
 
     #md5
@@ -430,7 +453,6 @@ def main():
     config = {}    
     
     sep = SEP_MAP[args.sep]
-
     if not args.mode:
         print("Using field separator: {}".format(sep))
         print("-------------- File preview--------------")
