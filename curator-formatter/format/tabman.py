@@ -206,9 +206,9 @@ class Table():
         else:
             return tabulate(self.pd.head(10), headers='keys', tablefmt="fancy_grid", disable_numparse=True, showindex=False)
 
-    def convert_log10_pvalues(self):
-        self.pd.rename(columns={'p_value':'log10_p_value'}, inplace=True)
-        self.pd['p_value'] = np.power(10, self.pd['log10_p_value'].astype(float))
+    def convert_neg_log10_pvalues(self):
+        self.pd.rename(columns={'p_value':'neg_log10_p_value'}, inplace=True)
+        self.pd['p_value'] = np.power(10, (-1 * self.pd['neg_log10_p_value'].astype(float)))
 
 
 class Config():
@@ -220,7 +220,7 @@ class Config():
         self.config = { 
                         "outFilePrefix":"formatted_",
                         "md5":False,
-                        "convertLogPvalue":False,
+                        "convertNegLog10Pvalue":False,
                         "fieldSeparator":self.field_sep,
                         "removeLinesStarting":"",
                         "splitColumns":[],
@@ -320,7 +320,7 @@ class Config():
             self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]] if self.config["fieldSeparator"] in SEP_MAP else self.config["fieldSeparator"]
             self.config["removeComments"] = set_var_from_dict(self.file_config, "removeComments", "") 
             self.config["md5"] = set_var_from_dict(self.file_config, "md5", False) 
-            self.config["convertLogPvalue"] = set_var_from_dict(self.file_config, "convertLogPvalue", False) 
+            self.config["convertNegLog10Pvalue"] = set_var_from_dict(self.file_config, "convertNegLog10Pvalue", False) 
             self.config["splitColumns"].extend(self.splits_config)
             self.config["columnConfig"].extend(self.column_config)
             self.config["dropCols"] = self.cols_to_drop
@@ -405,9 +405,9 @@ def apply_config_to_file(file, config, preview=False):
     if keep_cols:
         table.perform_keep_cols(keep_cols)
     
-    if all([config['convertLogPvalue'], 'p_value' in keep_cols]):
+    if all([config['convertNegLog10Pvalue'], 'p_value' in keep_cols]):
         print('converting pvals')
-        table.convert_log10_pvalues()
+        table.convert_neg_log10_pvalues()
         
     table.to_csv(preview)
 
