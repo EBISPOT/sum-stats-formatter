@@ -37,14 +37,35 @@ def parse_config(config_name, config_type):
     return config.config
 
 
+def table_iterator(file, field_sep='\s+', outfile_prefix='outfile_', remove_starting=None ):
+    if remove_starting:
+        return pd.read_csv(file,
+            comment=remove_starting,
+            sep=field_sep,
+            dtype=str,
+            error_bad_lines=False,
+            warn_bad_lines=True,
+            engine='python',
+            chunksize=1000000)
+    else:
+        return pd.read_csv(file,
+            sep=field_sep,
+            dtype=str,
+            error_bad_lines=False,
+            warn_bad_lines=True,
+            engine='python',
+            chunksize=1000000)
+
+
+
 class Table():
-    def __init__(self, file, field_sep='\s+', outfile_prefix='outfile_', remove_starting=None):
+    def __init__(self, file=None, field_sep='\s+', outfile_prefix='outfile_', remove_starting=None, dataframe=None):
         self.file = file
+        self.pd = dataframe
         self.outfile_prefix = outfile_prefix
         self.field_sep = field_sep
         self.ignore_pattern = remove_starting
         self.field_names = []
-        print("field sep: {}".format(self.field_sep))
 
     def get_fields(self):
         self.header = self.pd.columns.tolist()
@@ -130,14 +151,22 @@ class Table():
             self.outfile_name = os.path.join(self.parent_dir, self.outfile_prefix + self.filename + '.PREVIEW.tsv')
 
 
-    def to_csv(self, preview=False):
+    def to_csv(self, preview=False, header=True):
         self.set_outfile_name(preview)
-        self.pd.to_csv(self.outfile_name,
+        if header is True:
+            self.pd.to_csv(self.outfile_name,
                 mode='w',
-                header=True,
+                header=header,
                 sep="\t",
                 na_rep="NA",
                 index=False)
+        else:
+            self.pd.to_csv(self.outfile_name,
+                    mode='a',
+                    header=header,
+                    sep="\t",
+                    na_rep="NA",
+                    index=False)
 
     def split_column(self, field, delimiter, left_name, right_name):
         self.pd = sssp.split_field(df=self.pd,
@@ -356,14 +385,41 @@ def md5sum(file):
 
 
 def apply_config_to_file(file, config, preview=False):
-    table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
-    table.partial_df() if preview is True else table.pandas_df() 
-    table.field_names.extend(table.get_header())
+    if preview is True:
+        table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
+        table.partial_df()
+        process_table(table, config, preview)
+        table.to_csv(preview)
+        if config['md5'] is True:
+            md5 = md5sum(table.outfile_name)
+            md5_outfile = table.outfile_name + '.md5'
+            with open(md5_outfile, 'w') as f:
+                f.write(md5)
+        print("-------------- File out --------------")
+        print(sspk.peek(table.outfile_name))
+    else:
+        chunks = table_iterator(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
+        header = True
+        outfile_name = None
+        for chunk in chunks:
+            table = Table(file=file, dataframe=chunk, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
+            process_table(table, config, preview)
+            table.to_csv(preview, header)
+            header = False
+            outfile_name = table.outfile_name
+        if config['md5'] is True and outfile_name is not None:
+            md5 = md5sum(outfile_name)
+            md5_outfile = outfile_name + '.md5'
+            with open(md5_outfile, 'w') as f:
+                f.write(md5)
+        print("-------------- File out --------------")
+        print(sspk.peek(outfile_name))
     
+def process_table(table, config, preview):
+    table.field_names.extend(table.get_header())
     # drop unwanted cols
     table.drop_cols(config["dropCols"])
 
-    print(preview)
     # check for splits request
     splits = set_var_from_dict(config, 'splitColumns', None)
     if splits:
@@ -409,17 +465,6 @@ def apply_config_to_file(file, config, preview=False):
         print('converting pvals')
         table.convert_neg_log10_pvalues()
         
-    table.to_csv(preview)
-
-    #md5
-    if config['md5'] is True:
-        md5 = md5sum(table.outfile_name)
-        md5_outfile = table.outfile_name + '.md5'
-        with open(md5_outfile, 'w') as f:
-            f.write(md5)
-
-    print("-------------- File out --------------")
-    print(sspk.peek(table.outfile_name))
 
 
 def apply_config_to_file_use_cluster(file, config):
