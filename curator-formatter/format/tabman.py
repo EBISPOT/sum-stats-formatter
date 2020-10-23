@@ -500,10 +500,11 @@ def main():
     
     sep = SEP_MAP[args.sep]
     if not args.mode:
-        print("Using field separator: {}".format(sep))
-        print("-------------- File preview--------------")
-        print(sspk.peek(args.f, sep=sep))
-        print("Please provide some other argunents if you want to format a file")
+        for f in args.f:
+            print("Using field separator: {}".format(sep))
+            print("-------------- File preview--------------")
+            print(sspk.peek(f, sep=sep))
+            print("Please provide some other argunents if you want to format a file")
     elif args.mode:
         if not args.config:
             print("Please provide a config file with '-config'")
