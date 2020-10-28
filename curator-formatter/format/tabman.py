@@ -468,7 +468,7 @@ def process_table(table, config, preview):
 
 
 def apply_config_to_file_use_cluster(file, config):
-    sub = bsub("gwas_ss_format", M="36000", R="rusage[mem=36000]", N="")
+    sub = bsub("gwas_ss_format", M="3600", R="rusage[mem=3600]", N="")
     command = "tabman -f {} -config {} -mode apply".format(file, config)
     print(">>>> Submitting job to cluster, job id below")
     print(sub(command).job_id)
