@@ -291,10 +291,13 @@ class Config():
         file_sheet.set_column('A:C', 18, text_format)
         file_sheet.data_validation('B2', {'validate': 'list',
                                   'source': ['space', 'tab', 'comma', 'pipe']})
+        file_sheet.data_validation('B5', {'validate': 'list',
+                                  'source': ['True', 'False']})
         file_sheet.data_validation('B6', {'validate': 'list',
                                   'source': ['True', 'False']})
-        file_sheet.data_validation('B7', {'validate': 'list',
-                                  'source': ['True', 'False']})
+
+        sep_label = [k for k,v in SEP_MAP.items() if v == self.field_sep][0]
+        file_sheet.write('B2', sep_label)
         self.splits_config = self.splits_config.append(self.columns_in_df, ignore_index=True, sort=True)
         self.splits_config.to_excel(writer, index=False, sheet_name="splits")
         self.find_replace_config = self.find_replace_config.append(self.columns_in_df, ignore_index=True, sort=True)
@@ -489,7 +492,7 @@ def check_args(args):
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', nargs='+', required=True)
-    argparser.add_argument('-sep', help='The seperator/delimiter of the input file used to seperate the fields', default='space', choices=['space', 'tab', 'comma', 'pipe'], required=False)
+    argparser.add_argument('-sep', help='The seperator/delimiter of the input file used to seperate the fields', default='tab', choices=['space', 'tab', 'comma', 'pipe'], required=False)
     argparser.add_argument('-preview', help='Show a preview (top 10 lines) of the input/output file(s)', action='store_true', required=False)
     argparser.add_argument('-config', help='Name configuration file. You can set a path to the configuration file directory in the environment variable SS_FORMAT_CONFIG_DIR', required=False)
     argparser.add_argument('-config_type', help='Type of configuration file', default='xlsx', choices=['xlsx', 'json'], required=False)
@@ -520,6 +523,7 @@ def main():
                     print("You can only specify one file for the template generation")
                     sys.exit()
                 file = args.f[0]
+                print("Using field separator: {}".format(sep))
                 table = Table(file, field_sep=sep)
                 print("Generating configuration template...")
                 generate_config_template(table, config_path, args.config_type)
