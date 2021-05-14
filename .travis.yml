@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.6"
+branches:
+  only:
+  - master
+  - dev
+addons:
+  sonarcloud:
+    organization: "gwas-ebi"
+script:
+  - sonar-scanner -Dsonar.organization=gwas-ebi -Dsonar.projectKey=sum-stats-formatter -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=0566d66d0cfe16cd2cb8ba02db7fcd0b6d1e7ee6 -Dsonar.exclusions=tests/*,build/**,**/*.java,**/target/**
