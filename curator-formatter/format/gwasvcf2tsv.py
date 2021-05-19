@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from bsub import bsub
 import gzip
 import pathlib
 import argparse
@@ -140,13 +141,26 @@ def convert_gwas_vcf_to_tsv(vcf):
     vcf_handler = VCF(vcf)
     vcf_handler.gwas_vcf_to_gwas_tsv()
 
+def convert_gwas_vcf_to_tsv_with_cluster(vcf):
+    sub = bsub("gwas_vcf2tsv", M="2400", R="rusage[mem=2400]", N="")
+    command = "vcf2tsv -f {} -mode local".format(vcf)
+    print(">>>> Submitting job to cluster, job id below")
+    print(sub(command).job_id)
+    print("You will receive an email when the job is finished. Formatted files will appear in the same directory as the input file.")
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', nargs='+', required=True)
+    argparser.add_argument('-exec', help='"lsf" (default) to run as an LSF cluster job, "local" to run locally', choices=['lsf', 'local'], default='lsf', required=False)
     args = argparser.parse_args()
+    exec = args.exec
 
     for vcf in args.f:
-        convert_gwas_vcf_to_tsv(vcf)
+        if exec == 'lsf':
+            convert_gwas_vcf_to_tsv_with_cluster(vcf)
+        else:
+            convert_gwas_vcf_to_tsv(vcf)
 
 
 if __name__ == '__main__':
