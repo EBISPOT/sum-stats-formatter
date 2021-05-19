@@ -142,7 +142,7 @@ def convert_gwas_vcf_to_tsv(vcf):
     vcf_handler.gwas_vcf_to_gwas_tsv()
 
 def convert_gwas_vcf_to_tsv_with_cluster(vcf):
-    sub = bsub("gwas_vcf2tsv", M="2400", R="rusage[mem=2400]", N="")
+    sub = bsub("gwas_vcf2tsv", M="4000", R="rusage[mem=4000]", N="")
     command = "vcf2tsv -f {} -exec local".format(vcf)
     print(">>>> Submitting job to cluster, job id below")
     print(sub(command).job_id)
