@@ -1,7 +1,0 @@
-snp	chr	bp	effect_allele	other_allele	pval	beta	or	ci_lower	ci_upper	eaf	se	comment
-rs1000050	1	162736463	t	c	1.313e-1	0.1127				0.8526	0.0747	ok
-	1	162736463	t	c	1.313e-1	0.1127				0.8526	0.0747	resolvable rsid
-rs1000050	NOT_VALID	162736463	t	c	1.313e-1	0.1127				0.8526	0.0747	resolvable chr
-rs1000050	1	NOT_VALID	t	c	1.313e-1	0.1127				0.8526	0.0747	resolvable bp
-rs1000050	1	162736463	t	c		0.1127				0.8526	0.0747	no pval
-	1		t	c	1.313e-1	0.1127				0.8526	0.0747	unresolveable rsid

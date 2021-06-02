@@ -70,7 +70,12 @@ class VCF():
     def _set_rows_starting_with_hash(self, f):
         still_in_meta_header = True
         while still_in_meta_header:
-            line = f.readline().strip().decode('ascii')
+            line = f.readline().strip()
+            # convert bytes to str otherwise pass
+            try:
+                line = line.decode('ascii')
+            except (UnicodeDecodeError, AttributeError):
+                pass
             if str(line).startswith('#'):
                 self.meta_header.append(line)
             else:
