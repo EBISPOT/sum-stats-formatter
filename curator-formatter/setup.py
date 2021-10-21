@@ -20,8 +20,12 @@ setup(
                             'ss-compress = format.compress_file:main',
                             'ss-delete = format.delete_columns:main',
                             'ss-concat = format.cat_files:main',
+<<<<<<< HEAD
                             'tabman = format.tabman:main',
                             'vcf2tsv = format.gwasvcf2tsv:main']
+=======
+                            'tabman = format.tabman:main']
+>>>>>>> master
     },
     url='https://github.com/EBISPOT/sum-stats-formatter',
     license=''
