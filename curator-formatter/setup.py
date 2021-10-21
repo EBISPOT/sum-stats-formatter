@@ -1,4 +1,8 @@
 from distutils.core import setup
+import os
+
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
 
 setup(
     name='ss-format',
@@ -24,5 +28,6 @@ setup(
                             'vcf2tsv = format.gwasvcf2tsv:main']
     },
     url='https://github.com/EBISPOT/sum-stats-formatter',
-    license=''
+    license='',
+    install_requires=requirements
 )
