@@ -4,11 +4,11 @@ import os
 from tabulate import tabulate
 
 
-def peek(file, num_lines=10, sep='\s+', ignore='#'):
+def peek(file, num_lines=10, sep='\s+', ignore=None):
     df = pd.read_csv(file, sep=sep, dtype=str, 
                     comment=ignore, error_bad_lines=False, 
                     warn_bad_lines=True, nrows=num_lines,
-                    na_filter=False)
+                    na_filter=False, engine='python')
     return tabulate(df, headers='keys', tablefmt="fancy_grid", disable_numparse=True, showindex=False)
 
 

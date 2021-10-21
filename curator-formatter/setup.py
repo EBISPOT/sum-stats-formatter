@@ -4,6 +4,7 @@ setup(
     name='ss-format',
     version='0.1-SNAPSHOT',
     packages=['format'],
+    data_files=[('data_files',['format/tab_man_template.xlsx'])],
     entry_points={
         "console_scripts": ['ss-peek = format.peek:main',
                             'ss-format = format.automatic_formatting:main',
@@ -19,7 +20,12 @@ setup(
                             'ss-compress = format.compress_file:main',
                             'ss-delete = format.delete_columns:main',
                             'ss-concat = format.cat_files:main',
+<<<<<<< HEAD
+                            'tabman = format.tabman:main',
+                            'vcf2tsv = format.gwasvcf2tsv:main']
+=======
                             'tabman = format.tabman:main']
+>>>>>>> master
     },
     url='https://github.com/EBISPOT/sum-stats-formatter',
     license=''
