@@ -13,59 +13,61 @@ import format.split_column as sssp
 from format.utils import header_mapper
 from format.common_constants import *
 
-
 SEP_MAP = {
-            'space': '\\s+', 
-            'tab': '\\t',
-            'comma': ',',
-            'pipe': '|'
-           }
+    'space': '\\s+',
+    'tab': '\\t',
+    'comma': ',',
+    'pipe': '|'
+}
 
-MAND_COLS = (PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_L_DSET, RANGE_U_DSET, 
-            BETA_DSET, SE_DSET, FREQ_DSET , EFFECT_DSET, OTHER_DSET, SNP_DSET)
+MAND_COLS = (PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_L_DSET, RANGE_U_DSET,
+             BETA_DSET, SE_DSET, FREQ_DSET, EFFECT_DSET, OTHER_DSET, SNP_DSET)
+
 
 def generate_config_template(table, config_name, config_type):
-    table.partial_df() #initialise heead of table
+    table.partial_df()  # initialise heead of table
     columns_in = table.get_fields()
     sep = table.get_sep()
     config = Config(columns_in=columns_in, config_file=config_name, config_type=config_type, field_sep=sep)
     config.generate_config_template()
-        
+
+
 def parse_config(config_name, config_type):
     config = Config(config_file=config_name, config_type=config_type)
     config.parse_config()
     return config.config
 
 
-def table_iterator(file, field_sep='\s+', outfile_prefix='outfile_', remove_starting=None ):
+def table_iterator(file, field_sep='\s+', outfile_prefix='outfile_', remove_starting=None):
     if remove_starting:
         return pd.read_csv(file,
-            comment=remove_starting,
-            sep=field_sep,
-            dtype=str,
-            error_bad_lines=False,
-            warn_bad_lines=True,
-            engine='python',
-            chunksize=1000000)
+                           comment=remove_starting,
+                           sep=field_sep,
+                           dtype=str,
+                           error_bad_lines=False,
+                           warn_bad_lines=True,
+                           engine='python',
+                           chunksize=1000000)
     else:
         return pd.read_csv(file,
-            sep=field_sep,
-            dtype=str,
-            error_bad_lines=False,
-            warn_bad_lines=True,
-            engine='python',
-            chunksize=1000000)
-
+                           sep=field_sep,
+                           dtype=str,
+                           error_bad_lines=False,
+                           warn_bad_lines=True,
+                           engine='python',
+                           chunksize=1000000)
 
 
 class Table():
-    def __init__(self, file=None, field_sep='\s+', outfile_prefix='outfile_', remove_starting=None, dataframe=None):
+    def __init__(self, file=None, field_sep='\s+', outfile_prefix='outfile_', remove_starting=None, dataframe=None,
+                 outdir=None):
         self.file = file
         self.pd = dataframe
         self.outfile_prefix = outfile_prefix
         self.field_sep = field_sep
         self.ignore_pattern = remove_starting
         self.field_names = []
+        self.outdir = outdir
 
     def get_fields(self):
         self.header = self.pd.columns.tolist()
@@ -103,77 +105,73 @@ class Table():
     def pandas_df(self):
         if self.ignore_pattern:
             self.pd = pd.read_csv(self.file,
-                comment=self.ignore_pattern,
-                sep=self.field_sep,
-                dtype=str,
-                error_bad_lines=False,
-                warn_bad_lines=True,
-                engine='python')
+                                  comment=self.ignore_pattern,
+                                  sep=self.field_sep,
+                                  dtype=str,
+                                  error_bad_lines=False,
+                                  warn_bad_lines=True,
+                                  engine='python')
         else:
             self.pd = pd.read_csv(self.file,
-                sep=self.field_sep,
-                dtype=str,
-                error_bad_lines=False,
-                warn_bad_lines=True,
-                engine='python')
-
+                                  sep=self.field_sep,
+                                  dtype=str,
+                                  error_bad_lines=False,
+                                  warn_bad_lines=True,
+                                  engine='python')
 
     def partial_df(self, nrows=10):
         if self.ignore_pattern:
             self.pd = pd.read_csv(self.file,
-                comment=self.ignore_pattern,
-                sep=self.field_sep,
-                dtype=str,
-                error_bad_lines=False,
-                warn_bad_lines=True, 
-                nrows=nrows,
-                engine='python')
+                                  comment=self.ignore_pattern,
+                                  sep=self.field_sep,
+                                  dtype=str,
+                                  error_bad_lines=False,
+                                  warn_bad_lines=True,
+                                  nrows=nrows,
+                                  engine='python')
         else:
             self.pd = pd.read_csv(self.file,
-                sep=self.field_sep,
-                dtype=str,
-                error_bad_lines=False,
-                warn_bad_lines=True,
-                nrows=nrows,
-                engine='python')
-
+                                  sep=self.field_sep,
+                                  dtype=str,
+                                  error_bad_lines=False,
+                                  warn_bad_lines=True,
+                                  nrows=nrows,
+                                  engine='python')
 
     def drop_cols(self, cols):
         self.pd.drop(columns=cols, inplace=True)
 
-
     def set_outfile_name(self, preview=False):
         self.get_filename()
-        self.get_parent_dir()
+        outdir = self.outdir if self.outdir else self.get_parent_dir()
         if preview is False:
-            self.outfile_name = os.path.join(self.parent_dir, self.outfile_prefix + self.filename + '.tsv')
+            self.outfile_name = os.path.join(outdir, self.outfile_prefix + self.filename + '.tsv')
         else:
-            self.outfile_name = os.path.join(self.parent_dir, self.outfile_prefix + self.filename + '.PREVIEW.tsv')
-
+            self.outfile_name = os.path.join(outdir, self.outfile_prefix + self.filename + '.PREVIEW.tsv')
 
     def to_csv(self, preview=False, header=True):
         self.set_outfile_name(preview)
         if header is True:
             self.pd.to_csv(self.outfile_name,
-                mode='w',
-                header=header,
-                sep="\t",
-                na_rep="NA",
-                index=False)
+                           mode='w',
+                           header=header,
+                           sep="\t",
+                           na_rep="NA",
+                           index=False)
         else:
             self.pd.to_csv(self.outfile_name,
-                    mode='a',
-                    header=header,
-                    sep="\t",
-                    na_rep="NA",
-                    index=False)
+                           mode='a',
+                           header=header,
+                           sep="\t",
+                           na_rep="NA",
+                           index=False)
 
     def split_column(self, field, delimiter, left_name, right_name):
         self.pd = sssp.split_field(df=self.pd,
-                field=field,
-                delimiter=delimiter,
-                left_name=left_name,
-                right_name=right_name)
+                                   field=field,
+                                   delimiter=delimiter,
+                                   left_name=left_name,
+                                   right_name=right_name)
 
     def find_and_replace(self, field, find, replace):
         self.pd[field] = self.pd[field].str.replace(r'{}'.format(find), r'{}'.format(replace))
@@ -187,13 +185,19 @@ class Table():
                 print("The specified field '{}' for splitting on was not found".format(split['field']))
                 return False
             if split['leftName'] in self.field_names:
-                print("The split on field '{}' cannot be done because the left header, '{}', clashes with an existing header".format(split['field'], split['leftName']))
+                print(
+                    "The split on field '{}' cannot be done because the left header, '{}', clashes with an existing header".format(
+                        split['field'], split['leftName']))
                 return False
             if split['rightName'] in self.field_names:
-                print("The split on field '{}' cannot done because the right header, '{}', clashes with an existing header".format(split['field'], split['rightName']))
+                print(
+                    "The split on field '{}' cannot done because the right header, '{}', clashes with an existing header".format(
+                        split['field'], split['rightName']))
                 return False
             if split['leftName'] == split['rightName']:
-                print("The split on field '{}' cannot done because the right and left headers, '{}', clash with each other".format(split['field'], split['rightName']))
+                print(
+                    "The split on field '{}' cannot done because the right and left headers, '{}', clash with each other".format(
+                        split['field'], split['rightName']))
                 return False
             else:
                 self.field_names.extend([split['leftName'], split['rightName']])
@@ -231,12 +235,14 @@ class Table():
     def peek(self, keep_cols=False):
         if keep_cols:
             keep_cols = [c for c in keep_cols if c in self.get_header()]
-            return tabulate(self.pd.head(10)[keep_cols], headers='keys', tablefmt="fancy_grid", disable_numparse=True, showindex=False)
+            return tabulate(self.pd.head(10)[keep_cols], headers='keys', tablefmt="fancy_grid", disable_numparse=True,
+                            showindex=False)
         else:
-            return tabulate(self.pd.head(10), headers='keys', tablefmt="fancy_grid", disable_numparse=True, showindex=False)
+            return tabulate(self.pd.head(10), headers='keys', tablefmt="fancy_grid", disable_numparse=True,
+                            showindex=False)
 
     def convert_neg_log10_pvalues(self):
-        self.pd.rename(columns={'p_value':'neg_log10_p_value'}, inplace=True)
+        self.pd.rename(columns={'p_value': 'neg_log10_p_value'}, inplace=True)
         self.pd['p_value'] = np.power(10, (-1 * self.pd['neg_log10_p_value'].astype(float)))
 
 
@@ -246,28 +252,29 @@ class Config():
         self.config_file = config_file
         self.config_type = config_type
         self.field_sep = field_sep
-        self.config = { 
-                        "outFilePrefix":"formatted_",
-                        "md5":False,
-                        "convertNegLog10Pvalue":False,
-                        "fieldSeparator":self.field_sep,
-                        "removeLinesStarting":"",
-                        "splitColumns":[],
-                        "columnConfig":[]
-                     }
-       
+        self.config = {
+            "outFilePrefix": "formatted_",
+            "md5": False,
+            "convertNegLog10Pvalue": False,
+            "fieldSeparator": self.field_sep,
+            "removeLinesStarting": "",
+            "splitColumns": [],
+            "columnConfig": []
+        }
 
     def generate_config_template(self):
-        self.file_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"), sheet_name="file")
-        self.splits_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"), sheet_name="splits")
-        self.find_replace_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"), sheet_name="find_and_replace")
-        self.columns_in_df = pd.DataFrame(self.columns_in, columns=['IN']).rename(columns={"IN":"FIELD"})
+        self.file_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"),
+                                         sheet_name="file")
+        self.splits_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"),
+                                           sheet_name="splits")
+        self.find_replace_config = pd.read_excel(os.path.join(sys.prefix, "data_files", "tab_man_template.xlsx"),
+                                                 sheet_name="find_and_replace")
+        self.columns_in_df = pd.DataFrame(self.columns_in, columns=['IN']).rename(columns={"IN": "FIELD"})
         self.columns_out_config = self.suggest_header_mapping()
         if self.config_type == 'xlsx':
             self.generate_xlsx_config()
         elif self.config_type == 'json':
             self.generate_json_config()
-
 
     def parse_config(self):
         if self.config_type == 'xlsx':
@@ -275,35 +282,35 @@ class Config():
         elif self.config_type == 'json':
             self.parse_json_config()
 
-
     def generate_xlsx_config(self):
         xlsx_out = self.config_file
-        writer = pd.ExcelWriter(xlsx_out, engine ='xlsxwriter')
+        writer = pd.ExcelWriter(xlsx_out, engine='xlsxwriter')
         self.file_config.to_excel(writer, index=False, sheet_name="file")
 
-        workbook  = writer.book
+        workbook = writer.book
         file_sheet = writer.sheets['file']
 
         # define cell formats
         text_format = workbook.add_format()
-        text_format.set_num_format('@')       
+        text_format.set_num_format('@')
 
         file_sheet.set_column('A:C', 18, text_format)
         file_sheet.data_validation('B2', {'validate': 'list',
-                                  'source': ['space', 'tab', 'comma', 'pipe']})
+                                          'source': ['space', 'tab', 'comma', 'pipe']})
         file_sheet.data_validation('B5', {'validate': 'list',
-                                  'source': ['True', 'False']})
+                                          'source': ['True', 'False']})
         file_sheet.data_validation('B6', {'validate': 'list',
-                                  'source': ['True', 'False']})
+                                          'source': ['True', 'False']})
 
-        sep_label = [k for k,v in SEP_MAP.items() if v == self.field_sep][0]
+        sep_label = [k for k, v in SEP_MAP.items() if v == self.field_sep][0]
         file_sheet.write('B2', sep_label)
         self.splits_config = self.splits_config.append(self.columns_in_df, ignore_index=True, sort=True)
         self.splits_config.to_excel(writer, index=False, sheet_name="splits")
         self.find_replace_config = self.find_replace_config.append(self.columns_in_df, ignore_index=True, sort=True)
-        self.find_replace_config.to_excel(writer, index=False, sheet_name="find_and_replace", columns=['FIELD','FIND','REPLACE','EXTRACT'])
+        self.find_replace_config.to_excel(writer, index=False, sheet_name="find_and_replace",
+                                          columns=['FIELD', 'FIND', 'REPLACE', 'EXTRACT'])
         self.columns_out_config.to_excel(writer, index=False, sheet_name="columns_out")
-        
+
         splits_sheet = writer.sheets['splits']
         find_and_replace_sheet = writer.sheets['find_and_replace']
         columns_out_sheet = writer.sheets['columns_out']
@@ -331,7 +338,8 @@ class Config():
             if mandatory_field not in columns_out and mandatory_field not in columns_out.values():
                 mandatory_fields_not_in_columns.append(mandatory_field)
         cols_df = pd.DataFrame(columns_out.items(), columns=['IN', 'OUT'])
-        cols_df = cols_df.append(pd.DataFrame(mandatory_fields_not_in_columns, columns=['OUT']), ignore_index=True, sort=True)
+        cols_df = cols_df.append(pd.DataFrame(mandatory_fields_not_in_columns, columns=['OUT']), ignore_index=True,
+                                 sort=True)
         return cols_df
 
     def generate_json_config(self):
@@ -339,25 +347,37 @@ class Config():
 
     def parse_xlsx_config(self):
         try:
-            self.file_config = pd.read_excel(self.config_file, dtype=str, sheet_name="file", usecols=['ATTRIBUTE', 'VALUE']).dropna().set_index('ATTRIBUTE')['VALUE'].to_dict()
-            self.splits_config = pd.read_excel(self.config_file, dtype=str, sheet_name="splits").dropna().rename(columns={"FIELD": "field", "SEPARATOR": "separator", "LEFT_NAME":"leftName", "RIGHT_NAME": "rightName"}).to_dict('records')
+            self.file_config = pd.read_excel(self.config_file, dtype=str, sheet_name="file",
+                                             usecols=['ATTRIBUTE', 'VALUE']).dropna().set_index('ATTRIBUTE')[
+                'VALUE'].to_dict()
+            self.splits_config = pd.read_excel(self.config_file, dtype=str, sheet_name="splits").dropna().rename(
+                columns={"FIELD": "field", "SEPARATOR": "separator", "LEFT_NAME": "leftName",
+                         "RIGHT_NAME": "rightName"}).to_dict('records')
             self.find_replace_config = pd.read_excel(self.config_file, dtype=str, sheet_name="find_and_replace")
-            col_config_df = pd.read_excel(self.config_file, dtype=str, sheet_name="columns_out").rename(columns={"IN":"FIELD", "OUT":"OUT_NAME"})
+            col_config_df = pd.read_excel(self.config_file, dtype=str, sheet_name="columns_out").rename(
+                columns={"IN": "FIELD", "OUT": "OUT_NAME"})
             self.columns_out_config = col_config_df.dropna(subset=['OUT_NAME'])
-            self.cols_to_drop = col_config_df.loc[~col_config_df.index.isin(self.columns_out_config.index)].dropna(subset=['FIELD'])['FIELD'].to_list()
+            self.cols_to_drop = \
+            col_config_df.loc[~col_config_df.index.isin(self.columns_out_config.index)].dropna(subset=['FIELD'])[
+                'FIELD'].to_list()
             print(self.cols_to_drop)
-            self.column_config = pd.merge(self.find_replace_config, self.columns_out_config, how='right', on='FIELD').replace({np.nan: ""}).rename(columns={"FIELD": "field", "FIND": "find", "REPLACE": "replace", "EXTRACT": "extract", "OUT_NAME": "rename"}).to_dict('records')
-            self.config["outFilePrefix"] = set_var_from_dict(self.file_config, "outFilePrefix", "formatted_") 
-            self.config["fieldSeparator"] = set_var_from_dict(self.file_config, "fieldSeparator", self.field_sep) 
-            self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]] if self.config["fieldSeparator"] in SEP_MAP else self.config["fieldSeparator"]
-            self.config["removeComments"] = set_var_from_dict(self.file_config, "removeComments", "") 
-            self.config["md5"] = set_var_from_dict(self.file_config, "md5", False) 
-            self.config["convertNegLog10Pvalue"] = set_var_from_dict(self.file_config, "convertNegLog10Pvalue", False) 
+            self.column_config = pd.merge(self.find_replace_config, self.columns_out_config, how='right',
+                                          on='FIELD').replace({np.nan: ""}).rename(
+                columns={"FIELD": "field", "FIND": "find", "REPLACE": "replace", "EXTRACT": "extract",
+                         "OUT_NAME": "rename"}).to_dict('records')
+            self.config["outFilePrefix"] = set_var_from_dict(self.file_config, "outFilePrefix", "formatted_")
+            self.config["fieldSeparator"] = set_var_from_dict(self.file_config, "fieldSeparator", self.field_sep)
+            self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]] if self.config[
+                                                                                          "fieldSeparator"] in SEP_MAP else \
+            self.config["fieldSeparator"]
+            self.config["removeComments"] = set_var_from_dict(self.file_config, "removeComments", "")
+            self.config["md5"] = set_var_from_dict(self.file_config, "md5", False)
+            self.config["convertNegLog10Pvalue"] = set_var_from_dict(self.file_config, "convertNegLog10Pvalue", False)
             self.config["splitColumns"].extend(self.splits_config)
             self.config["columnConfig"].extend(self.column_config)
             self.config["dropCols"] = self.cols_to_drop
             print(self.config)
-            
+
         except FileNotFoundError:
             print("XLSX config: {} was not found".format(self.config_file))
 
@@ -365,15 +385,15 @@ class Config():
         try:
             with open(self.config_file, 'r') as f:
                 config = json.load(f)
-                config["outFilePrefix"] = set_var_from_dict(config, "outFilePrefix", "formatted_") 
-                config["fieldSeparator"] = set_var_from_dict(config, "fieldSeparator", self.field_sep) 
-                config["removeComments"] = set_var_from_dict(config, "removeComments", "") 
+                config["outFilePrefix"] = set_var_from_dict(config, "outFilePrefix", "formatted_")
+                config["fieldSeparator"] = set_var_from_dict(config, "fieldSeparator", self.field_sep)
+                config["removeComments"] = set_var_from_dict(config, "removeComments", "")
                 return config
         except FileNotFoundError:
             print("JSON config: {} was not found".format(self.config_file))
         except json.decoder.JSONDecodeError:
             print("JSON config: {} could not be understood".format(self.config_file))
-    
+
 
 def set_var_from_dict(dictionary, var_name, default):
     return dictionary[var_name] if var_name in dictionary else default
@@ -387,9 +407,10 @@ def md5sum(file):
     return hash_md5.hexdigest()
 
 
-def apply_config_to_file(file, config, preview=False):
+def apply_config_to_file(file, config, preview=False, outdir=None):
     if preview is True:
-        table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
+        table = Table(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"],
+                      remove_starting=config["removeComments"], outdir=outdir)
         table.partial_df()
         process_table(table, config, preview)
         table.to_csv(preview)
@@ -401,11 +422,13 @@ def apply_config_to_file(file, config, preview=False):
         print("-------------- File out --------------")
         print(sspk.peek(table.outfile_name))
     else:
-        chunks = table_iterator(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
+        chunks = table_iterator(file, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"],
+                                remove_starting=config["removeComments"])
         header = True
         outfile_name = None
         for chunk in chunks:
-            table = Table(file=file, dataframe=chunk, outfile_prefix=config["outFilePrefix"], field_sep=config["fieldSeparator"], remove_starting=config["removeComments"])
+            table = Table(file=file, dataframe=chunk, outfile_prefix=config["outFilePrefix"],
+                          field_sep=config["fieldSeparator"], remove_starting=config["removeComments"], outdir=outdir)
             process_table(table, config, preview)
             table.to_csv(preview, header)
             header = False
@@ -417,7 +440,8 @@ def apply_config_to_file(file, config, preview=False):
                 f.write(md5)
         print("-------------- File out --------------")
         print(sspk.peek(outfile_name))
-    
+
+
 def process_table(table, config, preview):
     table.field_names.extend(table.get_header())
     # drop unwanted cols
@@ -429,7 +453,7 @@ def process_table(table, config, preview):
         if table.check_split_name_clashes(splits):
             table.perform_splits(splits)
 
-    #find and replace
+    # find and replace
     find_replace = []
     column_config = set_var_from_dict(config, 'columnConfig', None)
     for field in column_config:
@@ -438,7 +462,7 @@ def process_table(table, config, preview):
     if find_replace:
         table.perform_find_replacements(find_replace)
 
-    #extract
+    # extract
     extract = []
     column_config = set_var_from_dict(config, 'columnConfig', None)
     for field in column_config:
@@ -447,7 +471,7 @@ def process_table(table, config, preview):
     if extract:
         table.perform_extract(extract)
 
-    #rename columns
+    # rename columns
     header_rename = {}
     for field in column_config:
         if "rename" in field:
@@ -456,30 +480,32 @@ def process_table(table, config, preview):
     if header_rename:
         table.perform_header_rename(header_rename)
 
-    #keep cols
+    # keep cols
     keep_cols = []
     for field in column_config:
         field_name = field["rename"] if "rename" in field and len(field["rename"]) > 0 else field["field"]
         keep_cols.append(field_name)
     if keep_cols:
         table.perform_keep_cols(keep_cols)
-    
+
     if all([config['convertNegLog10Pvalue'], 'p_value' in keep_cols]):
         print('converting pvals')
         table.convert_neg_log10_pvalues()
-        
 
 
-def apply_config_to_file_use_cluster(file, config):
+def apply_config_to_file_use_cluster(file, config, outdir=None):
     sub = bsub("gwas_ss_format", M="3600", R="rusage[mem=3600]", N="")
     command = "tabman -f {} -config {} -mode apply".format(file, config)
+    if outdir:
+        command += ' -o {}'.format(outdir)
     print(">>>> Submitting job to cluster, job id below")
     print(sub(command).job_id)
-    print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in the same directory as the input file.")
+    print(
+        "You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in the same directory as the input file.")
 
 
 def env_variable_else(env_var_name, default):
-        return os.environ.get(env_var_name) if os.environ.get(env_var_name) else default
+    return os.environ.get(env_var_name) if os.environ.get(env_var_name) else default
 
 
 def check_args(args):
@@ -492,15 +518,23 @@ def check_args(args):
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', nargs='+', required=True)
-    argparser.add_argument('-sep', help='The seperator/delimiter of the input file used to seperate the fields', default='tab', choices=['space', 'tab', 'comma', 'pipe'], required=False)
-    argparser.add_argument('-preview', help='Show a preview (top 10 lines) of the input/output file(s)', action='store_true', required=False)
-    argparser.add_argument('-config', help='Name configuration file. You can set a path to the configuration file directory in the environment variable SS_FORMAT_CONFIG_DIR', required=False)
-    argparser.add_argument('-config_type', help='Type of configuration file', default='xlsx', choices=['xlsx', 'json'], required=False)
-    argparser.add_argument('-mode', help='"gen" to generate the configuration file, "apply" to apply the configuration file', choices=['gen', 'apply', 'apply-cluster'], required=False)
+    argparser.add_argument('-o', help='Path to the output directory', default=None, required=False)
+    argparser.add_argument('-sep', help='The seperator/delimiter of the input file used to seperate the fields',
+                           default='tab', choices=['space', 'tab', 'comma', 'pipe'], required=False)
+    argparser.add_argument('-preview', help='Show a preview (top 10 lines) of the input/output file(s)',
+                           action='store_true', required=False)
+    argparser.add_argument('-config',
+                           help='Name configuration file. You can set a path to the configuration file directory in the environment variable SS_FORMAT_CONFIG_DIR',
+                           required=False)
+    argparser.add_argument('-config_type', help='Type of configuration file', default='xlsx', choices=['xlsx', 'json'],
+                           required=False)
+    argparser.add_argument('-mode',
+                           help='"gen" to generate the configuration file, "apply" to apply the configuration file',
+                           choices=['gen', 'apply', 'apply-cluster'], required=False)
     args = argparser.parse_args()
 
-    config = {}    
-    
+    config = {}
+
     sep = SEP_MAP[args.sep]
     if not args.mode:
         for f in args.f:
@@ -512,7 +546,8 @@ def main():
         if not args.config:
             print("Please provide a config file with '-config'")
             print("If using `-mode gen` just provide a name e.g. 'myconf.xlsx' for the config template to be saved as.")
-            print("If using `-mode apply` or`-mode apply-cluster` please provide the name e.g. 'myconf.xlsx' of the filled out template.")
+            print(
+                "If using `-mode apply` or`-mode apply-cluster` please provide the name e.g. 'myconf.xlsx' of the filled out template.")
             argparser.print_help()
             sys.exit()
         else:
@@ -533,11 +568,11 @@ def main():
                 print("Applying configuration...")
                 for f in args.f:
                     print(f)
-                    apply_config_to_file(f, config_dict, args.preview)
+                    apply_config_to_file(f, config_dict, args.preview, args.o)
             elif args.mode == 'apply-cluster':
-                print("Applying configuration using cluster job...")                
+                print("Applying configuration using cluster job...")
                 for f in args.f:
-                    apply_config_to_file_use_cluster(f, config_path)
+                    apply_config_to_file_use_cluster(f, config_path, args.o)
     else:
         print("Please provide some argunents")
         argparser.print_help()
