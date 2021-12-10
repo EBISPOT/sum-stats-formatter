@@ -335,7 +335,31 @@ class Config():
         return cols_df
 
     def generate_json_config(self):
-        pass
+        json_out = self.config_file
+        self.config["fieldSeparator"] = [k for k, v in SEP_MAP.items() if v == self.field_sep][0]
+        self.config["splitColumns"] = self.splits_config_template()
+        self.config["columnConfig"] = self.column_config_template()
+        print(self.config)
+        with open(json_out, 'w', encoding='utf-8') as f:
+            json.dump(self.config, f, ensure_ascii=False, indent=4)
+
+    def splits_config_template(self):
+        template = []
+        for col in self.columns_in_df['FIELD'].to_list():
+            template.append({"field": col, "leftName": "", "rightName": "", "separator": ""})
+        return template
+
+    def column_config_template(self):
+        template = []
+        self.columns_out_config.rename(columns={'IN':'field', 'OUT': 'rename'}, inplace=True)
+        for dict in self.columns_out_config.to_dict('index').values():
+            dict["find"] = ""
+            dict["replace"] = ""
+            dict["extract"] = ""
+            template.append(dict)
+        return template
+
+
 
     def parse_xlsx_config(self):
         try:
