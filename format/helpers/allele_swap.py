@@ -1,6 +1,6 @@
 import argparse
 import os
-from format.utils import *
+from format.helpers.utils import *
 
 
 def get_value_from_field(row, header, field):

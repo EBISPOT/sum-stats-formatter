@@ -4,7 +4,7 @@ from tqdm import tqdm
 import os
 import dask.dataframe as dd
 import pandas as pd
-from format.utils import *
+from format.helpers.utils import *
 
 def process_file(file, drop_headers):
     filename, file_extension = os.path.splitext(file)
