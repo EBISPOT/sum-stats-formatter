@@ -3,7 +3,8 @@ import sys
 import json
 import pandas as pd
 import numpy as np
-from format.utils import SEP_MAP, MAND_COLS, set_var_from_dict
+import jsonschema
+from format.utils import SEP_MAP, MAND_COLS, set_var_from_dict, CONFIG_SCHEMA
 from format.helpers.utils import header_mapper
 
 
@@ -18,7 +19,7 @@ class Config:
             "md5": False,
             "convertNegLog10Pvalue": False,
             "fieldSeparator": self.field_sep,
-            "removeLinesStarting": "",
+            "removeComments": "",
             "splitColumns": [],
             "columnConfig": []
         }
@@ -115,7 +116,6 @@ class Config:
         self.config["fieldSeparator"] = [k for k, v in SEP_MAP.items() if v == self.field_sep][0]
         self.config["splitColumns"] = self.splits_config_template()
         self.config["columnConfig"] = self.column_config_template()
-        print(self.config)
         with open(json_out, 'w', encoding='utf-8') as f:
             json.dump(self.config, f, ensure_ascii=False, indent=4)
 
@@ -134,9 +134,6 @@ class Config:
             d["extract"] = ""
             template.append(d)
         return template
-
-    def validate_json_config(self):
-        pass
 
     def parse_xlsx_config(self):
         try:
@@ -205,20 +202,26 @@ class Config:
             self.config["splitColumns"].extend(self.splits_config)
             self.config["columnConfig"].extend(self.column_config)
             self.config["dropCols"] = self.cols_to_drop
-
         except FileNotFoundError:
             print("XLSX config: {} was not found".format(self.config_file))
 
+    @staticmethod
+    def validate_json_config(json_config):
+        try:
+            jsonschema.validate(instance=json_config, schema=CONFIG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as e:
+            sys.exit(e)
+        return True
+
     def parse_json_config(self):
-        # TODO need to replicate the functionality of the xlsx parser here for json
-        self.validate_json_config()
         try:
             with open(self.config_file, 'r') as f:
-                config = json.load(f)
-                config["outFilePrefix"] = set_var_from_dict(config, "outFilePrefix", "formatted_")
-                config["fieldSeparator"] = set_var_from_dict(config, "fieldSeparator", self.field_sep)
-                config["removeComments"] = set_var_from_dict(config, "removeComments", "")
-                return config
+                self.config = json.load(f)
+                if self.validate_json_config(self.config):
+                    self.cols_to_drop = [c["field"] for c in self.config["columnConfig"] if c["rename"] is None]
+                    self.config["outFilePrefix"] = set_var_from_dict(self.config, "outFilePrefix", "formatted_")
+                    self.config["fieldSeparator"] = set_var_from_dict(self.config, "fieldSeparator", self.field_sep)
+                    self.config["dropCols"] = self.cols_to_drop
         except FileNotFoundError:
             print("JSON config: {} was not found".format(self.config_file))
         except json.decoder.JSONDecodeError:
