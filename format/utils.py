@@ -32,6 +32,11 @@ CONFIG_SCHEMA = {
                                  "rightName": {"type": "string"},
                                  "separator": {"type": "string",
                                                "pattern": ".*"},
+                             },
+                             "dependentRequired": {
+                                 "leftName": ["rightName", "separator"],
+                                 "rightName": ["leftName", "separator"],
+                                 "separator": ["rightName", "leftName"]
                              }
                          }
                          },
@@ -44,6 +49,10 @@ CONFIG_SCHEMA = {
                                  "find": {"type": "string"},
                                  "replace": {"type": "string"},
                                  "extract": {"type": "string"},
+                             },
+                             "dependentRequired": {
+                                 "find": ["replace"],
+                                 "replace": ["find"]
                              }
                          }
                          }

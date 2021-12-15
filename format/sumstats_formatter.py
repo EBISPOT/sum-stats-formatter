@@ -100,7 +100,7 @@ def process_sumstats_table(table, config):
 
     # find and replace
     find_replace = []
-    column_config = set_var_from_dict(config, 'columnsumstats_config.Config', None)
+    column_config = set_var_from_dict(config, 'columnConfig', None)
     for field in column_config:
         if "find" and "replace" in field:
             find_replace.append(field)
@@ -109,7 +109,7 @@ def process_sumstats_table(table, config):
 
     # extract
     extract = []
-    column_config = set_var_from_dict(config, 'columnsumstats_config.Config', None)
+    column_config = set_var_from_dict(config, 'columnConfig', None)
     for field in column_config:
         if "extract" in field:
             extract.append(field)

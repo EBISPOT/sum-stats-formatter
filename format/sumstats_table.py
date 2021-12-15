@@ -89,6 +89,11 @@ class Table:
                                   engine='python')
 
     def drop_cols(self, cols):
+        print('-------')
+        print(self.field_sep)
+        print(self.pd.columns)
+        print('-------')
+        print(cols)
         self.pd.drop(columns=cols, inplace=True)
 
     def set_outfile_name(self, preview=False):

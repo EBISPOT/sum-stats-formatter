@@ -213,14 +213,21 @@ class Config:
             sys.exit(e)
         return True
 
+    def clean_json_config(self):
+        self.config["splitColumns"] = [c for c in self.config["splitColumns"] if len(c['separator']) > 0]
+
     def parse_json_config(self):
+        # TODO column config - need to drop unrequired mappings.
         try:
             with open(self.config_file, 'r') as f:
                 self.config = json.load(f)
                 if self.validate_json_config(self.config):
+                    self.clean_json_config()
                     self.cols_to_drop = [c["field"] for c in self.config["columnConfig"] if c["rename"] is None]
                     self.config["outFilePrefix"] = set_var_from_dict(self.config, "outFilePrefix", "formatted_")
                     self.config["fieldSeparator"] = set_var_from_dict(self.config, "fieldSeparator", self.field_sep)
+                    if self.config["fieldSeparator"] in SEP_MAP:
+                        self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]]
                     self.config["dropCols"] = self.cols_to_drop
         except FileNotFoundError:
             print("JSON config: {} was not found".format(self.config_file))
