@@ -1,7 +1,7 @@
 FROM python:3.7-slim-buster
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc python-dev vim nano \
+    && apt-get install -y --no-install-recommends gcc python-dev vim nano bsub \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .
@@ -13,3 +13,5 @@ RUN pip install --upgrade pip \
 
 RUN mkdir files
 WORKDIR /files
+
+ENV SS_FORMAT_CONFIG_DIR ./

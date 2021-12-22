@@ -138,9 +138,12 @@ def process_sumstats_table(table, config):
         table.convert_neg_log10_pvalues()
         
 
-def apply_config_to_file_use_cluster(file, config):
-    sub = bsub("gwas_ss_format", M="3600", R="rusage[mem=3600]", N="")
-    command = "tabman -f {} -config {} -mode apply".format(file, config)
+def apply_config_to_file_use_cluster(file, config_type, config_path, memory):
+    sub = bsub("gwas_ss_format",
+               M="{}".format(str(memory)),
+               R="rusage[mem={}]".format(str(memory)),
+               N="")
+    command = "ss-format -f {} -config_type {} -config {} -mode apply".format(file, config_type, config_path)
     print(">>>> Submitting job to cluster, job id below")
     print(sub(command).job_id)
     print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
@@ -160,7 +163,7 @@ def main():
                            nargs='+',
                            required=True)
     argparser.add_argument('-sep',
-                           help='The seperator/delimiter of the input file used to seperate the fields',
+                           help='The separator/delimiter of the input file used to separate the fields',
                            default='tab',
                            choices=['space', 'tab', 'comma', 'pipe'],
                            required=False)
@@ -181,6 +184,11 @@ def main():
                            help='"gen" to generate the configuration file, "apply" to apply the configuration file',
                            choices=['gen', 'apply', 'apply-cluster'],
                            required=False)
+    argparser.add_argument('-cluster_mem',
+                           help='Option to specify cluster memory in MB when using `-mode apply-cluster`',
+                           default='3600',
+                           required=False)
+
     args = argparser.parse_args()
 
     sep = SEP_MAP[args.sep]
@@ -220,7 +228,9 @@ def main():
             elif args.mode == 'apply-cluster':
                 print("Applying configuration using cluster job...")                
                 for f in args.f:
-                    apply_config_to_file_use_cluster(f, config_path)
+                    apply_config_to_file_use_cluster(f, config_type=args.config_type,
+                                                     config_path=config_path,
+                                                     memory=args.cluster_mem)
     else:
         print("Please provide some argunents")
         argparser.print_help()
