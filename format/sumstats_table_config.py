@@ -221,14 +221,17 @@ class Config:
         for c in self.config["columnConfig"]:
             if c["rename"] is not None:
                 clean_column_config.append(c)
+        # option to call add_split_cols_to_out_cols(clean_column_config) here if required
+        self.config["columnConfig"] = clean_column_config
+
+    def add_split_cols_to_out_cols(self, column_config):
         for c in self.config["splitColumns"]:
             if len(c["leftName"]) > 0:
                 left_field = {"field": c["leftName"], "rename": ""}
-                clean_column_config.append(left_field)
+                column_config.append(left_field)
             if len(c["rightName"]) > 0:
                 right_field = {"field": c["rightName"], "rename": ""}
-                clean_column_config.append(right_field)
-        self.config["columnConfig"] = clean_column_config
+                column_config.append(right_field)
 
     def parse_json_config(self):
         try:
@@ -241,7 +244,6 @@ class Config:
                     if self.config["fieldSeparator"] in SEP_MAP:
                         self.config["fieldSeparator"] = SEP_MAP[self.config["fieldSeparator"]]
                     self.config["dropCols"] = self.cols_to_drop
-                    print(self.config)
         except FileNotFoundError:
             print("JSON config: {} was not found".format(self.config_file))
         except json.decoder.JSONDecodeError:

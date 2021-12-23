@@ -151,69 +151,72 @@ def apply_config_to_file_use_cluster(file, config_type, config_path, memory):
 
 
 def check_args(args):
-    config_ext = args.config.split(".")[-1]
+    config_ext = args.config_name.split(".")[-1]
     if args.config_type != config_ext:
-        print("Please give your -config file the extension and try again: '.{}'".format(args.config_type))
+        print("Please give your --config_name file the extension and try again: '.{}'".format(args.config_type))
         sys.exit()
 
 
 def main():
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('-f', help='Path to the file to be processed',
+    argparser.add_argument('-f', '--filepath',
+                           help='Path to the file to be processed',
                            nargs='+',
                            required=True)
-    argparser.add_argument('-sep',
+    argparser.add_argument('-s', '--separator',
                            help='The separator/delimiter of the input file used to separate the fields',
                            default='tab',
                            choices=['space', 'tab', 'comma', 'pipe'],
                            required=False)
-    argparser.add_argument('-preview',
+    argparser.add_argument('-p', '--preview',
                            help='Show a preview (top 10 lines) of the input/output file(s)',
                            action='store_true',
                            required=False)
-    argparser.add_argument('-config',
+    argparser.add_argument('-c', '--config_name',
                            help='Name configuration file. You can set a path to the configuration file directory in '
                                 'the environment variable SS_FORMAT_CONFIG_DIR',
                            required=False)
-    argparser.add_argument('-config_type',
-                           help='Type of configuration file',
-                           default='xlsx',
-                           choices=['xlsx', 'json'],
+    argparser.add_argument('-t', '--config_type',
+                           help='Type of configuration file, default: "json"',
+                           default='json',
+                           choices=['json', 'xlsx'],
                            required=False)
-    argparser.add_argument('-mode',
+    argparser.add_argument('-m', '--mode',
                            help='"gen" to generate the configuration file, "apply" to apply the configuration file',
                            choices=['gen', 'apply', 'apply-cluster'],
                            required=False)
-    argparser.add_argument('-cluster_mem',
-                           help='Option to specify cluster memory in MB when using `-mode apply-cluster`',
+    argparser.add_argument('-M', '--cluster_mem',
+                           help='Option to specify cluster memory in MB when using `--mode apply-cluster`, \
+                           default: "3600"',
                            default='3600',
                            required=False)
 
     args = argparser.parse_args()
 
-    sep = SEP_MAP[args.sep]
+    sep = SEP_MAP[args.separator]
     if not args.mode:
-        for f in args.f:
+        for f in args.filepath:
             print("Using field separator: {}".format(sep))
             print("-------------- File preview--------------")
             print(sspk.peek(f, sep=sep))
             print("Please provide some other argunents if you want to format a file")
     elif args.mode:
-        if not args.config:
-            print("Please provide a config file with '-config'")
-            print("If using `-mode gen` just provide a name e.g. 'myconf.xlsx' for the config template to be saved as.")
-            print("If using `-mode apply` or`-mode apply-cluster` please provide the name e.g. 'myconf.xlsx' of the "
+        if not args.config_name:
+            print("Please provide a config file with '--config_name'")
+            print("If using `--mode gen` just provide a name e.g. \
+            'myconf.xlsx' for the config template to be saved as.")
+            print("If using `--mode apply` or`--mode apply-cluster` please provide the name e.g. 'myconf.xlsx' of the "
                   "filled out template.")
             argparser.print_help()
             sys.exit()
         else:
             check_args(args)
-            config_path = os.path.join(env_variable_else('SS_FORMAT_CONFIG_DIR', './'), args.config)
+            config_path = os.path.join(env_variable_else('SS_FORMAT_CONFIG_DIR', './'), args.config_name)
             if args.mode == 'gen':
-                if len(args.f) != 1:
+                if len(args.filepath) != 1:
                     print("You can only specify one file for the template generation")
                     sys.exit()
-                file = args.f[0]
+                file = args.filepath[0]
                 print("Using field separator: {}".format(sep))
                 table = sumstats_table.Table(file, field_sep=sep)
                 print("Generating configuration template...")
@@ -222,17 +225,17 @@ def main():
                 print("Parsing config...")
                 config_dict = parse_config(config_path, args.config_type)
                 print("Applying configuration...")
-                for f in args.f:
+                for f in args.filepath:
                     print(f)
                     apply_config_to_file(f, config_dict, args.preview)
             elif args.mode == 'apply-cluster':
                 print("Applying configuration using cluster job...")                
-                for f in args.f:
+                for f in args.filepath:
                     apply_config_to_file_use_cluster(f, config_type=args.config_type,
                                                      config_path=config_path,
                                                      memory=args.cluster_mem)
     else:
-        print("Please provide some argunents")
+        print("Please provide some arguments")
         argparser.print_help()
 
 
