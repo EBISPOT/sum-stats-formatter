@@ -1,7 +1,7 @@
 FROM python:3.7-slim-buster
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc python-dev vim nano bsub \
+    && apt-get install -y --no-install-recommends gcc python-dev vim nano \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .
