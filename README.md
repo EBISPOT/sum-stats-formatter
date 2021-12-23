@@ -16,23 +16,31 @@ Inputs sumstast files must be flat files containing tables of separated values, 
 ## Installation
 
 ### 1. With Docker
-- `docker pull ebispot/gwas-sumstats-formatter:latest`
-- `docker run -v <path/to/your/sumstats/dir:/files -it ebispot/gwas-sumstats-formatter:latest /bin/bash`
-- `ss-format --help`
+```
+docker pull ebispot/gwas-sumstats-formatter:latest
+docker run -v <path/to/your/sumstats/dir:/files -it ebispot/gwas-sumstats-formatter:latest /bin/bash
+ss-format --help
+```
 
 ### 2. With Conda
-- `git clone https://github.com/EBISPOT/sum-stats-formatter.git`
-- `cd sum-stats-formatter`
-- `conda env create -f conda_env.yml`
-- `conda activate ss-format`
-- `pip install .`
+```
+git clone https://github.com/EBISPOT/sum-stats-formatter.git
+cd sum-stats-formatter
+conda env create -f conda_env.yml
+conda activate ss-format
+pip install .
+ss-format --help
+```
 
 ### 3. With venv and pip
-- `git clone https://github.com/EBISPOT/sum-stats-formatter.git`
-- `cd sum-stats-formatter`
-- `python3 -m venv .venv`
-- `source .venv/bin/activate`
-- `pip install .`
+```
+git clone https://github.com/EBISPOT/sum-stats-formatter.git
+cd sum-stats-formatter
+python3 -m venv .venv
+source .venv/bin/activate
+pip install .
+ss-format --help
+```
 
 ## Options
 
