@@ -202,6 +202,7 @@ class Config:
             self.config["splitColumns"].extend(self.splits_config)
             self.config["columnConfig"].extend(self.column_config)
             self.config["dropCols"] = self.cols_to_drop
+            self.add_split_cols_to_out_cols(self.config["columnConfig"])
         except FileNotFoundError:
             print("XLSX config: {} was not found".format(self.config_file))
 
@@ -223,6 +224,7 @@ class Config:
                 clean_column_config.append(c)
         # option to call add_split_cols_to_out_cols(clean_column_config) here if required
         self.config["columnConfig"] = clean_column_config
+        self.add_split_cols_to_out_cols(self.config["columnConfig"])
 
     def add_split_cols_to_out_cols(self, column_config):
         for c in self.config["splitColumns"]:
