@@ -12,7 +12,7 @@ jsonschema==4.2.1
 locket==0.2.0
 memory-profiler==0.57.0
 msgpack==0.6.2
-numpy==1.18.1
+numpy==1.21.0
 openpyxl==3.0.3
 pandas==0.25.3
 pandas-schema==0.3.4
