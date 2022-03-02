@@ -143,7 +143,7 @@ def apply_config_to_file_use_cluster(file, config_type, config_path, memory):
                M="{}".format(str(memory)),
                R="rusage[mem={}]".format(str(memory)),
                N="")
-    command = "ss-format -f {} -config_type {} -config {} -mode apply".format(file, config_type, config_path)
+    command = "ss-format -f {} -t {} -c {} -m apply".format(file, config_type, config_path)
     print(">>>> Submitting job to cluster, job id below")
     print(sub(command).job_id)
     print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
