@@ -10,6 +10,7 @@ OR_DSET = 'odds_ratio'
 RANGE_U_DSET = 'ci_upper'
 RANGE_L_DSET = 'ci_lower'
 BETA_DSET = 'beta'
+RSID_DSET = 'rsid'
 SE_DSET = 'standard_error'
 EFFECT_DSET = 'effect_allele'
 OTHER_DSET = 'other_allele'
@@ -24,7 +25,12 @@ HM_FREQ_DSET = 'hm_effect_allele_frequency'
 HM_VAR_ID = 'hm_variant_id'
 HM_CODE = 'hm_code'
 STUDY_DSET = 'study_accession'
+INFO_DSET = 'info'
+REF_DSET = 'ref_allele'
 
+ORDERED_HEADERS = (CHR_DSET, BP_DSET, EFFECT_DSET, OTHER_DSET, BETA_DSET, OR_DSET,
+                   SE_DSET, FREQ_DSET, PVAL_DSET, SNP_DSET, RSID_DSET, INFO_DSET,
+                   RANGE_U_DSET, RANGE_L_DSET, REF_DSET)
 
 DSET_TYPES = {SNP_DSET: str, STUDY_DSET: int, PVAL_DSET: float, MANTISSA_DSET: float, EXP_DSET: int, TRAIT_DSET: str,
               CHR_DSET: int, BP_DSET: int, OR_DSET: float, RANGE_U_DSET: float, RANGE_L_DSET: float, BETA_DSET: float, SE_DSET: float,
@@ -54,3 +60,5 @@ TO_QUERY_DSETS_DEFAULT = {SNP_DSET, MANTISSA_DSET, EXP_DSET, STUDY_DSET, CHR_DSE
                                 HM_EFFECT_DSET, HM_OTHER_DSET, HM_FREQ_DSET, HM_VAR_ID, HM_CODE}
 TO_INDEX = {STUDY_DSET, PVAL_DSET, BP_DSET}
 REQUIRED = {CHR_DSET, PVAL_DSET, SNP_DSET}#, EFFECT_DSET, OTHER_DSET}
+
+

@@ -3,6 +3,7 @@ import pathlib
 import pandas as pd
 import numpy as np
 import format.helpers.split_column as sssp
+from format.helpers.common_constants import ORDERED_HEADERS
 from tabulate import tabulate
 
 
@@ -91,6 +92,15 @@ class Table:
     def drop_cols(self, cols):
         self.pd.drop(columns=cols, inplace=True)
 
+    def reorder_cols(self, cols):
+        print(f"cols {cols}")
+        non_ordered_cols = list(set(cols) - set(ORDERED_HEADERS))
+        ordered_list = [c for c in ORDERED_HEADERS if c in cols]
+        print(f"ordered {ordered_list}")
+        ordered_list.extend(non_ordered_cols)
+        print(f"ordered {ordered_list}")
+        self.pd = self.pd[ordered_list]
+
     def set_outfile_name(self, preview=False):
         self.get_filename()
         self.get_parent_dir()
@@ -174,10 +184,11 @@ class Table:
 
     def perform_keep_cols(self, keep_cols):
         add_cols = [c for c in keep_cols if c not in self.get_header()]
-        keep_cols = [c for c in keep_cols if c in self.get_header()]
-        self.pd = self.pd[keep_cols]
+        cols_in_header = [c for c in keep_cols if c in self.get_header()]
+        self.pd = self.pd[cols_in_header]
         for c in add_cols:
             self.pd[c] = "NA"
+        self.reorder_cols(keep_cols)
 
     def peek(self, keep_cols=None):
         if keep_cols:

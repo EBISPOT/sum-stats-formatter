@@ -107,8 +107,9 @@ class Config:
             if mandatory_field not in columns_out and mandatory_field not in columns_out.values():
                 mandatory_fields_not_in_columns.append(mandatory_field)
         cols_df = pd.DataFrame(columns_out.items(), columns=['IN', 'OUT'])
-        cols_df = cols_df.append(pd.DataFrame(mandatory_fields_not_in_columns, columns=['OUT']), ignore_index=True,
-                                 sort=True)
+        suggested_fields_df = pd.DataFrame(mandatory_fields_not_in_columns, columns=['OUT'])
+        suggested_fields_df['IN'] = ""
+        cols_df = cols_df.append((suggested_fields_df), ignore_index=True, sort=True)
         return cols_df
 
     def generate_json_config(self):
@@ -191,7 +192,6 @@ class Config:
                          "EXTRACT": "extract",
                          "OUT_NAME": "rename"}
             ).to_dict('records')
-
             self.config["outFilePrefix"] = set_var_from_dict(self.file_config, "outFilePrefix", "formatted_")
             self.config["fieldSeparator"] = set_var_from_dict(self.file_config, "fieldSeparator", self.field_sep)
             if self.config["fieldSeparator"] in SEP_MAP:
