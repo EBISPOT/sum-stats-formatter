@@ -29,7 +29,7 @@ ss-validate==0.4.7
 tabulate==0.8.6
 tblib==1.6.0
 toolz==0.10.0
-tornado==6.0.3
+tornado==6.3.3
 xlrd==1.2.0
 XlsxWriter==1.2.9
 zict==1.0.0
