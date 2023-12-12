@@ -139,14 +139,27 @@ def process_sumstats_table(table, config):
 
 
 def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
+    # Define output and error file paths
+    output_file = "slurm-%j.out"  # %j will be replaced with the job ID
+    error_file = "slurm-%j.err"  # %j will be replaced with the job ID
+
+    sbatch_command = ["sbatch", 
+                      "--mem={}".format(memory), 
+                      "--output={}".format(output_file), 
+                      "--error={}".format(error_file), 
+                      "--wrap", 
+                      "ss-format -f {} -t {} -c {} -m apply".format(file, config_type, config_path)]
+
     # SLURM job submission command
-    sbatch_command = ["sbatch", f"--mem={memory}", "--time=01:00:00", "--wrap"]
-
-    # Command to be executed
-    command = f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply"
-
-    # Adding the command to sbatch_command
-    sbatch_command.append(command)
+    sbatch_command = [
+        "sbatch", 
+        f"--mem={memory}", 
+        "--time=01:00:00", 
+        f"--output={output_file}", 
+        f"--error={error_file}", 
+        "--wrap",
+        f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply"
+    ]
 
     print(">>>> Submitting job to SLURM, job id below")
 
