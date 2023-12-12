@@ -148,8 +148,8 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
         "sbatch", 
         f"--mem={memory}", 
         "--time=01:00:00", 
-        f"--output={output_file}", 
-        f"--error={error_file}", 
+        "--output='/homes/karatugo/sumstatsformatter/apply-cluster.out'", 
+        "--error='/homes/karatugo/sumstatsformatter/apply-cluster.err'", 
         "--wrap",
         f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply"
     ]
