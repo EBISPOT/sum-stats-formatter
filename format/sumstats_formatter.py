@@ -140,7 +140,7 @@ def process_sumstats_table(table, config):
 
 def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
     # SLURM job submission command
-    sbatch_command = ["sbatch", f"--mem={memory}", "--wrap"]
+    sbatch_command = ["sbatch", f"--mem={memory}", "--time=01:00:00", "--wrap"]
 
     # Command to be executed
     command = f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply"
@@ -153,9 +153,19 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
     # Executing the sbatch command
     result = subprocess.run(sbatch_command, capture_output=True, text=True)
 
-    # Parsing the job ID from the output
-    job_id = result.stdout.strip().split()[-1]
-    print(job_id)
+    if result.returncode != 0:
+        print("Error in submitting job: ", result.stderr)
+        return
+
+    print("Command output: ", result.stdout)
+
+    try:
+        job_id = result.stdout.strip().split()[-1]
+        print("Job ID: ", job_id)
+    except IndexError as e:
+        print("Error parsing job ID: ", e)
+        print("Full output: ", result.stdout)
+
 
     print(
         "You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
