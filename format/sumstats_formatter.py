@@ -1,7 +1,7 @@
 import argparse
 import os
 import pandas as pd
-from bsub import bsub
+import subprocess
 import sys
 import format.helpers.peek as sspk
 from format.utils import SEP_MAP, md5sum, set_var_from_dict, env_variable_else
@@ -138,16 +138,42 @@ def process_sumstats_table(table, config):
         table.convert_neg_log10_pvalues()
         
 
-def apply_config_to_file_use_cluster(file, config_type, config_path, memory):
-    sub = bsub("gwas_ss_format",
-               M="{}".format(str(memory)),
-               R="rusage[mem={}]".format(str(memory)),
-               N="")
-    command = "ss-format -f {} -t {} -c {} -m apply".format(file, config_type, config_path)
-    print(">>>> Submitting job to cluster, job id below")
-    print(sub(command).job_id)
-    print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
-          "the same directory as the input file.")
+# def apply_config_to_file_use_cluster(file, config_type, config_path, memory):
+#     sub = bsub("gwas_ss_format",
+#                M="{}".format(str(memory)),
+#                R="rusage[mem={}]".format(str(memory)),
+#                N="")
+#     command = "ss-format -f {} -t {} -c {} -m apply".format(file, config_type, config_path)
+#     print(">>>> Submitting job to cluster, job id below")
+#     print(sub(command).job_id)
+#     print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
+#           "the same directory as the input file.")
+
+
+def apply_config_to_file_use_slurm(file_, config_type, config_path, memory):
+    # SLURM job submission command
+    sbatch_command = ["sbatch", f"--mem={memory}", "--wrap"]
+
+    # Command to be executed
+    command = f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply"
+
+    # Adding the command to sbatch_command
+    sbatch_command.append(command)
+
+    print(">>>> Submitting job to SLURM, job id below")
+
+    # Executing the sbatch command
+    result = subprocess.run(sbatch_command, capture_output=True, text=True)
+
+    # Parsing the job ID from the output
+    job_id = result.stdout.strip().split()[-1]
+    print(job_id)
+
+    print(
+        "You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
+        "the same directory as the input file."
+    )
+
 
 
 def check_args(args):
@@ -229,11 +255,15 @@ def main():
                     print(f)
                     apply_config_to_file(f, config_dict, args.preview)
             elif args.mode == 'apply-cluster':
+                # TODO: update the code here
                 print("Applying configuration using cluster job...")                
                 for f in args.filepath:
-                    apply_config_to_file_use_cluster(f, config_type=args.config_type,
-                                                     config_path=config_path,
-                                                     memory=args.cluster_mem)
+                    apply_config_to_file_use_cluster(
+                        f, 
+                        config_type=args.config_type,
+                        config_path=config_path,
+                        memory=args.cluster_mem,
+                    )
     else:
         print("Please provide some arguments")
         argparser.print_help()

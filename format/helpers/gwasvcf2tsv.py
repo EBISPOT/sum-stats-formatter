@@ -157,12 +157,12 @@ def convert_gwas_vcf_to_tsv_with_cluster(vcf):
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='Path to the file to be processed', nargs='+', required=True)
-    argparser.add_argument('-exec', help='"lsf" (default) to run as an LSF cluster job, "local" to run locally', choices=['lsf', 'local'], default='lsf', required=False)
+    argparser.add_argument('-exec', help='"slurm" (default) to run as an SLURM cluster job, "local" to run locally', choices=['slurm', 'local'], default='slurm', required=False)
     args = argparser.parse_args()
     exec = args.exec
 
     for vcf in args.f:
-        if exec == 'lsf':
+        if exec == 'slurm':
             convert_gwas_vcf_to_tsv_with_cluster(vcf)
         else:
             convert_gwas_vcf_to_tsv(vcf)
