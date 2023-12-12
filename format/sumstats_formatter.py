@@ -136,21 +136,9 @@ def process_sumstats_table(table, config):
     if all([config['convertNegLog10Pvalue'], 'p_value' in keep_cols]):
         print('converting pvals')
         table.convert_neg_log10_pvalues()
-        
-
-# def apply_config_to_file_use_cluster(file, config_type, config_path, memory):
-#     sub = bsub("gwas_ss_format",
-#                M="{}".format(str(memory)),
-#                R="rusage[mem={}]".format(str(memory)),
-#                N="")
-#     command = "ss-format -f {} -t {} -c {} -m apply".format(file, config_type, config_path)
-#     print(">>>> Submitting job to cluster, job id below")
-#     print(sub(command).job_id)
-#     print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
-#           "the same directory as the input file.")
 
 
-def apply_config_to_file_use_slurm(file_, config_type, config_path, memory):
+def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
     # SLURM job submission command
     sbatch_command = ["sbatch", f"--mem={memory}", "--wrap"]
 
