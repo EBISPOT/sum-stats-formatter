@@ -143,13 +143,6 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
     output_file = "slurm-%j.out"  # %j will be replaced with the job ID
     error_file = "slurm-%j.err"  # %j will be replaced with the job ID
 
-    sbatch_command = ["sbatch", 
-                      "--mem={}".format(memory), 
-                      "--output={}".format(output_file), 
-                      "--error={}".format(error_file), 
-                      "--wrap", 
-                      "ss-format -f {} -t {} -c {} -m apply".format(file, config_type, config_path)]
-
     # SLURM job submission command
     sbatch_command = [
         "sbatch", 
