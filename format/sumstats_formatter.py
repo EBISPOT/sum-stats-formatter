@@ -148,14 +148,10 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
         "sbatch", 
         f"--mem={memory}", 
         "--time=01:00:00", 
-        "--output='/homes/karatugo/sumstatsformatter/apply-cluster.out'", 
-        "--error='/homes/karatugo/sumstatsformatter/apply-cluster.err'", 
-        "--wrap",
-        f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply"
+        f"--output={output_file}",
+        f"--error={error_file}", 
+        f"--wrap='ss-format -f {file_} -t {config_type} -c {config_path} -m apply'"
     ]
-
-    # Print the sbatch_command
-    print("Executing command:", ' '.join(sbatch_command))
 
     print(">>>> Submitting job to SLURM, job id below")
 
