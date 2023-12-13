@@ -154,6 +154,9 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
         f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply"
     ]
 
+    # Print the sbatch_command
+    print("Executing command:", ' '.join(sbatch_command))
+
     print(">>>> Submitting job to SLURM, job id below")
 
     # Executing the sbatch command
