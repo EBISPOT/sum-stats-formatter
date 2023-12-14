@@ -150,7 +150,7 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
         "--time=01:00:00", 
         f"--output={output_file}",
         f"--error={error_file}", 
-        f"--wrap='source /hps/software/users/parkinso/spot/gwas/anaconda3/bin/activate; conda activate ss-format; ss-format --help'"
+        f"--wrap='conda env create -f ../conda_env.yml; conda activate ss-format; ss-format --help'"
     ]
 
     # Print the sbatch_command
