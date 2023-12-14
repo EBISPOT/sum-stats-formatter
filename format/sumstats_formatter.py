@@ -150,7 +150,7 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
         "--time=01:00:00", 
         f"--output={output_file}",
         f"--error={error_file}", 
-        f"--wrap='ss-format -f {file_} -t {config_type} -c {config_path} -m apply'"
+        f"--wrap='ss-format --help'"
     ]
 
     # Print the sbatch_command
