@@ -155,9 +155,10 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
         file.write("#SBATCH --time=01:00:00\n")
         file.write(f"#SBATCH --output={output_file}\n")
         file.write(f"#SBATCH --error={error_file}\n")
-        file.write("conda activate ss-format\n")
+        # file.write("source /hps/software/users/parkinso/spot/gwas/anaconda3/bin/activate base\n")
+        # file.write("conda activate ss-format\n")
         file.write(f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply\n")
-        file.write("conda deactivate\n")
+        # file.write("conda deactivate\n")
 
     # Make the script executable
     os.chmod(sbatch_script_path, 0o755)
