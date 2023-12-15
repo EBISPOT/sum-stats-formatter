@@ -151,7 +151,7 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
         f"--output={output_file}",
         f"--error={error_file}", 
         "--export=ALL",
-        f"--wrap='ss-format --help'"
+        f"--wrap='source activate ss-format; ss-format --help'"
     ]
 
     # Print the sbatch_command
