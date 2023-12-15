@@ -143,16 +143,27 @@ def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
     output_file = "slurm-%j.out"  # %j will be replaced with the job ID
     error_file = "slurm-%j.err"  # %j will be replaced with the job ID
 
+    # Get the current working directory
+    current_dir = os.getcwd()
+
+    # Set the SBATCH script path in the current directory
+    sbatch_script_path = os.path.join(current_dir, "temp_sbatch_script.sh")
+
+    with open(sbatch_script_path, "w") as file:
+        file.write("#!/bin/bash\n")
+        file.write(f"#SBATCH --mem={memory}\n")
+        file.write("#SBATCH --time=01:00:00\n")
+        file.write(f"#SBATCH --output={output_file}\n")
+        file.write(f"#SBATCH --error={error_file}\n")
+        file.write("conda activate ss-format\n")
+        file.write(f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply\n")
+        file.write("conda deactivate\n")
+
+    # Make the script executable
+    os.chmod(sbatch_script_path, 0o755)
+
     # SLURM job submission command
-    sbatch_command = [
-        "sbatch", 
-        f"--mem={memory}", 
-        "--time=01:00:00", 
-        f"--output={output_file}",
-        f"--error={error_file}", 
-        "--export=ALL",
-        f"--wrap='source /hps/software/users/parkinso/spot/gwas/anaconda3/bin/activate base; conda activate ss-format; ss-format -f {file_} -t {config_type} -c {config_path} -m apply; conda deactivate;'"
-    ]
+    sbatch_command = ["sbatch", sbatch_script_path]
 
     # Print the sbatch_command
     print("Executing command:", ' '.join(sbatch_command))
