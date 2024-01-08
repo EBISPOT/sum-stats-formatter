@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='ss-format',
-    version='0.1-SNAPSHOT',
+    version='0.1.1',
     packages=['format', 'format.helpers'],
     data_files=[('data_files',['format/formatter_config_template.xlsx'])],
     entry_points={

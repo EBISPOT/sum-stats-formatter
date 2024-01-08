@@ -31,3 +31,6 @@ files
 *.yaml
 *.properties
 gwas_properties.py
+
+# Virtual envs
+.venv/*

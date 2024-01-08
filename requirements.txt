@@ -8,7 +8,7 @@ et-xmlfile==1.0.1
 fsspec==0.6.2
 HeapDict==1.0.1
 jdcal==1.4.1
-jsonschema==4.2.1
+jsonschema==4.0.0
 locket==0.2.0
 memory-profiler==0.57.0
 msgpack==0.6.2

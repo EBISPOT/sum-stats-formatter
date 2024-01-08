@@ -1,7 +1,7 @@
 import argparse
 import os
 import pandas as pd
-from bsub import bsub
+import subprocess
 import sys
 import format.helpers.peek as sspk
 from format.utils import SEP_MAP, md5sum, set_var_from_dict, env_variable_else
@@ -136,18 +136,60 @@ def process_sumstats_table(table, config):
     if all([config['convertNegLog10Pvalue'], 'p_value' in keep_cols]):
         print('converting pvals')
         table.convert_neg_log10_pvalues()
-        
 
-def apply_config_to_file_use_cluster(file, config_type, config_path, memory):
-    sub = bsub("gwas_ss_format",
-               M="{}".format(str(memory)),
-               R="rusage[mem={}]".format(str(memory)),
-               N="")
-    command = "ss-format -f {} -t {} -c {} -m apply".format(file, config_type, config_path)
-    print(">>>> Submitting job to cluster, job id below")
-    print(sub(command).job_id)
-    print("You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
-          "the same directory as the input file.")
+
+def apply_config_to_file_use_cluster(file_, config_type, config_path, memory):
+    # Define output and error file paths
+    output_file = "slurm-%j.out"  # %j will be replaced with the job ID
+    error_file = "slurm-%j.err"  # %j will be replaced with the job ID
+
+    # Get the current working directory
+    current_dir = os.getcwd()
+
+    # Set the SBATCH script path in the current directory
+    sbatch_script_path = os.path.join(current_dir, "temp_sbatch_script.sh")
+
+    with open(sbatch_script_path, "w") as file:
+        file.write("#!/bin/bash\n")
+        file.write(f"#SBATCH --mem={memory}\n")
+        file.write("#SBATCH --time=01:00:00\n")
+        file.write(f"#SBATCH --output={output_file}\n")
+        file.write(f"#SBATCH --error={error_file}\n")
+        file.write(f"ss-format -f {file_} -t {config_type} -c {config_path} -m apply\n")
+
+    # Make the script executable
+    os.chmod(sbatch_script_path, 0o755)
+
+    # SLURM job submission command
+    sbatch_command = ["sbatch", sbatch_script_path]
+
+    # Print the sbatch_command
+    print("Executing command:", ' '.join(sbatch_command))
+
+    print(">>>> Submitting job to SLURM, job id below")
+
+    # Executing the sbatch command
+    result = subprocess.run(sbatch_command, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        print("Error in submitting job: ", result.stderr)
+        return
+
+    print("Command output: ", result.stdout)
+
+    try:
+        job_id = result.stdout.strip().split()[-1]
+        print("Job ID: ", job_id)
+    except IndexError as e:
+        print("Error parsing job ID: ", e)
+        print("Full output: ", result.stdout)
+
+
+    print(
+        "You will receive an email when the job is finished. Formatted files, md5sums and configs will appear in "
+        "the same directory as the input file."
+    )
+
 
 
 def check_args(args):
@@ -229,11 +271,15 @@ def main():
                     print(f)
                     apply_config_to_file(f, config_dict, args.preview)
             elif args.mode == 'apply-cluster':
+                # TODO: update the code here
                 print("Applying configuration using cluster job...")                
                 for f in args.filepath:
-                    apply_config_to_file_use_cluster(f, config_type=args.config_type,
-                                                     config_path=config_path,
-                                                     memory=args.cluster_mem)
+                    apply_config_to_file_use_cluster(
+                        f, 
+                        config_type=args.config_type,
+                        config_path=config_path,
+                        memory=args.cluster_mem,
+                    )
     else:
         print("Please provide some arguments")
         argparser.print_help()

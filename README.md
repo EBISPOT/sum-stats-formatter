@@ -9,7 +9,7 @@ The formatting process has three steps:
 2. Edit the formatting configuration as required
 3. Apply the formatting configuration to the file(s)
 
-The interface is a command line tool called `ss-format`. Configurations can be made with JSON or XLSX. There is an option for LSF cluster execution for bulk formatting.
+The interface is a command line tool called `ss-format`. Configurations can be made with JSON or XLSX. There is an option for SLURM cluster execution for bulk formatting.
 
 Inputs sumstast files must be flat files containing tables of separated values, where each row has the same number of fields/columns. 
 
@@ -90,7 +90,7 @@ optional arguments:
    1. `ss-format -f test_ss*.tsv -t json -c test.json -m apply` # use '*' wildcard for globbing
    2. The outputs, will be formatted files called `formatted_test_ss1.tsv`, `formatted_test_ss2.tsv`, `formatted_test_ss3.tsv`
 
-### Format multiple sumstats files on an LSF cluster (conda or venv install only)
+### Format multiple sumstats files on a SLURM cluster (conda or venv install only)
 Same as previous except step 3 is like this:
 - `ss-format -f test_ss*.tsv -t json -c test.json -m apply-cluster`
 
